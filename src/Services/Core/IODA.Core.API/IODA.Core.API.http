@@ -1,0 +1,122 @@
+# IODA Core API - Pruebas locales
+# Base URL (ajusta si usas otro puerto; launchSettings usa 5269)
+@baseUrl = http://localhost:5269
+@projectId = 00000000-0000-0000-0000-000000000000
+@schemaId = 00000000-0000-0000-0000-000000000000
+@contentId = 00000000-0000-0000-0000-000000000000
+@environmentId = 00000000-0000-0000-0000-000000000000
+@userId = 11111111-1111-1111-1111-111111111111
+
+### ========== PROJECTS ==========
+
+### 1. Crear proyecto
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+
+{
+  "name": "Mi Blog",
+  "description": "Proyecto de prueba para Fase 1",
+  "createdBy": "{{userId}}"
+}
+
+### 2. Obtener proyecto por ID (reemplaza {{projectId}} por el GUID devuelto en el POST anterior)
+GET {{baseUrl}}/api/projects/{{projectId}}
+
+### ========== SCHEMAS ==========
+
+### 3. Crear schema en el proyecto (reemplaza {{projectId}})
+POST {{baseUrl}}/api/projects/{{projectId}}/schemas
+Content-Type: application/json
+
+{
+  "schemaName": "Article",
+  "schemaType": "article",
+  "description": "Artículo de blog",
+  "fields": [
+    {
+      "fieldName": "body",
+      "fieldType": "RichText",
+      "isRequired": true,
+      "displayOrder": 0
+    },
+    {
+      "fieldName": "author",
+      "fieldType": "String",
+      "isRequired": true,
+      "displayOrder": 1
+    }
+  ],
+  "createdBy": "{{userId}}"
+}
+
+### 4. Listar schemas del proyecto
+GET {{baseUrl}}/api/projects/{{projectId}}/schemas
+
+### 5. Obtener schema por ID (reemplaza {{schemaId}})
+GET {{baseUrl}}/api/projects/{{projectId}}/schemas/{{schemaId}}
+
+### ========== CONTENT ==========
+# Para crear contenido necesitas un Environment (por ahora insertar en BD; ver docs/COMO_PROBAR_FASE_1.md).
+# Sustituye {{projectId}}, {{environmentId}}, {{schemaId}} por los GUIDs reales.
+
+### 6. Crear contenido
+POST {{baseUrl}}/api/projects/{{projectId}}/content
+Content-Type: application/json
+
+{
+  "environmentId": "{{environmentId}}",
+  "schemaId": "{{schemaId}}",
+  "title": "Mi primer artículo",
+  "contentType": "article",
+  "fields": {
+    "body": "<p>Hola mundo</p>",
+    "author": "Yo"
+  },
+  "createdBy": "{{userId}}"
+}
+
+### 7. Listar contenido del proyecto (paginado)
+GET {{baseUrl}}/api/projects/{{projectId}}/content?page=1&pageSize=20
+
+### 8. Obtener contenido por ID
+GET {{baseUrl}}/api/projects/{{projectId}}/content/{{contentId}}
+
+### 9. Actualizar contenido
+PUT {{baseUrl}}/api/projects/{{projectId}}/content/{{contentId}}
+Content-Type: application/json
+
+{
+  "title": "Título actualizado",
+  "fields": {
+    "body": "<p>Contenido actualizado</p>",
+    "author": "Yo"
+  },
+  "updatedBy": "{{userId}}"
+}
+
+### 10. Publicar contenido
+POST {{baseUrl}}/api/projects/{{projectId}}/content/{{contentId}}/publish
+Content-Type: application/json
+
+{
+  "publishedBy": "{{userId}}"
+}
+
+### 11. Despublicar contenido
+POST {{baseUrl}}/api/projects/{{projectId}}/content/{{contentId}}/unpublish
+Content-Type: application/json
+
+{
+  "reason": "Corrección pendiente",
+  "unpublishedBy": "{{userId}}"
+}
+
+### 12. Obtener versión concreta del contenido
+GET {{baseUrl}}/api/projects/{{projectId}}/content/{{contentId}}/versions/1
+
+### 13. Listar contenido publicado en un entorno
+GET {{baseUrl}}/api/projects/{{projectId}}/environments/{{environmentId}}/content/published?page=1&pageSize=20
+
+### ========== SWAGGER ==========
+### Abrir documentación en el navegador (cuando la API está en ejecución)
+# http://localhost:5269/swagger

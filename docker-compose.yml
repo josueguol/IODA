@@ -1,0 +1,133 @@
+networks:
+  # Red externa compartida con otros proyectos
+  local-dev-network:
+    external: true
+  # Red interna para este proyecto
+  ioda-internal:
+    driver: bridge
+
+services:
+  # CMS Core Service
+  ioda-core-api:
+    build:
+      context: .
+      dockerfile: src/Services/Core/IODA.Core.API/Dockerfile
+    container_name: ioda-core-api
+    hostname: ioda-core-api
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ioda_core;Username=postgres;Password=postgres
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__VirtualHost=ioda_cms
+      - RabbitMQ__Username=dev
+      - RabbitMQ__Password=dev
+    depends_on: []  # [postgres, rabbitmq] cuando uses compose para infra
+    networks:
+      - local-dev-network
+      - ioda-internal
+    restart: unless-stopped
+    profiles:
+      - services
+
+  # Identity Service
+  ioda-identity-api:
+    build:
+      context: .
+      dockerfile: src/Services/Identity/IODA.Identity.API/Dockerfile
+    container_name: ioda-identity-api
+    hostname: ioda-identity-api
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ioda_identity;Username=postgres;Password=postgres
+      - Jwt__SecretKey=your-super-secret-key-min-32-chars-change-in-production
+      - Jwt__Issuer=ioda-identity
+      - Jwt__Audience=ioda-cms
+      - Jwt__ExpirationMinutes=60
+      - Jwt__RefreshTokenExpirationDays=7
+    depends_on: []
+    networks:
+      - local-dev-network
+      - ioda-internal
+    restart: unless-stopped
+    profiles:
+      - services
+
+  # Authorization Service (Access Rules – Fase 3)
+  ioda-authorization-api:
+    build:
+      context: .
+      dockerfile: src/Services/Authorization/IODA.Authorization.API/Dockerfile
+    container_name: ioda-authorization-api
+    hostname: ioda-authorization-api
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ioda_authorization;Username=postgres;Password=postgres
+      - Jwt__SecretKey=your-super-secret-key-min-32-chars-change-in-production
+      - Jwt__Issuer=ioda-identity
+      - Jwt__Audience=ioda-cms
+    depends_on: []
+    networks:
+      - local-dev-network
+      - ioda-internal
+    restart: unless-stopped
+    profiles:
+      - services
+
+  # Publishing Service (Fase 4)
+  ioda-publishing-api:
+    build:
+      context: .
+      dockerfile: src/Services/Publishing/IODA.Publishing.API/Dockerfile
+    container_name: ioda-publishing-api
+    hostname: ioda-publishing-api
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ioda_publishing;Username=postgres;Password=postgres
+      - CoreApi__BaseUrl=http://ioda-core-api:8080
+    depends_on: []
+    networks:
+      - local-dev-network
+      - ioda-internal
+    restart: unless-stopped
+    profiles:
+      - services
+
+  # Indexing Service (Fase 5)
+  ioda-indexing-api:
+    build:
+      context: .
+      dockerfile: src/Services/Indexing/IODA.Indexing.API/Dockerfile
+    container_name: ioda-indexing-api
+    hostname: ioda-indexing-api
+    ports:
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Elasticsearch__Enabled=true
+      - Elasticsearch__Url=http://elasticsearch:9200
+      - Elasticsearch__IndexName=ioda-published-content
+      - RabbitMQ__Enabled=true
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__VirtualHost=ioda_cms
+      - RabbitMQ__Username=dev
+      - RabbitMQ__Password=dev
+    depends_on: []
+    networks:
+      - local-dev-network
+      - ioda-internal
+    restart: unless-stopped
+    profiles:
+      - services

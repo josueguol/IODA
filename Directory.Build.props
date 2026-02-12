@@ -1,0 +1,69 @@
+<Project>
+  <!-- 
+    ============================================================================
+    IODA CMS - Propiedades Compartidas para Todos los Proyectos
+    ============================================================================
+    Este archivo define propiedades comunes que se aplican a todos los 
+    proyectos de la solución, asegurando consistencia y mantenibilidad.
+    ============================================================================
+  -->
+
+  <PropertyGroup>
+    <!-- Versión del Framework -->
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    
+    <!-- Configuración de Nullable Reference Types -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    
+    <!-- Análisis de Código -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    
+    <!-- Información del Proyecto -->
+    <Company>IODA</Company>
+    <Product>IODA CMS</Product>
+    <Authors>IODA Team</Authors>
+    <Copyright>Copyright © 2026 IODA</Copyright>
+    <Version>0.1.0</Version>
+    
+    <!-- Output Path Centralizado -->
+    <OutputPath>$(MSBuildProjectDirectory)\..\..\..\..\artifacts\$(Configuration)\$(MSBuildProjectName)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!-- Configuración para APIs -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.API'))">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn> <!-- Suprimir warnings de documentación XML -->
+  </PropertyGroup>
+
+  <!-- Configuración para Domain Layer -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Domain'))">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Paquetes Compartidos para TODOS los proyectos -->
+  <ItemGroup>
+    <!-- Análisis de Código -->
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Paquetes para proyectos de Test -->
+  <ItemGroup Condition="$(MSBuildProjectName.Contains('Test'))">
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+  </ItemGroup>
+
+</Project>
