@@ -56,5 +56,6 @@ python3 -m ai_agents.cli "Tu pregunta"
 | `OLLAMA_URL` | Solo ollama | `http://localhost:11434/api/generate` |
 | `OLLAMA_MODEL` | Solo ollama | `gemma3:4b` |
 | `LLM_TEMPERATURE` | Opcional | `0.2` |
+| `LLM_TIMEOUT` | Segundos de espera a la respuesta del LLM (por defecto 300; si Ollama tarda más, súbelo) | `300` |
 
 **Nota:** No pongas API keys en el código; usa variables de entorno o un gestor de secretos.

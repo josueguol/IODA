@@ -62,6 +62,7 @@ class Orchestrator:
             provider=provider,
             model=model,
             temperature=self.cfg.temperature,
+            timeout_seconds=self.cfg.llm_timeout_seconds,
             ollama_url=self.cfg.ollama_url,
             openai_api_key=self.cfg.openai_api_key,
             anthropic_api_key=self.cfg.anthropic_api_key,

@@ -30,6 +30,7 @@ class AgentConfig:
     openai_model: str
     anthropic_model: str
     temperature: float
+    llm_timeout_seconds: int  # timeout para la respuesta del LLM (Ollama local puede tardar mucho)
     # API key (o usar env OPENAI_API_KEY / ANTHROPIC_API_KEY)
     openai_api_key: str | None
     anthropic_api_key: str | None
@@ -87,10 +88,11 @@ def default_config(workspace_root: str | Path) -> AgentConfig:
         embedding_dim=768,
         llm_provider=os.getenv("LLM_PROVIDER", "ollama").lower(),
         ollama_url=os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate"),
-        ollama_model=os.getenv("OLLAMA_MODEL", "gemma3:4b"),
+        ollama_model=os.getenv("OLLAMA_MODEL", "deepseek-coder:6.7b"),
         openai_model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
         temperature=float(os.getenv("LLM_TEMPERATURE", "0.2")),
+        llm_timeout_seconds=int(os.getenv("LLM_TIMEOUT", "300")),
         openai_api_key=os.getenv("OPENAI_API_KEY") or None,
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
         top_k=10,

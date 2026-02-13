@@ -19,6 +19,7 @@ class LlmConfig:
     provider: str  # "ollama" | "openai" | "anthropic"
     model: str
     temperature: float = 0.2
+    timeout_seconds: int = 300  # Ollama con prompts largos puede tardar >2 min
     # Ollama
     ollama_url: str = "http://localhost:11434/api/generate"
     # API keys (para openai/anthropic)
@@ -45,7 +46,7 @@ def _generate_ollama(prompt: str, cfg: LlmConfig) -> str:
                 "stream": False,
                 "options": {"temperature": cfg.temperature},
             },
-            timeout=120,
+            timeout=cfg.timeout_seconds,
         )
     except requests.RequestException as e:
         raise LlmError(f"No se pudo conectar al LLM en {cfg.ollama_url}: {e}") from e
@@ -85,7 +86,7 @@ def _generate_openai(prompt: str, cfg: LlmConfig) -> str:
                 "temperature": cfg.temperature,
                 "max_tokens": 4096,
             },
-            timeout=120,
+            timeout=cfg.timeout_seconds,
         )
     except requests.RequestException as e:
         raise LlmError(f"Error de conexión a OpenAI: {e}") from e
@@ -130,7 +131,7 @@ def _generate_anthropic(prompt: str, cfg: LlmConfig) -> str:
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": cfg.temperature,
             },
-            timeout=120,
+            timeout=cfg.timeout_seconds,
         )
     except requests.RequestException as e:
         raise LlmError(f"Error de conexión a Anthropic: {e}") from e
