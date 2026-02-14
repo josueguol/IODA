@@ -79,7 +79,7 @@ export function createAuthAwareHttpClient(config: AuthAwareClientConfig) {
     }
 
     if (!response.ok) {
-      if (response.status === 401) onUnauthorized()
+      if (response.status === 401 || response.status === 403) onUnauthorized()
       const apiError = await createApiError(response)
       throw apiError
     }
