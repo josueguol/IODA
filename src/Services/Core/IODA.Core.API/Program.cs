@@ -54,13 +54,18 @@ if (rabbitEnabled && !string.IsNullOrWhiteSpace(rabbitHost))
     healthChecksBuilder.AddRabbitMQ(rabbitConnectionString, name: "rabbitmq", failureStatus: HealthStatus.Degraded);
 }
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
+    allowedOrigins = new[] { "http://localhost:3000", "http://localhost:5173", "https://localhost:3000", "https://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -85,6 +90,16 @@ if (!string.IsNullOrEmpty(jwtSecret))
             };
         });
     builder.Services.AddAuthorization();
+}
+
+// 1.4: en no-Development, no arrancar sin configuración crítica
+if (!builder.Environment.IsDevelopment())
+{
+    var missing = new List<string>();
+    if (string.IsNullOrWhiteSpace(builder.Configuration["Jwt:SecretKey"])) missing.Add("Jwt:SecretKey");
+    if (string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("DefaultConnection"))) missing.Add("ConnectionStrings:DefaultConnection");
+    if (missing.Count > 0)
+        throw new InvalidOperationException($"Missing required configuration: {string.Join(", ", missing)}. Set via environment variables or vault.");
 }
 
 var app = builder.Build();

@@ -2,12 +2,17 @@ using IODA.Publishing.Application.Commands;
 using IODA.Publishing.Application.Queries;
 using IODA.Publishing.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IODA.Publishing.API.Controllers;
 
+/// <summary>
+/// API de publicación: solicitudes, aprobación y rechazo. Todos los endpoints requieren JWT (rol Editor o Admin).
+/// </summary>
 [ApiController]
 [Route("api/publishing")]
+[Authorize(Policy = "Editor")]
 public class PublishingController : ControllerBase
 {
     private readonly IMediator _mediator;

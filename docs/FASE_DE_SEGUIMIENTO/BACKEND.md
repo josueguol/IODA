@@ -9,10 +9,10 @@ Referencia: [DIAGNOSTICO_TECNICO_CMS.md](../DIAGNOSTICO_TECNICO_CMS.md).
 
 ### 1.1 Autorización en APIs expuestas
 
-- [ ] **Authorization API:** Añadir `[Authorize]` (o políticas concretas) a todos los endpoints. Definir roles/permisos requeridos (ej. admin para CRUD de roles/permisos).
-- [ ] **Publishing API:** Añadir `[Authorize]` a todos los endpoints. Definir permisos (ej. editor para solicitudes de publicación, aprobar/rechazar).
-- [ ] **Indexing API:** Añadir `[Authorize]` a todos los endpoints (indexar, eliminar del índice).
-- [ ] Documentar en cada API qué rol/permiso se requiere por endpoint.
+- [x] **Authorization API:** Añadir `[Authorize]` (o políticas concretas) a todos los endpoints. Definir roles/permisos requeridos (ej. admin para CRUD de roles/permisos).
+- [x] **Publishing API:** Añadir `[Authorize]` a todos los endpoints. Definir permisos (ej. editor para solicitudes de publicación, aprobar/rechazar).
+- [x] **Indexing API:** Añadir `[Authorize]` a todos los endpoints (indexar, eliminar del índice).
+- [x] Documentar en cada API qué rol/permiso se requiere por endpoint.
 
 **Archivos afectados (referencia):** Controllers de Authorization, Publishing e Indexing.
 
@@ -20,20 +20,20 @@ Referencia: [DIAGNOSTICO_TECNICO_CMS.md](../DIAGNOSTICO_TECNICO_CMS.md).
 
 ### 1.2 CORS
 
-- [ ] Dejar de usar `AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()` en todos los `Program.cs`.
-- [ ] Restringir CORS a orígenes conocidos (lista de URLs del frontend) en todos los servicios (Core, Identity, Authorization, Publishing, Indexing).
-- [ ] Asegurar que en producción solo se permitan orígenes explícitos (configuración por entorno).
+- [x] Dejar de usar `AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()` en todos los `Program.cs`.
+- [x] Restringir CORS a orígenes conocidos (lista de URLs del frontend) en todos los servicios (Core, Identity, Authorization, Publishing, Indexing).
+- [x] Asegurar que en producción solo se permitan orígenes explícitos (configuración por entorno).
 
 ---
 
 ### 1.3 Identity API — Separación de capas
 
-- [ ] Eliminar la dependencia de `AuthController` sobre `IUserRepository` y lógica de negocio en el controller.
-- [ ] Crear en **Identity.Application**:
+- [x] Eliminar la dependencia de `AuthController` sobre `IUserRepository` y lógica de negocio en el controller.
+- [x] Crear en **Identity.Application**:
   - `GetSetupStatusQuery` / `IsFirstUserQuery` (o equivalente) para “¿hay usuarios?”.
   - Handler que consulte si está habilitado el auto-registro (config) y si existe al menos un usuario.
-- [ ] Hacer que `AuthController` solo llame a MediatR con esas queries y devuelva el resultado; sin inyección de `IUserRepository` ni `IConfiguration` para esta lógica.
-- [ ] Mover la lógica de “primer usuario” y “auto-registro habilitado” a los handlers de Application.
+- [x] Hacer que `AuthController` solo llame a MediatR con esas queries y devuelva el resultado; sin inyección de `IUserRepository` ni `IConfiguration` para esta lógica.
+- [x] Mover la lógica de “primer usuario” y “auto-registro habilitado” a los handlers de Application.
 
 **Archivos de referencia:** `src/Services/Identity/IODA.Identity.API/Controllers/AuthController.cs` (líneas 4, 16, 19, 35, 47).
 
@@ -41,18 +41,18 @@ Referencia: [DIAGNOSTICO_TECNICO_CMS.md](../DIAGNOSTICO_TECNICO_CMS.md).
 
 ### 1.4 Validación en startup (seguridad)
 
-- [ ] En todos los APIs (o al menos Core, Identity, Authorization): validar en startup que en entornos **no-Development** existan:
+- [x] En todos los APIs (o al menos Core, Identity, Authorization): validar en startup que en entornos **no-Development** existan:
   - `Jwt:SecretKey` (cuando el servicio use JWT).
   - `ConnectionStrings:DefaultConnection` (cuando el servicio use base de datos).
-- [ ] Si faltan, **no arrancar** (lanzar excepción o `Environment.FailFast`). Evitar que las APIs queden sin protección efectiva por configuración faltante.
+- [x] Si faltan, **no arrancar** (lanzar excepción o `Environment.FailFast`). Evitar que las APIs queden sin protección efectiva por configuración faltante.
 
 ---
 
 ### 1.5 Secretos y configuración sensible
 
-- [ ] Sacar de `appsettings.json` (y de commits) los valores reales de: `Jwt:SecretKey`, `ConnectionStrings`, `RabbitMQ` (contraseñas), `Media:StoragePath`.
-- [ ] Usar **User Secrets** en desarrollo y variables de entorno o vault en producción.
-- [ ] Mantener en `appsettings.json` solo valores por defecto seguros para Development (o placeholders sin datos reales).
+- [x] Sacar de `appsettings.json` (y de commits) los valores reales de: `Jwt:SecretKey`, `ConnectionStrings`, `RabbitMQ` (contraseñas), `Media:StoragePath`.
+- [x] Usar **User Secrets** en desarrollo y variables de entorno o vault en producción.
+- [x] Mantener en `appsettings.json` solo valores por defecto seguros para Development (o placeholders sin datos reales).
 
 ---
 

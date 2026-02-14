@@ -1,3 +1,4 @@
+using IODA.Identity.Application.DTOs;
 using MediatR;
 
 namespace IODA.Identity.Application.Commands;
@@ -5,4 +6,4 @@ namespace IODA.Identity.Application.Commands;
 public record RegisterCommand(
     string Email,
     string Password,
-    string? DisplayName = null) : IRequest<Guid>;
+    string? DisplayName = null) : IRequest<RegisterResultDto>;

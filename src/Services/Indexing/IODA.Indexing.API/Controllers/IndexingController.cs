@@ -2,12 +2,17 @@ using IODA.Indexing.Application.Commands;
 using IODA.Indexing.Application.Interfaces;
 using IODA.Indexing.Application.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IODA.Indexing.API.Controllers;
 
+/// <summary>
+/// API de indexación: indexar contenido, eliminar del índice y búsqueda. Todos los endpoints requieren JWT.
+/// </summary>
 [ApiController]
 [Route("api/indexing")]
+[Authorize]
 public class IndexingController : ControllerBase
 {
     private readonly IMediator _mediator;
