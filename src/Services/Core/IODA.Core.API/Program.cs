@@ -91,7 +91,14 @@ if (rabbitEnabled && !string.IsNullOrWhiteSpace(rabbitHost))
 
 builder.Services.AddDefaultCors(builder.Configuration, builder.Environment);
 builder.Services.AddJwtAuthentication(builder.Configuration);
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // 2.4: policies por permiso (JWT claim "permission" desde Identity)
+    options.AddPolicy("content.edit", policy => policy.RequireClaim("permission", "content.edit"));
+    options.AddPolicy("project.edit", policy => policy.RequireClaim("permission", "project.edit"));
+    options.AddPolicy("schema.edit", policy => policy.RequireClaim("permission", "schema.edit"));
+    options.AddPolicy("site.edit", policy => policy.RequireClaim("permission", "site.edit"));
+});
 
 // 1.4: en no-Development, no arrancar sin configuración crítica
 if (!builder.Environment.IsDevelopment())

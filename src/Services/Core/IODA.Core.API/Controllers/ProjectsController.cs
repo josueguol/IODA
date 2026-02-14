@@ -11,7 +11,7 @@ namespace IODA.Core.API.Controllers;
 
 [ApiController]
 [Route("api/projects")]
-[Authorize]
+[Authorize(Policy = "project.edit")]
 public class ProjectsController : ControllerBase
 {
     private readonly IMediator _mediator;

@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IAccessRuleRepository, AccessRuleRepository>();
         services.AddScoped<PermissionSeeder>();
+        services.AddScoped<SuperAdminRoleSeeder>();
 
         return services;
     }

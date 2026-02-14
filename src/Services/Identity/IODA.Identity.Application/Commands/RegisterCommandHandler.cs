@@ -12,15 +12,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ISetupConfiguration _setupConfiguration;
+    private readonly IFirstUserBootstrapClient _firstUserBootstrapClient;
 
     public RegisterCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        ISetupConfiguration setupConfiguration)
+        ISetupConfiguration setupConfiguration,
+        IFirstUserBootstrapClient firstUserBootstrapClient)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _setupConfiguration = setupConfiguration;
+        _firstUserBootstrapClient = firstUserBootstrapClient;
     }
 
     public async Task<RegisterResultDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -36,6 +39,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         var passwordHash = _passwordHasher.HashPassword(request.Password);
         var user = User.Create(request.Email.Trim(), passwordHash, request.DisplayName);
         await _userRepository.AddAsync(user, cancellationToken);
+
+        if (!hasUsers)
+            await _firstUserBootstrapClient.BootstrapFirstUserAsync(user.Id, cancellationToken);
+
         return new RegisterResultDto(user.Id, !hasUsers);
     }
 }

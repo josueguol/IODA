@@ -81,7 +81,8 @@ if (!string.IsNullOrEmpty(jwtSecret))
         });
     builder.Services.AddAuthorization(options =>
     {
-        options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+        // 2.4: policy por permiso (JWT incluye claim "permission" con códigos desde Identity)
+        options.AddPolicy("Admin", policy => policy.RequireClaim("permission", "role.manage"));
     });
 }
 
@@ -117,6 +118,12 @@ using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<IODA.Authorization.Infrastructure.Persistence.PermissionSeeder>();
     await seeder.SeedAsync();
+}
+// 2.5: rol SuperAdmin con todos los permisos del catálogo
+using (var scope = app.Services.CreateScope())
+{
+    var superAdminSeeder = scope.ServiceProvider.GetRequiredService<IODA.Authorization.Infrastructure.Persistence.SuperAdminRoleSeeder>();
+    await superAdminSeeder.SeedAsync();
 }
 
 app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();

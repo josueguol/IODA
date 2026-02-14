@@ -13,7 +13,7 @@ namespace IODA.Indexing.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/indexing")]
-[Authorize]
+[Authorize(Policy = "content.edit")]
 public class IndexingController : ControllerBase
 {
     private readonly IMediator _mediator;

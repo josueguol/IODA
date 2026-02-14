@@ -21,6 +21,9 @@ public class AccessRuleRepository : IAccessRuleRepository
             .Where(a => a.UserId == userId)
             .ToListAsync(cancellationToken);
 
+    public async Task<int> CountAsync(CancellationToken cancellationToken = default) =>
+        await _context.AccessRules.CountAsync(cancellationToken);
+
     public async Task<AccessRule> AddAsync(AccessRule rule, CancellationToken cancellationToken = default)
     {
         await _context.AccessRules.AddAsync(rule, cancellationToken);

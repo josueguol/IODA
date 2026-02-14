@@ -16,6 +16,9 @@ public class RoleRepository : IRoleRepository
     public async Task<Role?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Roles.FindAsync([id], cancellationToken);
 
+    public async Task<Role?> GetByNameAsync(string name, CancellationToken cancellationToken = default) =>
+        await _context.Roles.FirstOrDefaultAsync(r => r.Name == name, cancellationToken);
+
     public async Task<Role?> GetByIdWithPermissionsAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Roles
             .Include(r => r.RolePermissions)

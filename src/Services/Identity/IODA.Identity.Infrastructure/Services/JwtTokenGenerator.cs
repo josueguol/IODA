@@ -24,7 +24,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _expirationMinutes = int.TryParse(configuration["Jwt:ExpirationMinutes"], out var min) ? min : 60;
     }
 
-    public string GenerateAccessToken(Guid userId, string email, IEnumerable<string>? roles = null)
+    public string GenerateAccessToken(Guid userId, string email, IEnumerable<string>? roles = null, IEnumerable<string>? permissionCodes = null)
     {
         var claims = new List<Claim>
         {
@@ -36,6 +36,14 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         {
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+        if (permissionCodes != null)
+        {
+            foreach (var code in permissionCodes)
+            {
+                if (!string.IsNullOrWhiteSpace(code))
+                    claims.Add(new Claim(IJwtTokenGenerator.PermissionClaimType, code));
+            }
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));

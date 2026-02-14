@@ -25,23 +25,23 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 
 ## Fase 2: JWT con permisos y policies por permiso
 
-- [ ] **2.1 Integración Identity → Authorization para permisos**  
+- [x] **2.1 Integración Identity → Authorization para permisos**  
   En Identity: en Login y en Refresh, obtener la lista de “permisos efectivos” del usuario (códigos) desde el servicio Authorization. Opción recomendada: cliente HTTP en Identity.Infrastructure que llame a un endpoint de Authorization (ej. GET /api/authorization/users/{userId}/effective-permissions o interno). Authorization debe exponer ese endpoint (o ya existe GetUserAccessRules + cálculo de permisos). Definir contrato (array de strings con códigos de permiso).
 
-- [ ] **2.2 Incluir permisos en JWT (Identity)**  
+- [x] **2.2 Incluir permisos en JWT (Identity)**  
   Extender IJwtTokenGenerator.GenerateAccessToken para aceptar `IEnumerable<string> permissionCodes`. Emitir un claim por permiso (ej. tipo "permission", valor el code) o un único claim con lista serializada; debe ser coherente con cómo se validen las policies (RequireClaim). Actualizar LoginCommandHandler y RefreshTokenCommandHandler para pasar los permisos obtenidos en 2.1 al generador.
 
-- [ ] **2.3 Endpoint “effective permissions” (Authorization)**  
+- [x] **2.3 Endpoint “effective permissions” (Authorization)**  
   Si no existe: GET /api/authorization/users/{userId}/effective-permissions que devuelva los códigos de permiso efectivos del usuario (resolviendo reglas → roles → permisos de cada rol, sin duplicados). Proteger este endpoint (solo Identity o solo servicio-a-servicio con API key / JWT de sistema, según arquitectura). Documentar.
 
-- [ ] **2.4 Policies por permiso en cada API**  
+- [x] **2.4 Policies por permiso en cada API**  
   En Authorization.API: reemplazar AddPolicy("Admin", RequireRole("Admin")) por policy que exija RequireClaim("permission", "<code>") según la convención (ej. role.manage). En Publishing.API: reemplazar policy "Editor" por permiso correspondiente (ej. content.publish). En Core.API e Indexing.API: si se desea proteger por permiso, añadir policies 1:1 con permisos y aplicarlas a los controladores correspondientes. Usar el mismo tipo de claim que emite Identity.
 
-- [ ] **2.5 Crear SuperAdmin y asignar primer usuario (Authorization + Identity)**  
+- [x] **2.5 Crear SuperAdmin y asignar primer usuario (Authorization + Identity)**  
   En Authorization: seeder o lógica al arranque que cree el rol "SuperAdmin" si no existe y le asigne todos los permisos del catálogo. Exponer endpoint interno o escuchar evento “primer usuario registrado” (UserId). Cuando se registre el primer usuario (Identity lo indica), Authorization crea AccessRule(userId, SuperAdminRoleId). Opción alternativa: Identity tras el primer registro llama a Authorization para “asignar rol SuperAdmin a userId”; Authorization crea la regla. No debe existir bypass de autorización: el primer usuario pasa por el mismo flujo de JWT con permisos una vez asignado el rol.
 
-- [ ] **2.6 Eliminar políticas por rol**  
-  Quitar RequireRole("Admin") y RequireRole("Editor", "Admin") una vez las nuevas policies por permiso estén activas y el JWT incluya permisos.
+- [x] **2.6 Eliminar políticas por rol**  
+  Quitar RequireRole("Admin") y RequireRole("Editor", "Admin") una vez las nuevas policies por permiso estén activas y el JWT incluya permisos. (Completado en 2.4: todas las APIs usan ya solo RequireClaim("permission", …).)
 
 **Riesgos:** Breaking: JWT cambia de estructura; clientes que no esperen claims de permiso. Coordinar con frontend para Fase 3. Si Authorization no está disponible en login, definir fallback (ej. token sin permisos y 403 en rutas protegidas, o reintentos).
 
