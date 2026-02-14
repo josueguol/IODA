@@ -40,6 +40,7 @@ public class ErrorHandlingMiddleware
             InvalidRefreshTokenException => ((HttpStatusCode)HttpStatusCode.Unauthorized, CreateProblem(401, "Unauthorized", exception.Message)),
             UserNotFoundException => ((HttpStatusCode)HttpStatusCode.NotFound, CreateProblem(404, "Not Found", exception.Message)),
             UserAlreadyExistsException => ((HttpStatusCode)HttpStatusCode.Conflict, CreateProblem(409, "Conflict", exception.Message)),
+            SelfRegistrationDisabledException => ((HttpStatusCode)HttpStatusCode.Forbidden, CreateProblem(403, "Forbidden", exception.Message)),
             DomainException domainEx => ((HttpStatusCode)HttpStatusCode.BadRequest, CreateProblem(400, "Bad Request", domainEx.Message)),
             _ => ((HttpStatusCode)HttpStatusCode.InternalServerError, CreateProblem(500, "Internal Server Error",
                 context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true ? exception.Message : "An unexpected error occurred."))

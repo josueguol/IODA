@@ -6,8 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IODA.Authorization.API.Controllers;
 
+/// <summary>
+/// API de autorización: permisos, roles y reglas de acceso.
+/// Todos los endpoints requieren autenticación JWT. CRUD de roles/permisos/reglas requiere rol Admin.
+/// </summary>
 [ApiController]
 [Route("api/authorization")]
+[Authorize]
 public class AuthorizationController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -43,8 +48,9 @@ public class AuthorizationController : ControllerBase
         return Ok(roles);
     }
 
-    /// <summary>Crear un rol.</summary>
+    /// <summary>Crear un rol. Requiere rol Admin.</summary>
     [HttpPost("roles")]
+    [Authorize(Policy = "Admin")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -55,8 +61,9 @@ public class AuthorizationController : ControllerBase
         return CreatedAtAction(nameof(GetRoles), new { id = roleId }, roleId);
     }
 
-    /// <summary>Asignar permisos a un rol.</summary>
+    /// <summary>Asignar permisos a un rol. Requiere rol Admin.</summary>
     [HttpPost("roles/{roleId:guid}/permissions")]
+    [Authorize(Policy = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -75,8 +82,9 @@ public class AuthorizationController : ControllerBase
         return Ok(permissions);
     }
 
-    /// <summary>Crear un permiso.</summary>
+    /// <summary>Crear un permiso. Requiere rol Admin.</summary>
     [HttpPost("permissions")]
+    [Authorize(Policy = "Admin")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -96,8 +104,9 @@ public class AuthorizationController : ControllerBase
         return Ok(rules);
     }
 
-    /// <summary>Asignar un rol a un usuario en un ámbito opcional.</summary>
+    /// <summary>Asignar un rol a un usuario en un ámbito opcional. Requiere rol Admin.</summary>
     [HttpPost("rules")]
+    [Authorize(Policy = "Admin")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -114,8 +123,9 @@ public class AuthorizationController : ControllerBase
         return CreatedAtAction(nameof(GetUserAccessRules), new { userId = request.UserId }, new { id = ruleId });
     }
 
-    /// <summary>Revocar una regla de acceso.</summary>
+    /// <summary>Revocar una regla de acceso. Requiere rol Admin.</summary>
     [HttpDelete("rules/{ruleId:guid}")]
+    [Authorize(Policy = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RevokeAccessRule(Guid ruleId, CancellationToken cancellationToken)

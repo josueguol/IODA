@@ -1,7 +1,6 @@
 using IODA.Identity.Application.Commands;
 using IODA.Identity.Application.DTOs;
 using IODA.Identity.Application.Queries;
-using IODA.Identity.Domain.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,14 +12,10 @@ namespace IODA.Identity.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly IUserRepository _userRepository;
-    private readonly IConfiguration _configuration;
 
-    public AuthController(IMediator mediator, IUserRepository userRepository, IConfiguration configuration)
+    public AuthController(IMediator mediator)
     {
         _mediator = mediator;
-        _userRepository = userRepository;
-        _configuration = configuration;
     }
 
     // -----------------------------------------------------------------------
@@ -32,9 +27,8 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(SetupStatusDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<SetupStatusDto>> GetSetupStatus(CancellationToken cancellationToken)
     {
-        var hasUsers = await _userRepository.AnyAsync(cancellationToken);
-        var selfRegistrationEnabled = _configuration.GetValue("SelfRegistration:Enabled", true);
-        return Ok(new SetupStatusDto(hasUsers, selfRegistrationEnabled));
+        var result = await _mediator.Send(new GetSetupStatusQuery(), cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>Registrar un nuevo usuario.</summary>
@@ -45,25 +39,9 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<RegisterResultDto>> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
-        var hasUsers = await _userRepository.AnyAsync(cancellationToken);
-        var isFirstUser = !hasUsers;
-
-        // If self-registration is disabled and this is not the first user, reject
-        if (!isFirstUser)
-        {
-            var selfRegistrationEnabled = _configuration.GetValue("SelfRegistration:Enabled", true);
-            if (!selfRegistrationEnabled)
-            {
-                return StatusCode(StatusCodes.Status403Forbidden,
-                    new { title = "Forbidden", detail = "Self-registration is disabled. Contact an administrator." });
-            }
-        }
-
         var command = new RegisterCommand(request.Email, request.Password, request.DisplayName);
-        var userId = await _mediator.Send(command, cancellationToken);
-
-        return CreatedAtAction(nameof(Register), new { id = userId },
-            new RegisterResultDto(userId, isFirstUser));
+        var result = await _mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(Register), new { id = result.UserId }, result);
     }
 
     /// <summary>Iniciar sesión (email + contraseña). Devuelve access token y refresh token.</summary>
@@ -105,11 +83,8 @@ public class AuthController : ControllerBase
         var list = await _mediator.Send(query, cancellationToken);
         return Ok(list ?? Array.Empty<UserListItemDto>());
     }
-
 }
 
 public record RegisterRequest(string Email, string Password, string? DisplayName = null);
 public record LoginRequest(string Email, string Password);
 public record RefreshTokenRequest(string RefreshToken);
-public record SetupStatusDto(bool HasUsers, bool SelfRegistrationEnabled);
-public record RegisterResultDto(Guid UserId, bool IsFirstUser);

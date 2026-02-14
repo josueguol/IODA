@@ -1,9 +1,9 @@
 using IODA.Identity.Application.Interfaces;
 using IODA.Identity.Domain.Repositories;
+using IODA.Identity.Infrastructure.Services;
 using IODA.Identity.Infrastructure.Messaging;
 using IODA.Identity.Infrastructure.Persistence;
 using IODA.Identity.Infrastructure.Persistence.Repositories;
-using IODA.Identity.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
         services.AddScoped<IAuthEventPublisher, NoOpAuthEventPublisher>();
+        services.AddSingleton<ISetupConfiguration, SetupConfiguration>();
 
         return services;
     }
