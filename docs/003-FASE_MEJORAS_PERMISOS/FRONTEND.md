@@ -45,11 +45,13 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 
 ## Fase 4: Limpieza
 
-- [ ] **4.1 Eliminar constante DEFAULT_PERMISSIONS para creación**  
-  En RegisterPage (y donde aplique), la constante DEFAULT_PERMISSIONS ya no se usa para crear permisos. Eliminarla o reducirla a uso solo de etiquetado/nombres si hace falta para la UI. Si GET /permissions ya devuelve descripción, no es necesario mantener la lista en frontend.
+- [x] **4.1 Eliminar constante DEFAULT_PERMISSIONS para creación**  
+  En RegisterPage (y donde aplique), la constante DEFAULT_PERMISSIONS ya no se usa para crear permisos. Eliminarla o reducirla a uso solo de etiquetado/nombres si hace falta para la UI. Si GET /permissions ya devuelve descripción, no es necesario mantener la lista en frontend.  
+  **Hecho (en Fase 3.2):** La constante fue eliminada; RegisterPage usa solo GET /permissions para obtener IDs. No queda ninguna lista hardcodeada de permisos para creación.
 
-- [ ] **4.2 Revisar referencias a createPermission**  
-  Buscar en el proyecto cualquier llamada restante a `authorizationApi.createPermission` o equivalente y eliminarla. Asegurar que no queden rutas o botones "Crear permiso".
+- [x] **4.2 Revisar referencias a createPermission**  
+  Buscar en el proyecto cualquier llamada restante a `authorizationApi.createPermission` o equivalente y eliminarla. Asegurar que no queden rutas o botones "Crear permiso".  
+  **Hecho (en Fase 3.1 + verificación Fase 4):** No hay llamadas a `createPermission` ni tipo `CreatePermissionRequest`; el método y el tipo fueron eliminados. La pestaña Permisos no tiene botón ni formulario "Crear permiso". Búsqueda en el repo: 0 referencias.
 
 ---
 
