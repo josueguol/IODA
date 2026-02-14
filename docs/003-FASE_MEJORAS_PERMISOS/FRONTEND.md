@@ -21,24 +21,25 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 
 ## Fase 3: Ajuste tras backend con permisos en JWT y sin creación de permisos
 
-- [ ] **3.1 Eliminar creación de permisos en RolesPermissionsPage**  
+- [x] **3.1 Eliminar creación de permisos en RolesPermissionsPage**  
   En la pestaña Permisos: quitar el formulario y la lógica que llama a `authorizationApi.createPermission`. Quitar botón/acción "Crear permiso". La pestaña debe seguir mostrando la lista de permisos vía GET /api/authorization/permissions (solo lectura).  
-  **Coordinación:** Backend habrá eliminado o restringido POST /permissions; desplegar frontend cuando ese cambio esté en el entorno correspondiente.
+  **Hecho:** PermissionsTab solo carga y muestra la lista (GET /permissions); texto "solo lectura". createPermission eliminado del cliente API.
 
-- [ ] **3.2 Eliminar creación de permisos en el flujo de primer usuario (RegisterPage)**  
+- [x] **3.2 Eliminar creación de permisos en el flujo de primer usuario (RegisterPage)**  
   En `setupSuperAdmin`: no llamar a `authorizationApi.createPermission`. No iterar sobre DEFAULT_PERMISSIONS para crear permisos. Mantener: obtener roles (GET /roles), crear rol "SuperAdmin" si no existe (POST /roles), obtener permisos (GET /permissions), asignar todos los IDs de permisos al rol SuperAdmin (POST /roles/{id}/permissions), crear AccessRule usuario–SuperAdmin (POST /rules).  
-  **Nota:** Si el backend en Fase 2 asigna automáticamente al primer usuario el rol SuperAdmin, se puede simplificar: tras registro del primer usuario, solo hacer login y redirigir; no ejecutar setupSuperAdmin (o ejecutarlo solo si el backend indica que el usuario aún no tiene reglas). Definir con backend el contrato (ej. si GET /users/{userId}/rules devuelve vacío, entonces frontend hace setup; si no, no).
+  **Hecho:** Constante DEFAULT_PERMISSIONS eliminada. setupSuperAdmin obtiene permisos con GET /permissions (allPermIds = perms.map(p => p.id)). Si GET /users/{userId}/rules devuelve reglas, se omite el setup (backend ya asignó).
 
-- [ ] **3.3 Consumir solo GET /permissions para listas de permisos**  
-  Asegurar que RolesPermissionsPage y cualquier otra pantalla usen únicamente GET /api/authorization/permissions para rellenar listas de permisos asignables a roles. No asumir códigos de permiso hardcodeados para crear; solo para mostrar nombres si el backend no devuelve descripción.  
-  **Riesgo:** Bajo; el contrato GET /permissions no cambia.
+- [x] **3.3 Consumir solo GET /permissions para listas de permisos**  
+  Asegurar que RolesPermissionsPage y cualquier otra pantalla usen únicamente GET /api/authorization/permissions para rellenar listas de permisos asignables a roles.  
+  **Hecho:** RolesPermissionsPage (PermissionsTab y RolesTab) y RegisterPage usan solo getPermissions().
 
-- [ ] **3.4 Invalidar caché de permisos en refresh**  
+- [x] **3.4 Invalidar caché de permisos en refresh**  
   Tras renovar el access token (refresh), llamar a `invalidatePermissionCache()` para que usePermission vuelva a consultar o use el nuevo token. Integrar en el flujo de refresh del auth store (donde se actualiza el access token).  
-  **Objetivo:** Evitar que la UI muestre permisos obsoletos si el usuario pierde un rol/permiso y luego hace refresh.
+  **Hecho:** Caché movida a `shared/permission-cache.ts`; auth-store llama `invalidatePermissionCache()` en `setSession` (login y refresh).
 
-- [ ] **3.5 (Opcional) Mensaje cuando los permisos cambien**  
-  Si se detecta 403 en una acción que antes estaba permitida (ej. tras asignar/revocar roles), mostrar mensaje tipo "Sus permisos han cambiado" y opcionalmente forzar re-login o refresh para obtener nuevo JWT. Depende de si el backend devuelve un código específico para "permisos revocados".
+- [x] **3.5 (Opcional) Mensaje cuando los permisos cambien**  
+  Si se detecta 403 en una acción que antes estaba permitida (ej. tras asignar/revocar roles), mostrar mensaje tipo "Sus permisos han cambiado" y opcionalmente forzar re-login o refresh para obtener nuevo JWT.  
+  **Hecho:** onUnauthorized(reason) en auth-aware-client; ante 403 redirección a login con `?reason=permissions_changed`. LoginPage muestra el mensaje "Sus permisos han cambiado. Inicia sesión de nuevo." cuando existe ese query param.
 
 ---
 

@@ -6,7 +6,6 @@ export type {
   CreateRoleRequest,
   AssignPermissionsRequest,
   PermissionDto,
-  CreatePermissionRequest,
   AccessRuleDto,
   CreateAccessRuleRequest,
 } from './types'

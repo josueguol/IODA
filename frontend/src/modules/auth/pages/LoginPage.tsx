@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../store/auth-store'
 import { authApi } from '../api/auth-api'
 import type { ApiError } from '../../../shared/api'
@@ -81,10 +81,19 @@ const s: Record<string, React.CSSProperties> = {
     display: 'block',
     marginTop: '1rem',
   },
+  permissionsChanged: {
+    fontSize: '0.875rem',
+    padding: '0.5rem 0.75rem',
+    background: '#fff3cd',
+    color: '#856404',
+    borderRadius: 6,
+    marginBottom: '1rem',
+  },
 }
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const setSession = useAuthStore((s) => s.setSession)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -93,6 +102,7 @@ export function LoginPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const isRehydrating = useAuthStore((s) => s.isRehydrating)
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null)
+  const permissionsChanged = searchParams.get('reason') === 'permissions_changed'
 
   useEffect(() => {
     if (!isRehydrating && isAuthenticated) {
@@ -148,6 +158,11 @@ export function LoginPage() {
     <div style={s.container}>
       <div style={s.card}>
         <h1 style={s.title}>Iniciar sesión</h1>
+        {permissionsChanged && (
+          <p style={s.permissionsChanged}>
+            Sus permisos han cambiado. Inicia sesión de nuevo.
+          </p>
+        )}
         <form style={s.form} onSubmit={handleSubmit}>
           <div>
             <label style={s.label} htmlFor="email">Email</label>

@@ -3,16 +3,10 @@ import { useAuthStore } from '../../auth/store/auth-store'
 import { authorizationApi } from '../api/authorization-api'
 import type { PermissionContext } from '../types'
 import { parsePermissionsFromAccessToken } from '../utils/jwt-permissions'
+import { permissionCache } from '../../../shared/permission-cache'
 
 /** TTL del cache en ms (misma sesión). */
 const CACHE_TTL_MS = 60_000
-
-interface CacheEntry {
-  allowed: boolean
-  at: number
-}
-
-const cache = new Map<string, CacheEntry>()
 
 function cacheKey(userId: string, permissionCode: string, context: PermissionContext | undefined): string {
   const parts = [
@@ -76,7 +70,7 @@ export function usePermission(
 
     const withContext = hasContext(context)
     const key = cacheKey(userId, permissionCode, context ?? undefined)
-    const cached = cache.get(key)
+    const cached = permissionCache.get(key)
     if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
       setAllowed(cached.allowed)
       setLoading(false)
@@ -92,7 +86,7 @@ export function usePermission(
           setLoading(false)
           setError(null)
         }
-        cache.set(key, { allowed: true, at: Date.now() })
+        permissionCache.set(key, { allowed: true, at: Date.now() })
         return () => {
           mounted.current = false
         }
@@ -114,7 +108,7 @@ export function usePermission(
         if (mounted.current) {
           setAllowed(result.allowed)
           setError(null)
-          cache.set(key, { allowed: result.allowed, at: Date.now() })
+          permissionCache.set(key, { allowed: result.allowed, at: Date.now() })
         }
       })
       .catch((err) => {
@@ -135,7 +129,5 @@ export function usePermission(
   return { allowed, loading, error }
 }
 
-/** Invalida el cache de permisos (útil tras cambiar roles/reglas). */
-export function invalidatePermissionCache(): void {
-  cache.clear()
-}
+/** Invalida el cache de permisos (útil tras cambiar roles/reglas o tras refresh). Re-exportado desde shared. */
+export { invalidatePermissionCache } from '../../../shared/permission-cache'
