@@ -1,18 +1,57 @@
+using System.Net;
 using System.Text;
 using IODA.Core.Application;
 using IODA.Core.Infrastructure;
 using IODA.Core.Infrastructure.Persistence;
 using IODA.Core.API.Middleware;
+using IODA.Core.Domain.Exceptions;
+using IODA.Shared.Api;
+using IODA.Shared.Api.Extensions;
+using IODA.Shared.Api.Middleware;
+using IODA.Shared.BuildingBlocks.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+static (HttpStatusCode StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails Details)? MapCoreException(Exception ex, IHostEnvironment? env)
+{
+    return ex switch
+    {
+        SchemaValidationException schemaEx => (
+            HttpStatusCode.BadRequest,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails
+            {
+                Status = 400,
+                Title = "Schema Validation Error",
+                Detail = "Content does not conform to the schema.",
+                Extensions = new Dictionary<string, object?>
+                {
+                    ["errors"] = schemaEx.Errors.GroupBy(e => e.Field).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray())
+                }
+            }),
+        ContentNotFoundException or SiteNotFoundException or SchemaNotFoundException or ProjectNotFoundException or EnvironmentNotFoundException => (
+            HttpStatusCode.NotFound,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 404, Title = "Not Found", Detail = ex.Message }),
+        DomainException domainEx => (
+            HttpStatusCode.BadRequest,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Domain Error", Detail = domainEx.Message }),
+        ArgumentException argEx => (
+            HttpStatusCode.BadRequest,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Bad Request", Detail = argEx.Message }),
+        InvalidOperationException opEx => (
+            HttpStatusCode.BadRequest,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Invalid Operation", Detail = opEx.Message }),
+        _ => null
+    };
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddSharedErrorHandling(MapCoreException);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -54,43 +93,9 @@ if (rabbitEnabled && !string.IsNullOrWhiteSpace(rabbitHost))
     healthChecksBuilder.AddRabbitMQ(rabbitConnectionString, name: "rabbitmq", failureStatus: HealthStatus.Degraded);
 }
 
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
-    allowedOrigins = new[] { "http://localhost:3000", "http://localhost:5173", "https://localhost:3000", "https://localhost:5173" };
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins(allowedOrigins)
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
-});
-
-var jwtSecret = builder.Configuration["Jwt:SecretKey"];
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "ioda-cms";
-if (!string.IsNullOrEmpty(jwtSecret))
-{
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtIssuer,
-                ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                ClockSkew = TimeSpan.Zero
-            };
-        });
-    builder.Services.AddAuthorization();
-}
+builder.Services.AddDefaultCors(builder.Configuration, builder.Environment);
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddAuthorization();
 
 // 1.4: en no-Development, no arrancar sin configuración crítica
 if (!builder.Environment.IsDevelopment())
@@ -104,7 +109,7 @@ if (!builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 if (app.Environment.IsDevelopment())

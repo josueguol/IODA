@@ -32,7 +32,7 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
         var schema = await _unitOfWork.Schemas.GetByIdAsync(content.SchemaId, cancellationToken);
         if (schema == null)
         {
-            throw new InvalidOperationException($"Schema with ID '{content.SchemaId}' was not found.");
+            throw new SchemaNotFoundException(content.SchemaId);
         }
 
         var validationResult = _schemaValidation.Validate(schema, request.Fields ?? new Dictionary<string, object>());

@@ -17,6 +17,7 @@
     <ProjectReference Include="..\IODA.Authorization.Application\IODA.Authorization.Application.csproj" />
     <ProjectReference Include="..\IODA.Authorization.Domain\IODA.Authorization.Domain.csproj" />
     <ProjectReference Include="..\IODA.Authorization.Infrastructure\IODA.Authorization.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shared\IODA.Shared.Api\IODA.Shared.Api.csproj" />
     <ProjectReference Include="..\..\..\Shared\IODA.Shared.BuildingBlocks\IODA.Shared.BuildingBlocks.csproj" />
   </ItemGroup>
 </Project>

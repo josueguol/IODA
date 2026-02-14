@@ -1,3 +1,4 @@
+using IODA.Indexing.API.Contracts;
 using IODA.Indexing.Application.Commands;
 using IODA.Indexing.Application.Interfaces;
 using IODA.Indexing.Application.Queries;
@@ -65,15 +66,3 @@ public class IndexingController : ControllerBase
         return NoContent();
     }
 }
-
-public record SearchResultDto(long Total, IReadOnlyList<IndexedContentHitDto> Items);
-
-public record IndexedContentHitDto(Guid ContentId, Guid VersionId, string Title, string ContentType, DateTime PublishedAt);
-
-public record IndexContentRequestDto(
-    Guid ContentId,
-    Guid VersionId,
-    string Title,
-    string ContentType,
-    DateTime PublishedAt,
-    IReadOnlyDictionary<string, object>? Fields = null);

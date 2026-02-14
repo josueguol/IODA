@@ -1,4 +1,5 @@
 using IODA.Core.Domain.Entities;
+using IODA.Core.Domain.Exceptions;
 using IODA.Core.Domain.Repositories;
 using MediatR;
 
@@ -19,13 +20,13 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, Guid>
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(request.ProjectId, cancellationToken);
         if (project == null)
-            throw new InvalidOperationException($"Project '{request.ProjectId}' not found.");
+            throw new ProjectNotFoundException(request.ProjectId);
 
         if (request.EnvironmentId.HasValue)
         {
             var environment = await _environmentRepository.GetByIdAsync(request.EnvironmentId.Value, cancellationToken);
             if (environment == null)
-                throw new InvalidOperationException($"Environment '{request.EnvironmentId.Value}' not found.");
+                throw new EnvironmentNotFoundException(request.EnvironmentId.Value);
         }
 
         var site = Site.Create(

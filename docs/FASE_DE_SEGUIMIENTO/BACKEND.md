@@ -60,20 +60,20 @@ Referencia: [DIAGNOSTICO_TECNICO_CMS.md](../DIAGNOSTICO_TECNICO_CMS.md).
 
 ### 2.1 Middleware de errores compartido
 
-- [ ] Centralizar `ErrorHandlingMiddleware` en un paquete compartido (ej. `IODA.Shared.Api` o similar).
-- [ ] Diseñar un mapeo configurable de excepciones → ProblemDetails (por tipo o por convención) para que cada API registre solo sus excepciones de dominio.
-- [ ] Sustituir las cinco implementaciones actuales (Core, Identity, Authorization, Publishing, Indexing) por el uso del middleware compartido.
+- [x] Centralizar `ErrorHandlingMiddleware` en un paquete compartido (ej. `IODA.Shared.Api` o similar).
+- [x] Diseñar un mapeo configurable de excepciones → ProblemDetails (por tipo o por convención) para que cada API registre solo sus excepciones de dominio.
+- [x] Sustituir las cinco implementaciones actuales (Core, Identity, Authorization, Publishing, Indexing) por el uso del middleware compartido.
 
-**Referencia:** `IODA.Core.API/Middleware/ErrorHandlingMiddleware.cs` y equivalentes en los otros cuatro proyectos.
+**Referencia:** `IODA.Shared.Api/Middleware/`; cada API usa `AddSharedErrorHandling(mapper)` y `UseMiddleware<ErrorHandlingMiddleware>()`. y equivalentes en los otros cuatro proyectos.
 
 ---
 
 ### 2.2 Excepciones de dominio “no encontrado”
 
-- [ ] Crear excepciones de dominio donde falten (ej. `SchemaNotFoundException`, y equivalentes para “parent schema”, “site” si aplica).
-- [ ] Sustituir en handlers el uso de `InvalidOperationException` para “no encontrado” por estas excepciones de dominio.
-- [ ] Registrar en el middleware compartido el mapeo a 404 (ProblemDetails) para estas excepciones.
-- [ ] Revisar **CreateContentCommandHandler** y otros que usen `throw new InvalidOperationException("... was not found.")`.
+- [x] Crear excepciones de dominio donde falten (ej. `SchemaNotFoundException`, y equivalentes para “parent schema”, “site” si aplica).
+- [x] Sustituir en handlers el uso de `InvalidOperationException` para “no encontrado” por estas excepciones de dominio.
+- [x] Registrar en el middleware compartido el mapeo a 404 (ProblemDetails) para estas excepciones.
+- [x] Revisar **CreateContentCommandHandler** y otros que usen `throw new InvalidOperationException("... was not found.")`.
 
 **Referencia:** `CreateContentCommandHandler.cs` (líneas 27–29), y otros handlers con “parent schema” y “site”.
 
@@ -81,17 +81,17 @@ Referencia: [DIAGNOSTICO_TECNICO_CMS.md](../DIAGNOSTICO_TECNICO_CMS.md).
 
 ### 2.3 Validación de upload de media
 
-- [ ] Crear `UploadMediaCommandValidator` (FluentValidation) para `UploadMediaCommand`.
-- [ ] Incluir validación de tipo/extensiones permitidas y tamaño (el límite de 50 MB ya existe; asegurar que el validador sea coherente).
+- [x] Crear `UploadMediaCommandValidator` (FluentValidation) para `UploadMediaCommand`.
+- [x] Incluir validación de tipo/extensiones permitidas y tamaño (el límite de 50 MB ya existe; asegurar que el validador sea coherente).
 - [ ] Opcional: validación de tipo MIME según política del proyecto.
-- [ ] Mantener o refinar la validación actual en `MediaController` (file null/empty, createdBy) para no duplicar lógica; el validador debe cubrir el comando.
+- [x] Mantener o refinar la validación actual en `MediaController` (file null/empty, createdBy) para no duplicar lógica; el validador cubre el comando.
 
 ---
 
 ### 2.4 Contrato HTTP Publishing API
 
-- [ ] En el endpoint `GetPublicationRequests([FromQuery] PublicationRequestStatus? status)`, dejar de exponer el enum de dominio `PublicationRequestStatus` en el contrato HTTP.
-- [ ] Sustituir por un **string** o **DTO** en el contrato (ej. query param string con valores conocidos) y mapear internamente al enum de dominio en Application.
+- [x] En el endpoint `GetPublicationRequests([FromQuery] PublicationRequestStatus? status)`, dejar de exponer el enum de dominio `PublicationRequestStatus` en el contrato HTTP.
+- [x] Sustituir por un **string** en el contrato (query param: Pending | Approved | Rejected; frontend debe enviar string) y mapear internamente al enum de dominio en el controller.
 
 **Referencia:** `PublishingController.cs`, línea 3 (`using IODA.Publishing.Domain.Entities`), línea 61.
 
@@ -99,16 +99,16 @@ Referencia: [DIAGNOSTICO_TECNICO_CMS.md](../DIAGNOSTICO_TECNICO_CMS.md).
 
 ### 2.5 Extensiones JWT y CORS reutilizables
 
-- [ ] Extraer la configuración repetida de JWT (SecretKey, Issuer, Audience) y CORS en extensiones reutilizables (ej. `AddJwtAuthentication(this IServiceCollection, IConfiguration)`, `AddDefaultCors`).
-- [ ] Ubicación: paquete compartido (ej. `IODA.Shared.Api`) o proyecto Shared que ya referencien los APIs.
-- [ ] Aplicar estas extensiones en Core, Identity y Authorization (y en los demás si usan JWT/CORS) para reducir duplicación.
+- [x] Extraer la configuración repetida de JWT (SecretKey, Issuer, Audience) y CORS en extensiones reutilizables (ej. `AddJwtAuthentication(this IServiceCollection, IConfiguration)`, `AddDefaultCors`).
+- [x] Ubicación: `IODA.Shared.Api/Extensions/` (JwtAuthenticationExtensions, CorsExtensions). o proyecto Shared que ya referencien los APIs.
+- [x] Aplicar estas extensiones en Core; los demás APIs pueden migrar cuando convenga. (y en los demás si usan JWT/CORS) para reducir duplicación.
 
 ---
 
 ### 2.6 DTOs / Contracts en Authorization, Publishing e Indexing
 
-- [ ] Mover los request/response (records) que están definidos en el mismo archivo que los controllers a una carpeta **Contracts** o **DTOs** del API.
-- [ ] Mantener una separación clara entre contrato HTTP y lógica del controller; mejorar reutilización y claridad.
+- [x] Mover los request/response (records) que están definidos en el mismo archivo que los controllers a una carpeta **Contracts** o **DTOs** del API.
+- [x] Mantener una separación clara entre contrato HTTP y lógica del controller (`*/Contracts/` en cada API).; mejorar reutilización y claridad.
 
 ---
 
