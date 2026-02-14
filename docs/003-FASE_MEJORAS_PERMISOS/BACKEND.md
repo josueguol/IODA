@@ -49,10 +49,10 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 
 ## Fase 3 / 4: Limpieza
 
-- [ ] **3.1 Eliminar endpoint POST /api/authorization/permissions**  
+- [x] **3.1 Eliminar endpoint POST /api/authorization/permissions**  
   Quitar del AuthorizationController el método CreatePermission y la ruta POST /permissions. Opcionalmente mantener CreatePermissionCommand/Handler para uso interno (seed) o eliminarlos si el seed usa solo el catálogo y el DbContext. **Breaking:** Cualquier cliente que cree permisos por API dejará de poder hacerlo; coordinar con frontend (eliminar creación desde UI en la misma ventana).
 
-- [ ] **3.2 Ajustar GET /api/authorization/permissions**  
+- [x] **3.2 Ajustar GET /api/authorization/permissions**  
   Garantizar que devuelva solo permisos que pertenezcan al catálogo (o todos si el seed los creó todos). Si hace falta, filtrar por lista de códigos del catálogo en la query.
 
 ---

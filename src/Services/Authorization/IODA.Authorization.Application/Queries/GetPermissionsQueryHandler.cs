@@ -1,3 +1,4 @@
+using IODA.Authorization.Application.Permissions;
 using IODA.Authorization.Domain.Repositories;
 using MediatR;
 
@@ -15,6 +16,11 @@ public class GetPermissionsQueryHandler : IRequestHandler<GetPermissionsQuery, I
     public async Task<IReadOnlyList<PermissionDto>> Handle(GetPermissionsQuery request, CancellationToken cancellationToken)
     {
         var permissions = await _permissionRepository.GetAllAsync(cancellationToken);
-        return permissions.Select(p => new PermissionDto(p.Id, p.Code, p.Description)).ToList();
+        var catalogCodes = PermissionCatalog.AllCodes;
+        return permissions
+            .Where(p => catalogCodes.Contains(p.Code))
+            .Select(p => new PermissionDto(p.Id, p.Code, p.Description))
+            .OrderBy(p => p.Code)
+            .ToList();
     }
 }

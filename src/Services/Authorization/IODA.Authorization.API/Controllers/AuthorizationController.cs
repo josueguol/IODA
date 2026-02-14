@@ -87,26 +87,13 @@ public class AuthorizationController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>Listar todos los permisos.</summary>
+    /// <summary>Listar permisos del catálogo (solo los asignables a roles).</summary>
     [HttpGet("permissions")]
     [ProducesResponseType(typeof(IReadOnlyList<PermissionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<PermissionDto>>> GetPermissions(CancellationToken cancellationToken)
     {
         var permissions = await _mediator.Send(new GetPermissionsQuery(), cancellationToken);
         return Ok(permissions);
-    }
-
-    /// <summary>Crear un permiso. Requiere rol Admin.</summary>
-    [HttpPost("permissions")]
-    [Authorize(Policy = "Admin")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Guid>> CreatePermission([FromBody] CreatePermissionRequest request, CancellationToken cancellationToken)
-    {
-        var command = new CreatePermissionCommand(request.Code, request.Description);
-        var permissionId = await _mediator.Send(command, cancellationToken);
-        return CreatedAtAction(nameof(GetPermissions), new { id = permissionId }, permissionId);
     }
 
     /// <summary>Obtener reglas de acceso de un usuario.</summary>
