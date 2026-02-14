@@ -1,16 +1,62 @@
+using System.Net;
 using System.Text;
-using IODA.Publishing.API.Middleware;
 using IODA.Publishing.Application;
+using IODA.Publishing.Application.Exceptions;
 using IODA.Publishing.Infrastructure;
+using IODA.Publishing.Domain.Exceptions;
+using IODA.Shared.Api;
+using IODA.Shared.Api.Middleware;
+using IODA.Shared.BuildingBlocks.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+
+static (HttpStatusCode StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails Details)? MapPublishingException(Exception ex, IHostEnvironment? _)
+{
+    return ex switch
+    {
+        CoreApiException coreEx => CreateCoreApiProblem(coreEx),
+        PublicationRequestNotFoundException => (
+            HttpStatusCode.NotFound,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 404, Title = "Not Found", Detail = ex.Message }),
+        DomainException domainEx => (
+            HttpStatusCode.BadRequest,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Bad Request", Detail = domainEx.Message }),
+        InvalidOperationException opEx => (
+            HttpStatusCode.BadRequest,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Bad Request", Detail = opEx.Message }),
+        HttpRequestException => (
+            HttpStatusCode.BadGateway,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 502, Title = "Bad Gateway", Detail = "Core API unavailable or returned an error." }),
+        _ => null
+    };
+
+    static (HttpStatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails) CreateCoreApiProblem(CoreApiException ex)
+    {
+        if (ex.ProblemDetails != null)
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails
+            {
+                Status = ex.ProblemDetails.Status ?? ex.StatusCode,
+                Title = $"Core API Error: {ex.ProblemDetails.Title ?? "Error"}",
+                Detail = ex.ProblemDetails.Detail ?? ex.Message
+            };
+            if (ex.ProblemDetails.Extensions != null)
+                problem.Extensions = new Dictionary<string, object?>(ex.ProblemDetails.Extensions);
+            problem.Extensions ??= new Dictionary<string, object?>();
+            problem.Extensions["coreApiStatusCode"] = ex.StatusCode;
+            return ((HttpStatusCode)(problem.Status ?? ex.StatusCode), problem);
+        }
+        return ((HttpStatusCode)ex.StatusCode, new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = ex.StatusCode, Title = "Core API Error", Detail = ex.Message });
+    }
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddSharedErrorHandling(MapPublishingException);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -91,7 +137,7 @@ if (!builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

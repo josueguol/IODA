@@ -37,7 +37,7 @@ Referencia: [DIAGNOSTICO_TECNICO_CMS.md](../DIAGNOSTICO_TECNICO_CMS.md).
 
 ### 2.1 Contrato GetPublicationRequests
 
-- [ ] Cuando Backend sustituya el enum `PublicationRequestStatus` por string o DTO en `GetPublicationRequests`, actualizar el cliente frontend (tipos y parámetros de query) para usar el nuevo contrato (ej. enviar string en lugar de enum).
+- [x] **Hecho en BE-DTECH-2:** El backend ya expone `status` como query param **string** (valores: `"Pending"`, `"Approved"`, `"Rejected"`). Actualizar el cliente frontend en `getPublicationRequests(params)` para enviar `params.status` como string (ej. `"Pending"`) en lugar de enum numérico, si se usaba.
 
 ---
 

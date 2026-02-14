@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\IODA.Indexing.Application\IODA.Indexing.Application.csproj" />
     <ProjectReference Include="..\IODA.Indexing.Infrastructure\IODA.Indexing.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shared\IODA.Shared.Api\IODA.Shared.Api.csproj" />
     <ProjectReference Include="..\..\..\Shared\IODA.Shared.BuildingBlocks\IODA.Shared.BuildingBlocks.csproj" />
   </ItemGroup>
 </Project>

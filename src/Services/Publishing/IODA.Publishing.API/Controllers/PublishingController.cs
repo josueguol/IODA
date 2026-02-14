@@ -1,3 +1,4 @@
+using IODA.Publishing.API.Contracts;
 using IODA.Publishing.Application.Commands;
 using IODA.Publishing.Application.Queries;
 using IODA.Publishing.Domain.Entities;
@@ -59,25 +60,23 @@ public class PublishingController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>Listar solicitudes de publicación (por contentId, status o todas).</summary>
+    /// <summary>Listar solicitudes de publicación (por contentId, status o todas). Status: Pending | Approved | Rejected.</summary>
     [HttpGet("requests")]
     [ProducesResponseType(typeof(IReadOnlyList<PublicationRequestDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IReadOnlyList<PublicationRequestDto>>> GetPublicationRequests(
         [FromQuery] Guid? contentId = null,
-        [FromQuery] PublicationRequestStatus? status = null,
+        [FromQuery] string? status = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetPublicationRequestsQuery(contentId, status), cancellationToken);
+        PublicationRequestStatus? statusEnum = null;
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (!Enum.TryParse<PublicationRequestStatus>(status, ignoreCase: true, out var parsed))
+                return BadRequest(new ProblemDetails { Status = 400, Title = "Bad Request", Detail = "Invalid status. Allowed values: Pending, Approved, Rejected." });
+            statusEnum = parsed;
+        }
+        var result = await _mediator.Send(new GetPublicationRequestsQuery(contentId, statusEnum), cancellationToken);
         return Ok(result);
     }
 }
-
-public record RequestPublicationRequest(
-    Guid ContentId,
-    Guid ProjectId,
-    Guid EnvironmentId,
-    Guid RequestedBy);
-
-public record ApprovePublicationRequest(Guid ApprovedBy);
-
-public record RejectPublicationRequest(Guid RejectedBy, string? Reason = null);

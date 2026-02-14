@@ -1,15 +1,43 @@
+using System.Net;
 using System.Text;
-using IODA.Identity.API.Middleware;
 using IODA.Identity.Application;
 using IODA.Identity.Infrastructure;
+using IODA.Identity.Domain.Exceptions;
+using IODA.Shared.Api;
+using IODA.Shared.Api.Middleware;
+using IODA.Shared.BuildingBlocks.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+
+static (HttpStatusCode StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails Details)? MapIdentityException(Exception ex, IHostEnvironment? _)
+{
+    return ex switch
+    {
+        InvalidCredentialsException or InvalidRefreshTokenException => (
+            HttpStatusCode.Unauthorized,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 401, Title = "Unauthorized", Detail = ex.Message }),
+        UserNotFoundException => (
+            HttpStatusCode.NotFound,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 404, Title = "Not Found", Detail = ex.Message }),
+        UserAlreadyExistsException => (
+            HttpStatusCode.Conflict,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 409, Title = "Conflict", Detail = ex.Message }),
+        SelfRegistrationDisabledException => (
+            HttpStatusCode.Forbidden,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 403, Title = "Forbidden", Detail = ex.Message }),
+        DomainException domainEx => (
+            HttpStatusCode.BadRequest,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Bad Request", Detail = domainEx.Message }),
+        _ => null
+    };
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddSharedErrorHandling(MapIdentityException);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -87,7 +115,7 @@ if (!builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

@@ -1,4 +1,5 @@
 using IODA.Core.Application.Interfaces;
+using IODA.Core.Domain.Entities;
 using IODA.Core.Domain.Exceptions;
 using IODA.Core.Domain.Repositories;
 using IODA.Shared.Contracts.Events;
@@ -25,7 +26,7 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
         var schema = await _unitOfWork.Schemas.GetByIdAsync(request.SchemaId, cancellationToken);
         if (schema == null)
         {
-            throw new InvalidOperationException($"Schema with ID '{request.SchemaId}' was not found.");
+            throw new SchemaNotFoundException(request.SchemaId);
         }
 
         var validationResult = _schemaValidation.Validate(schema, request.Fields ?? new Dictionary<string, object>());
@@ -41,7 +42,7 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
             var site = await _unitOfWork.Sites.GetByIdAsync(request.SiteId.Value, cancellationToken);
             if (site == null || site.ProjectId != request.ProjectId)
             {
-                throw new InvalidOperationException($"Site '{request.SiteId.Value}' not found or does not belong to the project.");
+                throw new SiteNotFoundException(request.SiteId.Value);
             }
         }
 

@@ -27,6 +27,7 @@
     <ProjectReference Include="..\IODA.Core.Application\IODA.Core.Application.csproj" />
     <ProjectReference Include="..\IODA.Core.Domain\IODA.Core.Domain.csproj" />
     <ProjectReference Include="..\IODA.Core.Infrastructure\IODA.Core.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shared\IODA.Shared.Api\IODA.Shared.Api.csproj" />
     <ProjectReference Include="..\..\..\Shared\IODA.Shared.BuildingBlocks\IODA.Shared.BuildingBlocks.csproj" />
   </ItemGroup>
 

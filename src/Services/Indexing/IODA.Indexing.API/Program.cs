@@ -1,15 +1,29 @@
+using System.Net;
 using System.Text;
-using IODA.Indexing.API.Middleware;
 using IODA.Indexing.Application;
 using IODA.Indexing.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using IODA.Shared.Api;
+using IODA.Shared.Api.Middleware;
+
+static (HttpStatusCode StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails Details)? MapIndexingException(Exception ex, IHostEnvironment? _)
+{
+    return ex switch
+    {
+        InvalidOperationException opEx => (
+            HttpStatusCode.BadRequest,
+            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Bad Request", Detail = opEx.Message }),
+        _ => null
+    };
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddSharedErrorHandling(MapIndexingException);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -84,7 +98,7 @@ if (!builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

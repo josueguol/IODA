@@ -1,5 +1,6 @@
 using IODA.Core.Application.Interfaces;
 using IODA.Core.Domain.Entities;
+using IODA.Core.Domain.Exceptions;
 using IODA.Core.Domain.Repositories;
 using MediatR;
 
@@ -20,7 +21,7 @@ public class UploadMediaCommandHandler : IRequestHandler<UploadMediaCommand, Gui
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(request.ProjectId, cancellationToken);
         if (project == null)
-            throw new InvalidOperationException($"Project '{request.ProjectId}' not found.");
+            throw new ProjectNotFoundException(request.ProjectId);
 
         var storageKey = await _storage.SaveAsync(
             request.FileStream,

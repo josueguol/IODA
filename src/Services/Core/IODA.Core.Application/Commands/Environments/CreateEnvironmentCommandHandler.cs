@@ -1,3 +1,4 @@
+using IODA.Core.Domain.Exceptions;
 using IODA.Core.Domain.Repositories;
 using MediatR;
 using EnvironmentEntity = IODA.Core.Domain.Entities.Environment;
@@ -25,7 +26,7 @@ public class CreateEnvironmentCommandHandler : IRequestHandler<CreateEnvironment
         var projectExists = await _projectRepository.ExistsAsync(request.ProjectId, cancellationToken);
         if (!projectExists)
         {
-            throw new InvalidOperationException($"Project {request.ProjectId} not found.");
+            throw new ProjectNotFoundException(request.ProjectId);
         }
 
         var environment = EnvironmentEntity.Create(
