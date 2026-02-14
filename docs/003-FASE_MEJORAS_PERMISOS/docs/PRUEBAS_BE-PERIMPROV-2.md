@@ -136,3 +136,24 @@ En 2.4 se reemplazaron todas las políticas basadas en rol por políticas por pe
 - **Core.API / Indexing.API:** solo policies por permiso (`content.edit`, `project.edit`, etc.)
 
 **Comprobación:** Buscar en el código `RequireRole` en los proyectos *API: no debe haber resultados. Las rutas protegidas exigen únicamente el claim `permission` con el código correspondiente.
+
+---
+
+## Fase 3: Limpieza
+
+### 3.1 Eliminar POST /api/authorization/permissions
+
+- El endpoint **POST** `/api/authorization/permissions` ha sido eliminado. No es posible crear permisos por API.
+- Los permisos se crean únicamente por el seeder al arranque (catálogo en código). **Breaking:** El frontend no debe ofrecer creación de permisos desde la UI.
+
+**Comprobación:** Llamar a `POST /api/authorization/permissions` con body `{ "code": "test", "description": "Test" }`. **Esperado:** 404 Not Found (ruta no existe).
+
+### 3.2 GET /api/authorization/permissions filtrado por catálogo
+
+- **GET** `/api/authorization/permissions` devuelve solo los permisos cuyo código está en el catálogo (`PermissionCatalog`). Si en BD existieran permisos creados antes (fuera del catálogo), no se incluyen en la respuesta.
+- La respuesta está ordenada por código.
+
+**Pasos para probar:**
+
+1. Llamar a `GET /api/authorization/permissions` con JWT válido. **Esperado:** 200 y lista de permisos (los 19 del catálogo o los que el seeder haya insertado). Cada elemento tiene `id`, `code`, `description`.
+2. Si la BD tuviera permisos con códigos no incluidos en el catálogo (p. ej. insertados a mano), no deben aparecer en la respuesta.

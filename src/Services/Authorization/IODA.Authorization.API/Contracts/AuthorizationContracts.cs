@@ -15,8 +15,6 @@ public record CreateRoleRequest(string Name, string Description = "");
 
 public record AssignPermissionsRequest(IReadOnlyList<Guid> PermissionIds);
 
-public record CreatePermissionRequest(string Code, string Description = "");
-
 public record CreateAccessRuleRequest(
     Guid UserId,
     Guid RoleId,
