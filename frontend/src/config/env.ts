@@ -4,7 +4,17 @@
  */
 const env = import.meta.env;
 
+/** Origen del frontend (esquema + host + puerto). Debe coincidir con los orígenes permitidos en CORS del backend. */
+function getFrontendOrigin(): string {
+  const fromEnv = env.VITE_APP_ORIGIN as string | undefined
+  if (fromEnv) return fromEnv
+  if (typeof window !== 'undefined') return window.location.origin
+  return 'http://localhost:5173'
+}
+
 export const config = {
+  /** Origen del frontend para CORS. Backend/DevOps deben whitelist este origen. */
+  frontendOrigin: getFrontendOrigin(),
   /** Base URL de la Core API (proyectos, contenido, esquemas, publish). */
   coreApiUrl: (env.VITE_CORE_API_URL as string) ?? 'http://localhost:5269',
   /** Base URL de la Identity API (login, register, refresh). */
