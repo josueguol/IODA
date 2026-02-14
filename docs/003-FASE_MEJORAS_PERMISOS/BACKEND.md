@@ -40,8 +40,8 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 - [x] **2.5 Crear SuperAdmin y asignar primer usuario (Authorization + Identity)**  
   En Authorization: seeder o lógica al arranque que cree el rol "SuperAdmin" si no existe y le asigne todos los permisos del catálogo. Exponer endpoint interno o escuchar evento “primer usuario registrado” (UserId). Cuando se registre el primer usuario (Identity lo indica), Authorization crea AccessRule(userId, SuperAdminRoleId). Opción alternativa: Identity tras el primer registro llama a Authorization para “asignar rol SuperAdmin a userId”; Authorization crea la regla. No debe existir bypass de autorización: el primer usuario pasa por el mismo flujo de JWT con permisos una vez asignado el rol.
 
-- [ ] **2.6 Eliminar políticas por rol**  
-  Quitar RequireRole("Admin") y RequireRole("Editor", "Admin") una vez las nuevas policies por permiso estén activas y el JWT incluya permisos.
+- [x] **2.6 Eliminar políticas por rol**  
+  Quitar RequireRole("Admin") y RequireRole("Editor", "Admin") una vez las nuevas policies por permiso estén activas y el JWT incluya permisos. (Completado en 2.4: todas las APIs usan ya solo RequireClaim("permission", …).)
 
 **Riesgos:** Breaking: JWT cambia de estructura; clientes que no esperen claims de permiso. Coordinar con frontend para Fase 3. Si Authorization no está disponible en login, definir fallback (ej. token sin permisos y 403 en rutas protegidas, o reintentos).
 

@@ -124,3 +124,15 @@ Cada API protege sus endpoints con políticas que exigen el claim **`permission`
 4. **Registrar el primer usuario** vía Identity (POST register). **Esperado:** 200 y usuario creado; en logs de Identity debe verse la llamada a bootstrap; en Authorization debe crearse una fila en `access_rules` para ese userId con el roleId de SuperAdmin.
 5. **Comprobar permisos:** Hacer login con ese usuario. El JWT debe incluir todos los claims `permission` del catálogo (p. ej. content.edit, role.manage, etc.). Llamar a `GET /api/authorization/users/<userId>/effective-permissions` y a algún endpoint que requiera policy Admin (role.manage). **Esperado:** 200 en todos.
 6. **Segundo usuario:** Registrar otro usuario. Identity llamará de nuevo a bootstrap-first-user, pero Authorization responderá **409** (ya hay reglas). El segundo usuario no tendrá el rol SuperAdmin; su JWT no incluirá permisos hasta que se le asigne un rol manualmente (vía POST rules).
+
+---
+
+## 2.6 Eliminar políticas por rol
+
+En 2.4 se reemplazaron todas las políticas basadas en rol por políticas por permiso. No queda ningún `RequireRole("Admin")` ni `RequireRole("Editor", "Admin")` en las APIs:
+
+- **Authorization.API:** policy "Admin" → `RequireClaim("permission", "role.manage")`
+- **Publishing.API:** policy "Editor" → `RequireClaim("permission", "content.publish")`
+- **Core.API / Indexing.API:** solo policies por permiso (`content.edit`, `project.edit`, etc.)
+
+**Comprobación:** Buscar en el código `RequireRole` en los proyectos *API: no debe haber resultados. Las rutas protegidas exigen únicamente el claim `permission` con el código correspondiente.
