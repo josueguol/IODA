@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\IODA.Authorization.Application\IODA.Authorization.Application.csproj" />
     <ProjectReference Include="..\IODA.Authorization.Domain\IODA.Authorization.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
