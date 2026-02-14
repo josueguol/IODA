@@ -1,3 +1,4 @@
+using IODA.Authorization.Application.Permissions;
 using IODA.Authorization.Domain.Exceptions;
 using IODA.Authorization.Domain.Repositories;
 using MediatR;
@@ -24,7 +25,9 @@ public class AssignPermissionsToRoleCommandHandler : IRequestHandler<AssignPermi
         {
             var permission = await _permissionRepository.GetByIdAsync(permissionId, cancellationToken);
             if (permission == null)
-                throw new PermissionNotFoundException(permissionId);
+                throw new ArgumentException($"Permission with id '{permissionId}' was not found.");
+            if (!PermissionCatalog.IsInCatalog(permission.Code))
+                throw new ArgumentException($"Permission '{permission.Code}' (id: {permissionId}) is not in the system catalog and cannot be assigned to roles.");
             role.GrantPermission(permissionId);
         }
 

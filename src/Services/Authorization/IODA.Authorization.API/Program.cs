@@ -112,6 +112,13 @@ if (!builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
+// 1.2: seed de permisos del catálogo (idempotente por code)
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<IODA.Authorization.Infrastructure.Persistence.PermissionSeeder>();
+    await seeder.SeedAsync();
+}
+
 app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
