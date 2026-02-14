@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using IODA.Authorization.API.Authorization;
 using IODA.Authorization.Application;
 using IODA.Authorization.Infrastructure;
 using IODA.Authorization.Domain.Exceptions;
@@ -7,6 +8,7 @@ using IODA.Shared.Api;
 using IODA.Shared.Api.Middleware;
 using IODA.Shared.BuildingBlocks.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -81,9 +83,10 @@ if (!string.IsNullOrEmpty(jwtSecret))
         });
     builder.Services.AddAuthorization(options =>
     {
-        // 2.4: policy por permiso (JWT incluye claim "permission" con códigos desde Identity)
-        options.AddPolicy("Admin", policy => policy.RequireClaim("permission", "role.manage"));
+        // Admin: modo bootstrap (0 AccessRules) O claim permission "role.manage" (ver 003-BUGFIXS)
+        options.AddPolicy("Admin", policy => policy.AddRequirements(new BootstrapOrAdminRequirement()));
     });
+    builder.Services.AddScoped<IAuthorizationHandler, BootstrapOrAdminHandler>();
 }
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
