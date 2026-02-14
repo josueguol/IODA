@@ -21,7 +21,9 @@ public static class JwtAuthenticationExtensions
         var jwtAudience = configuration["Jwt:Audience"] ?? "ioda-cms";
 
         if (string.IsNullOrEmpty(jwtSecret))
+        {
             return services;
+        }
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

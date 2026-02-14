@@ -87,7 +87,12 @@ public class MediaController : ControllerBase
         return Ok(item);
     }
 
-    /// <summary>Descargar o previsualizar el archivo (stream). Público para permitir carga directa en img/video.</summary>
+    /// <summary>
+    /// Descargar o previsualizar el archivo (stream).
+    /// Acceso público intencional ([AllowAnonymous]) para permitir referencias directas en &lt;img&gt;/&lt;video&gt; y entrega vía CDN
+    /// sin pasar token en la URL. Si en el futuro el contenido debe ser privado, implementar signed URLs o token de acceso corto
+    /// y eliminar [AllowAnonymous]. Ver docs/FASE_DE_SEGUIMIENTO/BACKEND.md (Fase 3.3).
+    /// </summary>
     [HttpGet("media/{mediaId:guid}/file")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]

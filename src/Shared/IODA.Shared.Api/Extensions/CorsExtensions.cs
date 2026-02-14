@@ -16,7 +16,9 @@ public static class CorsExtensions
     {
         var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
         if (environment.IsDevelopment() && allowedOrigins.Length == 0)
+        {
             allowedOrigins = new[] { "http://localhost:3000", "http://localhost:5173", "https://localhost:3000", "https://localhost:5173" };
+        }
 
         services.AddCors(options =>
         {

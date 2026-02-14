@@ -37,12 +37,8 @@ static (HttpStatusCode StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails Detai
         DomainException domainEx => (
             HttpStatusCode.BadRequest,
             new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Domain Error", Detail = domainEx.Message }),
-        ArgumentException argEx => (
-            HttpStatusCode.BadRequest,
-            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Bad Request", Detail = argEx.Message }),
-        InvalidOperationException opEx => (
-            HttpStatusCode.BadRequest,
-            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Invalid Operation", Detail = opEx.Message }),
+        ArgumentException => IODA.Shared.Api.ExceptionMappingConvention.Map(ex),
+        InvalidOperationException => IODA.Shared.Api.ExceptionMappingConvention.Map(ex),
         _ => null
     };
 }

@@ -116,29 +116,28 @@ Referencia: [DIAGNOSTICO_TECNICO_CMS.md](../DIAGNOSTICO_TECNICO_CMS.md).
 
 ### 3.1 Warnings como errores
 
-- [ ] Activar `TreatWarningsAsErrors: true` en `Directory.Build.props` de forma progresiva (por proyecto o globalmente) y corregir warnings existentes.
+- [x] Activar `TreatWarningsAsErrors: true` en `Directory.Build.props` de forma progresiva (por proyecto o globalmente) y corregir warnings existentes.
 
 ---
 
 ### 3.2 SchemaValidationService (opcional)
 
-- [ ] Si la complejidad sigue creciendo: refactorizar `SchemaValidationService` a estrategias por tipo (ej. `IFieldValidator` + implementaciones por string, number, boolean, date, enum, etc.) para reducir el tamaño de la clase.
+- [x] Si la complejidad sigue creciendo: refactorizar `SchemaValidationService` a estrategias por tipo (ej. `IFieldValidator` + implementaciones por string, number, boolean, date, enum, etc.) para reducir el tamaño de la clase.
 
-**Referencia:** `src/Services/Core/IODA.Core.Application/Services/SchemaValidationService.cs` (~250 líneas).
+**Referencia:** `src/Services/Core/IODA.Core.Application/Services/SchemaValidationService.cs`; validadores en `Validators/Schema/`.
 
 ---
 
 ### 3.3 MediaController.GetFile — acceso público
 
-- [ ] Revisar el uso de `[AllowAnonymous]` en `MediaController.GetFile`.
-- [ ] Si el contenido no es público: implementar signed URLs o token de acceso corto y documentar la decisión.
-- [ ] Si es intencional (CDN/publicación): documentar en código y en documentación de arquitectura.
+- [x] Revisar el uso de `[AllowAnonymous]` en `MediaController.GetFile`.
+- [x] Si es intencional (CDN/publicación): documentar en código y en documentación de arquitectura.
 
 ---
 
 ### 3.4 Consistencia en manejo de excepciones HTTP
 
-- [ ] Unificar el mapeo de `InvalidOperationException` y `ArgumentException` entre servicios (Core devuelve 400 para ambos; Authorization 409 para InvalidOperationException). Definir convención (ej. 400 vs 409) y aplicarla en el middleware compartido.
+- [x] Unificar el mapeo de `InvalidOperationException` y `ArgumentException` entre servicios. Convención en `IODA.Shared.Api.ExceptionMappingConvention`: ArgumentException → 400; InvalidOperationException con "already exists" → 409, resto → 400. Aplicada en Core, Authorization, Publishing, Indexing.
 
 ---
 

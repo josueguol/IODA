@@ -43,7 +43,7 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
                 .ToList());
         }
 
-        content.Update(request.Title, request.Fields, request.UpdatedBy);
+        content.Update(request.Title, request.Fields ?? new Dictionary<string, object>(), request.UpdatedBy);
 
         await _unitOfWork.Contents.UpdateAsync(content, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
