@@ -13,8 +13,9 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 
 ## Fase 2 (preparación opcional)
 
-- [ ] **2.1 (Opcional) Leer permisos desde JWT**  
-  Si se acuerda que el frontend usará los permisos del JWT para ocultar/mostrar UI (en lugar de solo checkAccess), implementar lectura del claim de permisos tras decodificar el access token (o usar un endpoint que devuelva permisos del usuario). Mantener usePermission/checkAccess para contexto específico si el backend lo sigue exponiendo. **No es obligatorio en Fase 2;** puede dejarse para cuando el JWT ya incluya permisos y se quiera reducir llamadas a checkAccess.
+- [x] **2.1 (Opcional) Leer permisos desde JWT**  
+  Si se acuerda que el frontend usará los permisos del JWT para ocultar/mostrar UI (en lugar de solo checkAccess), implementar lectura del claim de permisos tras decodificar el access token (o usar un endpoint que devuelva permisos del usuario). Mantener usePermission/checkAccess para contexto específico si el backend lo sigue exponiendo. **No es obligatorio en Fase 2;** puede dejarse para cuando el JWT ya incluya permisos y se quiera reducir llamadas a checkAccess.  
+  **Hecho:** Util `parsePermissionsFromAccessToken` (claim `permission`, string o string[]), hook `useJwtPermissions()`, e integración en `usePermission`: sin contexto se usa primero el JWT y solo se llama a checkAccess si el permiso no está en el token.
 
 ---
 
