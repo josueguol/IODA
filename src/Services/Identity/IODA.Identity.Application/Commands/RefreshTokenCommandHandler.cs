@@ -43,7 +43,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
         await _refreshTokenRepository.UpdateAsync(storedToken, cancellationToken);
 
         var effectivePermissions = await _effectivePermissionsClient.GetEffectivePermissionsAsync(user.Id, cancellationToken);
-        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email);
+        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email, permissionCodes: effectivePermissions);
         var expiresInSeconds = _jwtTokenGenerator.GetAccessTokenExpirationMinutes() * 60;
 
         var (refreshTokenValue, refreshTokenValidity) = _refreshTokenGenerator.Generate();

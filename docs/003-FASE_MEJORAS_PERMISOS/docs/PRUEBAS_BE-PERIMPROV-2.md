@@ -61,6 +61,15 @@ Identity debe tener configurado `AuthorizationApi:BaseUrl` (URL base del API de 
 
 ---
 
-## 2.2 (Próximo) Incluir permisos en JWT y policies por permiso
+## 2.2 Incluir permisos en JWT (Identity)
 
-Cuando se implemente 2.2, añadir aquí pasos para comprobar que el access token incluye los códigos de permiso (claim) y que las policies por permiso en Authorization y otros servicios rechazan/autorizan correctamente.
+El access token incluye un claim por cada permiso efectivo del usuario: tipo de claim **`permission`**, valor = código (ej. `content.edit`, `role.manage`). Las APIs que usen policies por permiso (2.4) validarán con `RequireClaim("permission", "<code>")`.
+
+### Pasos para probar
+
+1. Tener 2.1 operativo: Identity con `AuthorizationApi:BaseUrl` y usuario con al menos un rol con permisos asignados en Authorization.
+2. **Login:** Hacer login y obtener el `accessToken` de la respuesta.
+3. **Decodificar el JWT:** Usar [jwt.io](https://jwt.io) o cualquier decodificador (payload en base64). En el payload deben aparecer claims con tipo **`permission`** y valores los códigos (ej. `"permission": "content.edit"`; si hay varios, varios claims con el mismo tipo).
+4. **Refresh:** Hacer refresh con el refresh token. El nuevo access token también debe incluir los mismos claims `permission`.
+5. Usuario sin reglas/permisos: el token no debe incluir claims `permission` (o lista vacía); Login/Refresh siguen devolviendo 200.
+6. Cuando se implemente 2.4, comprobar que un endpoint protegido por `RequireClaim("permission", "role.manage")` acepta un token que tenga ese claim y rechaza (403) un token sin él.

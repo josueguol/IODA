@@ -28,7 +28,7 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 - [x] **2.1 Integración Identity → Authorization para permisos**  
   En Identity: en Login y en Refresh, obtener la lista de “permisos efectivos” del usuario (códigos) desde el servicio Authorization. Opción recomendada: cliente HTTP en Identity.Infrastructure que llame a un endpoint de Authorization (ej. GET /api/authorization/users/{userId}/effective-permissions o interno). Authorization debe exponer ese endpoint (o ya existe GetUserAccessRules + cálculo de permisos). Definir contrato (array de strings con códigos de permiso).
 
-- [ ] **2.2 Incluir permisos en JWT (Identity)**  
+- [x] **2.2 Incluir permisos en JWT (Identity)**  
   Extender IJwtTokenGenerator.GenerateAccessToken para aceptar `IEnumerable<string> permissionCodes`. Emitir un claim por permiso (ej. tipo "permission", valor el code) o un único claim con lista serializada; debe ser coherente con cómo se validen las policies (RequireClaim). Actualizar LoginCommandHandler y RefreshTokenCommandHandler para pasar los permisos obtenidos en 2.1 al generador.
 
 - [x] **2.3 Endpoint “effective permissions” (Authorization)**  
