@@ -81,7 +81,8 @@ if (!string.IsNullOrEmpty(jwtSecret))
         });
     builder.Services.AddAuthorization(options =>
     {
-        options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+        // 2.4: policy por permiso (JWT incluye claim "permission" con códigos desde Identity)
+        options.AddPolicy("Admin", policy => policy.RequireClaim("permission", "role.manage"));
     });
 }
 

@@ -10,7 +10,7 @@ namespace IODA.Core.API.Controllers;
 
 [ApiController]
 [Route("api/projects/{projectId:guid}")]
-[Authorize]
+[Authorize(Policy = "content.edit")]
 public class MediaController : ControllerBase
 {
     private readonly IMediator _mediator;

@@ -9,7 +9,7 @@ namespace IODA.Core.API.Controllers;
 
 [ApiController]
 [Route("api/projects/{projectId:guid}")]
-[Authorize]
+[Authorize(Policy = "site.edit")]
 public class SitesController : ControllerBase
 {
     private readonly IMediator _mediator;

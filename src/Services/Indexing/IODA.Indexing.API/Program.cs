@@ -70,7 +70,11 @@ if (!string.IsNullOrEmpty(jwtSecret))
                 ClockSkew = TimeSpan.Zero
             };
         });
-    builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(options =>
+    {
+        // 2.4: policy por permiso (JWT claim "permission" desde Identity)
+        options.AddPolicy("content.edit", policy => policy.RequireClaim("permission", "content.edit"));
+    });
 }
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();

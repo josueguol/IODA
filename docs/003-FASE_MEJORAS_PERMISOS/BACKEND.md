@@ -34,7 +34,7 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 - [x] **2.3 Endpoint “effective permissions” (Authorization)**  
   Si no existe: GET /api/authorization/users/{userId}/effective-permissions que devuelva los códigos de permiso efectivos del usuario (resolviendo reglas → roles → permisos de cada rol, sin duplicados). Proteger este endpoint (solo Identity o solo servicio-a-servicio con API key / JWT de sistema, según arquitectura). Documentar.
 
-- [ ] **2.4 Policies por permiso en cada API**  
+- [x] **2.4 Policies por permiso en cada API**  
   En Authorization.API: reemplazar AddPolicy("Admin", RequireRole("Admin")) por policy que exija RequireClaim("permission", "<code>") según la convención (ej. role.manage). En Publishing.API: reemplazar policy "Editor" por permiso correspondiente (ej. content.publish). En Core.API e Indexing.API: si se desea proteger por permiso, añadir policies 1:1 con permisos y aplicarlas a los controladores correspondientes. Usar el mismo tipo de claim que emite Identity.
 
 - [ ] **2.5 Crear SuperAdmin y asignar primer usuario (Authorization + Identity)**  

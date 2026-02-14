@@ -73,3 +73,29 @@ El access token incluye un claim por cada permiso efectivo del usuario: tipo de 
 4. **Refresh:** Hacer refresh con el refresh token. El nuevo access token también debe incluir los mismos claims `permission`.
 5. Usuario sin reglas/permisos: el token no debe incluir claims `permission` (o lista vacía); Login/Refresh siguen devolviendo 200.
 6. Cuando se implemente 2.4, comprobar que un endpoint protegido por `RequireClaim("permission", "role.manage")` acepta un token que tenga ese claim y rechaza (403) un token sin él.
+
+---
+
+## 2.4 Policies por permiso en cada API
+
+Cada API protege sus endpoints con políticas que exigen el claim **`permission`** con el código correspondiente (emitido por Identity en el JWT). Ya no se usa `RequireRole("Admin")` ni `RequireRole("Editor", "Admin")`.
+
+### Convención policy → permiso
+
+| API            | Nombre policy   | Permiso requerido |
+|----------------|-----------------|--------------------|
+| Authorization  | Admin           | role.manage        |
+| Publishing     | Editor          | content.publish    |
+| Core           | content.edit    | content.edit       |
+| Core           | project.edit    | project.edit       |
+| Core           | schema.edit     | schema.edit        |
+| Core           | site.edit       | site.edit          |
+| Indexing       | content.edit    | content.edit       |
+
+### Pasos para probar
+
+1. **Usuario con permiso `role.manage`:** Hacer login, obtener JWT. Llamar a Authorization: `POST /api/authorization/roles`, `POST /api/authorization/roles/{id}/permissions`, etc. **Esperado:** 204/201 según el endpoint.
+2. **Usuario sin `role.manage`:** JWT sin claim `permission` con valor `role.manage`. Llamar a `POST /api/authorization/roles`. **Esperado:** 403 Forbidden.
+3. **Usuario con permiso `content.publish`:** Llamar a Publishing (ej. endpoint que requiera policy Editor). **Esperado:** 200/201 según el caso.
+4. **Usuario sin `content.publish`:** Llamar al mismo endpoint de Publishing. **Esperado:** 403 Forbidden.
+5. **Core / Indexing:** Con JWT que incluya `content.edit`, llamar a Core (ContentController, MediaController) o Indexing. **Esperado:** 200. Con JWT sin `content.edit`, **esperado:** 403. Igual para `project.edit` (ProjectsController), `schema.edit` (SchemasController), `site.edit` (SitesController).

@@ -9,7 +9,7 @@ namespace IODA.Core.API.Controllers;
 
 [ApiController]
 [Route("api/projects/{projectId:guid}/schemas")]
-[Authorize]
+[Authorize(Policy = "schema.edit")]
 public class SchemasController : ControllerBase
 {
     private readonly IMediator _mediator;
