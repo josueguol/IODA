@@ -135,6 +135,27 @@ public class AuthorizationController : ControllerBase
         return Ok(codes);
     }
 
+    /// <summary>
+    /// 2.5: Asigna el rol SuperAdmin al primer usuario. Solo permitido cuando aún no existe ninguna regla de acceso.
+    /// Identity llama a este endpoint tras registrar al primer usuario. Requiere API key de servicio o JWT.
+    /// </summary>
+    [HttpPost("bootstrap-first-user")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> BootstrapFirstUser([FromBody] BootstrapFirstUserRequest request, CancellationToken cancellationToken)
+    {
+        if (!AllowEffectivePermissionsAccess())
+            return Unauthorized();
+
+        var result = await _mediator.Send(new BootstrapFirstUserCommand(request.UserId), cancellationToken);
+        if (!result.Success)
+            return Conflict(new { error = result.ErrorMessage });
+        return StatusCode(StatusCodes.Status201Created);
+    }
+
     /// <summary>Asignar un rol a un usuario en un ámbito opcional. Requiere rol Admin.</summary>
     [HttpPost("rules")]
     [Authorize(Policy = "Admin")]

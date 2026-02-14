@@ -24,3 +24,6 @@ public record CreateAccessRuleRequest(
     Guid? EnvironmentId = null,
     Guid? SchemaId = null,
     string? ContentStatus = null);
+
+/// <summary>2.5: Asignar rol SuperAdmin al primer usuario (solo cuando no hay reglas de acceso).</summary>
+public record BootstrapFirstUserRequest(Guid UserId);

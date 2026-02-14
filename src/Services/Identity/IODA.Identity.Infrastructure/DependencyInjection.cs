@@ -51,10 +51,12 @@ public static class DependencyInjection
                     client.DefaultRequestHeaders.TryAddWithoutValidation("X-Service-Api-Key", apiKey);
             });
             services.AddScoped<IEffectivePermissionsClient, AuthorizationEffectivePermissionsClient>();
+            services.AddScoped<IFirstUserBootstrapClient, AuthorizationBootstrapFirstUserClient>();
         }
         else
         {
             services.AddScoped<IEffectivePermissionsClient, NoOpEffectivePermissionsClient>();
+            services.AddScoped<IFirstUserBootstrapClient, NoOpFirstUserBootstrapClient>();
         }
 
         return services;

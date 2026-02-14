@@ -99,3 +99,28 @@ Cada API protege sus endpoints con políticas que exigen el claim **`permission`
 3. **Usuario con permiso `content.publish`:** Llamar a Publishing (ej. endpoint que requiera policy Editor). **Esperado:** 200/201 según el caso.
 4. **Usuario sin `content.publish`:** Llamar al mismo endpoint de Publishing. **Esperado:** 403 Forbidden.
 5. **Core / Indexing:** Con JWT que incluya `content.edit`, llamar a Core (ContentController, MediaController) o Indexing. **Esperado:** 200. Con JWT sin `content.edit`, **esperado:** 403. Igual para `project.edit` (ProjectsController), `schema.edit` (SchemasController), `site.edit` (SitesController).
+
+---
+
+## 2.5 Crear SuperAdmin y asignar primer usuario
+
+### Authorization
+
+- **Al arranque:** Tras el seeder de permisos, se ejecuta el seeder del rol "SuperAdmin": se crea el rol si no existe y se le asignan todos los permisos del catálogo.
+- **Endpoint:** **POST** `/api/authorization/bootstrap-first-user` con body `{ "userId": "<guid>" }`. Autenticación: JWT o header `X-Service-Api-Key`.
+  - **201 Created:** Se creó la regla de acceso (userId → rol SuperAdmin). Solo ocurre cuando aún no existe ninguna regla en el sistema (primer usuario).
+  - **409 Conflict:** Ya existe al menos una regla ("Bootstrap already done").
+  - **401:** Sin credenciales válidas.
+
+### Identity
+
+- Tras registrar un usuario, si es el **primer usuario** (no había ninguno antes), Identity llama automáticamente a Authorization `POST bootstrap-first-user` con el `userId` del recién registrado. Si Authorization no está configurado (`AuthorizationApi:BaseUrl` vacío) o falla la llamada, el registro sigue siendo correcto (solo se registra un warning en log).
+
+### Pasos para probar
+
+1. **BD limpia:** Asegurar que la tabla `access_rules` en Authorization está vacía y que Identity tiene 0 usuarios (o borrar el usuario de prueba).
+2. **Configurar Identity:** `AuthorizationApi:BaseUrl` y `AuthorizationApi:ServiceApiKey` (y en Authorization `Authorization:ServiceApiKey` con el mismo valor).
+3. **Arrancar Authorization** (para que corran los seeders: permisos + rol SuperAdmin).
+4. **Registrar el primer usuario** vía Identity (POST register). **Esperado:** 200 y usuario creado; en logs de Identity debe verse la llamada a bootstrap; en Authorization debe crearse una fila en `access_rules` para ese userId con el roleId de SuperAdmin.
+5. **Comprobar permisos:** Hacer login con ese usuario. El JWT debe incluir todos los claims `permission` del catálogo (p. ej. content.edit, role.manage, etc.). Llamar a `GET /api/authorization/users/<userId>/effective-permissions` y a algún endpoint que requiera policy Admin (role.manage). **Esperado:** 200 en todos.
+6. **Segundo usuario:** Registrar otro usuario. Identity llamará de nuevo a bootstrap-first-user, pero Authorization responderá **409** (ya hay reglas). El segundo usuario no tendrá el rol SuperAdmin; su JWT no incluirá permisos hasta que se le asigne un rol manualmente (vía POST rules).

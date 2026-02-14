@@ -119,6 +119,12 @@ using (var scope = app.Services.CreateScope())
     var seeder = scope.ServiceProvider.GetRequiredService<IODA.Authorization.Infrastructure.Persistence.PermissionSeeder>();
     await seeder.SeedAsync();
 }
+// 2.5: rol SuperAdmin con todos los permisos del catálogo
+using (var scope = app.Services.CreateScope())
+{
+    var superAdminSeeder = scope.ServiceProvider.GetRequiredService<IODA.Authorization.Infrastructure.Persistence.SuperAdminRoleSeeder>();
+    await superAdminSeeder.SeedAsync();
+}
 
 app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();
 

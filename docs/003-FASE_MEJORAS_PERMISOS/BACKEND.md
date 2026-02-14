@@ -37,7 +37,7 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 - [x] **2.4 Policies por permiso en cada API**  
   En Authorization.API: reemplazar AddPolicy("Admin", RequireRole("Admin")) por policy que exija RequireClaim("permission", "<code>") según la convención (ej. role.manage). En Publishing.API: reemplazar policy "Editor" por permiso correspondiente (ej. content.publish). En Core.API e Indexing.API: si se desea proteger por permiso, añadir policies 1:1 con permisos y aplicarlas a los controladores correspondientes. Usar el mismo tipo de claim que emite Identity.
 
-- [ ] **2.5 Crear SuperAdmin y asignar primer usuario (Authorization + Identity)**  
+- [x] **2.5 Crear SuperAdmin y asignar primer usuario (Authorization + Identity)**  
   En Authorization: seeder o lógica al arranque que cree el rol "SuperAdmin" si no existe y le asigne todos los permisos del catálogo. Exponer endpoint interno o escuchar evento “primer usuario registrado” (UserId). Cuando se registre el primer usuario (Identity lo indica), Authorization crea AccessRule(userId, SuperAdminRoleId). Opción alternativa: Identity tras el primer registro llama a Authorization para “asignar rol SuperAdmin a userId”; Authorization crea la regla. No debe existir bypass de autorización: el primer usuario pasa por el mismo flujo de JWT con permisos una vez asignado el rol.
 
 - [ ] **2.6 Eliminar políticas por rol**  
