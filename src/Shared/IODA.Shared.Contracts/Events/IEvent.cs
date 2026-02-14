@@ -9,20 +9,20 @@ public interface IEvent
     /// <summary>
     /// Unique identifier of the event
     /// </summary>
-    Guid EventId { get; }
+    public Guid EventId { get; }
 
     /// <summary>
     /// Timestamp when the event occurred (UTC)
     /// </summary>
-    DateTime OccurredAt { get; }
+    public DateTime OccurredAt { get; }
 
     /// <summary>
     /// Version of the event schema
     /// </summary>
-    int Version { get; }
+    public int Version { get; }
 
     /// <summary>
     /// Type name of the event
     /// </summary>
-    string EventType { get; }
+    public string EventType { get; }
 }

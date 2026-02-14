@@ -9,10 +9,10 @@ public interface IDomainEvent
     /// <summary>
     /// Unique identifier of the event
     /// </summary>
-    Guid EventId { get; }
+    public Guid EventId { get; }
 
     /// <summary>
     /// Timestamp when the event occurred (UTC)
     /// </summary>
-    DateTime OccurredAt { get; }
+    public DateTime OccurredAt { get; }
 }

@@ -12,9 +12,8 @@ static (HttpStatusCode StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails Detai
 {
     return ex switch
     {
-        InvalidOperationException opEx => (
-            HttpStatusCode.BadRequest,
-            new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 400, Title = "Bad Request", Detail = opEx.Message }),
+        ArgumentException => IODA.Shared.Api.ExceptionMappingConvention.Map(ex),
+        InvalidOperationException => IODA.Shared.Api.ExceptionMappingConvention.Map(ex),
         _ => null
     };
 }

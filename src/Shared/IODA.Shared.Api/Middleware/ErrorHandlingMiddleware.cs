@@ -47,9 +47,13 @@ public class ErrorHandlingMiddleware
         };
 
         if ((int)statusCode >= 500)
+        {
             _logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
+        }
         else
+        {
             _logger.LogWarning(exception, "Request error: {Message}", exception.Message);
+        }
 
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)statusCode;
@@ -61,7 +65,9 @@ public class ErrorHandlingMiddleware
         var env = context.RequestServices.GetService<IHostEnvironment>();
         var mapped = _options.ExceptionMapper(exception, env);
         if (mapped.HasValue)
+        {
             return mapped.Value;
+        }
 
         return (
             HttpStatusCode.InternalServerError,

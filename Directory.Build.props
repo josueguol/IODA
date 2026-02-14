@@ -20,7 +20,11 @@
     <!-- Análisis de Código -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest</AnalysisLevel>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+    <!-- Fase 3: activado de forma progresiva; suprimir solo categorías aceptadas (ej. documentación XML). -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- CS1591: documentación XML faltante; completar por proyecto de forma progresiva. -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
     
     <!-- Información del Proyecto -->
     <Company>IODA</Company>
@@ -37,12 +41,17 @@
   <!-- Configuración para APIs -->
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.API'))">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1591</NoWarn> <!-- Suprimir warnings de documentación XML -->
+    <NoWarn>$(NoWarn);1591;IDE0011;IDE0270;IDE0040</NoWarn>
   </PropertyGroup>
 
-  <!-- Configuración para Domain Layer -->
+  <!-- Configuración para Domain Layer: estilo (accesibilidad en interfaces, llaves, null-check) se puede endurecer por proyecto. -->
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Domain'))">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);IDE0040;IDE0011;IDE0270</NoWarn>
+  </PropertyGroup>
+  <!-- Application/Infrastructure: mismo criterio progresivo para Fase 3.1. -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Application')) or $(MSBuildProjectName.EndsWith('.Infrastructure'))">
+    <NoWarn>$(NoWarn);IDE0040;IDE0011;IDE0270</NoWarn>
   </PropertyGroup>
 
   <!-- Paquetes Compartidos para TODOS los proyectos -->
