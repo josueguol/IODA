@@ -7,16 +7,16 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 
 ## Fase 1: Cambios internos compatibles
 
-- [ ] **1.1 Catálogo de permisos en código (Authorization)**  
+- [x] **1.1 Catálogo de permisos en código (Authorization)**  
   Crear en Authorization (Domain o Application) una fuente única de verdad con todos los permisos del sistema: código + descripción. Incluir al menos: content.create, content.edit, content.delete, content.publish, project.create, project.edit, project.delete, environment.create, environment.edit, environment.delete, site.create, site.edit, site.delete, schema.create, schema.edit, schema.delete, user.list, user.create, role.manage. Formato: clase estática, enum con descripción, o lista constante. No exponer aún como API; solo uso interno.
 
-- [ ] **1.2 Seeder de permisos (Authorization)**  
+- [x] **1.2 Seeder de permisos (Authorization)**  
   En Authorization.Infrastructure: al arranque de la API (o en una migración EF), si la tabla Permissions está vacía o faltan códigos del catálogo, insertar todos los permisos del catálogo. Idempotente por code (no duplicar). Reutilizar la entidad Permission y el repositorio existente o acceso directo al DbContext según convención del proyecto.
 
-- [ ] **1.3 Validar permisos asignados al rol (Authorization)**  
+- [x] **1.3 Validar permisos asignados al rol (Authorization)**  
   En AssignPermissionsToRoleCommandHandler: antes de asignar, validar que cada PermissionId corresponda a un permiso cuyo Code esté en el catálogo definido en 1.1. Si algún id no existe o no está en el catálogo, rechazar con 400 (Bad Request) y mensaje claro.
 
-- [ ] **1.4 Documentar convención policy ↔ permiso**  
+- [canceled] **1.4 Documentar convención policy ↔ permiso**  
   Añadir documento (en docs/003-FASE_MEJORAS_PERMISOS o en código) que liste: nombre de policy → permission code (1:1). Ejemplo: Admin → role.manage; Editor → content.publish (o los que se decidan). Será la referencia para Fase 2.
 
 **Riesgos:** Ninguno breaking si no se quita POST /permissions ni se cambian policies. Verificar que el seeder no entre en conflicto con permisos ya existentes en BD (mismos codes).

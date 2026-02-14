@@ -48,3 +48,23 @@ Al arrancar la Authorization API, si la tabla `permissions` está vacía o falta
 3. **Idempotencia:** Reiniciar la API y volver a llamar a `GET /api/authorization/permissions`. El número de permisos no debe aumentar (no se crean duplicados por código).
 
 4. **BD con permisos existentes:** Si la BD ya tenía permisos (p. ej. creados antes por el frontend), al arrancar la API el seeder solo inserta los códigos del catálogo que **faltan**. No debe fallar ni borrar permisos existentes.
+
+---
+
+## 1.3 Validar permisos asignados al rol
+
+Al asignar permisos a un rol (`POST /api/authorization/roles/{roleId}/permissions`), cada `PermissionId` debe existir en BD y su `Code` debe estar en el catálogo. Si no, la API responde **400 Bad Request** con mensaje claro.
+
+1. **Asignación válida:** Crear un rol, obtener IDs de permisos de `GET /api/authorization/permissions` (los del catálogo insertados por 1.2). Llamar a:
+   ```bash
+   curl -i -X POST https://localhost:<PORT>/api/authorization/roles/<ROLE_ID>/permissions \
+     -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
+     -d '{"permissionIds": ["<ID1>","<ID2>"]}'
+   ```
+   **Esperado:** 204 No Content.
+
+2. **ID de permiso inexistente:** Enviar un `permissionIds` que contenga un Guid que no exista en la tabla `permissions`.
+   **Esperado:** 400 Bad Request con mensaje del tipo "Permission with id '...' was not found."
+
+3. **Permiso no perteneciente al catálogo:** Si en BD existe un permiso creado fuera del catálogo (p. ej. código "custom.permission" insertado a mano), usar su ID en la asignación.
+   **Esperado:** 400 Bad Request con mensaje del tipo "Permission 'custom.permission' (...) is not in the system catalog and cannot be assigned to roles."
