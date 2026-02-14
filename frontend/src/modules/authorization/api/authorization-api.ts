@@ -1,5 +1,6 @@
 import { config } from '../../../config/env'
 import { createAuthAwareHttpClient } from '../../../shared/api'
+import { buildLoginRedirect } from '../../../shared/auth-redirect'
 import { useAuthStore } from '../../auth/store/auth-store'
 import type {
   CheckAccessRequest,
@@ -8,7 +9,6 @@ import type {
   CreateRoleRequest,
   AssignPermissionsRequest,
   PermissionDto,
-  CreatePermissionRequest,
   AccessRuleDto,
   CreateAccessRuleRequest,
 } from '../types'
@@ -17,9 +17,9 @@ const authorizationClient = createAuthAwareHttpClient({
   baseUrl: config.authorizationApiUrl,
   getAccessToken: () => useAuthStore.getState().accessToken,
   refreshSession: () => useAuthStore.getState().refreshSession(),
-  onUnauthorized: () => {
+  onUnauthorized: (reason) => {
     useAuthStore.getState().logout()
-    window.location.href = config.routerType === 'hash' ? '/#/login' : '/login'
+    window.location.href = buildLoginRedirect(config.routerType, reason)
   },
 })
 
@@ -53,13 +53,9 @@ export const authorizationApi = {
   // Permissions
   // -----------------------------------------------------------------------
 
-  /** GET /api/authorization/permissions */
+  /** GET /api/authorization/permissions (solo lectura; los permisos se gestionan en backend). */
   getPermissions: () =>
     authorizationClient.get<PermissionDto[]>('api/authorization/permissions'),
-
-  /** POST /api/authorization/permissions → devuelve el id del permiso creado */
-  createPermission: (body: CreatePermissionRequest) =>
-    authorizationClient.post<string>('api/authorization/permissions', body),
 
   // -----------------------------------------------------------------------
   // Access rules

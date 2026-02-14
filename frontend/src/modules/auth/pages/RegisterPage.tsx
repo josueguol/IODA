@@ -6,29 +6,6 @@ import { authorizationApi } from '../../authorization/api/authorization-api'
 import type { ApiError } from '../../../shared/api'
 import type { SetupStatus } from '../types'
 
-/** Permisos por defecto que el SuperAdmin obtendrá. */
-const DEFAULT_PERMISSIONS = [
-  { code: 'content.create', description: 'Crear contenido' },
-  { code: 'content.edit', description: 'Editar contenido' },
-  { code: 'content.delete', description: 'Eliminar contenido' },
-  { code: 'content.publish', description: 'Publicar contenido' },
-  { code: 'project.create', description: 'Crear proyectos' },
-  { code: 'project.edit', description: 'Editar proyectos' },
-  { code: 'project.delete', description: 'Eliminar proyectos' },
-  { code: 'environment.create', description: 'Crear entornos' },
-  { code: 'environment.edit', description: 'Editar entornos' },
-  { code: 'environment.delete', description: 'Eliminar entornos' },
-  { code: 'site.create', description: 'Crear sitios' },
-  { code: 'site.edit', description: 'Editar sitios' },
-  { code: 'site.delete', description: 'Eliminar sitios' },
-  { code: 'schema.create', description: 'Crear esquemas' },
-  { code: 'schema.edit', description: 'Editar esquemas' },
-  { code: 'schema.delete', description: 'Eliminar esquemas' },
-  { code: 'user.list', description: 'Listar usuarios' },
-  { code: 'user.create', description: 'Crear usuarios' },
-  { code: 'role.manage', description: 'Gestionar roles y permisos' },
-]
-
 function getRegisterErrorMessage(err: unknown): string {
   if (err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('Load failed'))) {
     return 'No se puede conectar con el servidor. ¿Está la Identity API en ejecución?'
@@ -168,33 +145,21 @@ export function RegisterPage() {
   const isFirstUserSetup = setupStatus !== null && !setupStatus.hasUsers
   const registrationBlocked = setupStatus !== null && setupStatus.hasUsers && !setupStatus.selfRegistrationEnabled
 
-  /** Configurar SuperAdmin: crear permisos + rol + regla de acceso */
+  /** Configurar SuperAdmin: rol + asignar todos los permisos (GET /permissions) + regla de acceso. No crea permisos (backend/catálogo). */
   const setupSuperAdmin = async (userId: string) => {
-    setSetupStep('Creando permisos por defecto…')
-
-    // 1. Get existing permissions
-    let existingPerms: { id: string; code: string }[] = []
+    // Si el backend ya asignó reglas al primer usuario (ej. bootstrap-first-user), no hacer setup
     try {
-      existingPerms = await authorizationApi.getPermissions()
-    } catch { /* empty db */ }
+      const existingRules = await authorizationApi.getUserRules(userId)
+      if (existingRules.length > 0) return
+    } catch { /* seguir con setup si falla la consulta */ }
 
-    // 2. Create missing permissions
-    const allPermIds: string[] = []
-    for (const perm of DEFAULT_PERMISSIONS) {
-      const existing = existingPerms.find((p) => p.code === perm.code)
-      if (existing) {
-        allPermIds.push(existing.id)
-      } else {
-        try {
-          const id = await authorizationApi.createPermission(perm)
-          allPermIds.push(id)
-        } catch {
-          // Ignore duplicate errors
-        }
-      }
-    }
+    setSetupStep('Obteniendo permisos del sistema…')
+    let allPermIds: string[] = []
+    try {
+      const perms = await authorizationApi.getPermissions()
+      allPermIds = perms.map((p) => p.id)
+    } catch { /* permisos no disponibles */ }
 
-    // 3. Create SuperAdmin role
     setSetupStep('Creando rol SuperAdmin…')
     let roleId: string
     try {
@@ -210,13 +175,12 @@ export function RegisterPage() {
       roleId = existing.id
     }
 
-    // 4. Assign all permissions to SuperAdmin role
     setSetupStep('Asignando permisos al rol…')
     if (allPermIds.length > 0) {
       await authorizationApi.assignPermissionsToRole(roleId, { permissionIds: allPermIds })
     }
 
-    // 5. Create access rule for the user
+    // Create access rule for the user
     setSetupStep('Asignando rol al usuario…')
     await authorizationApi.createAccessRule({
       userId,

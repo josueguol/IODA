@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { authorizationApi } from '../../modules/authorization/api/authorization-api'
 import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { useContextStore } from '../../modules/core/store/context-store'
-import { invalidatePermissionCache } from '../../modules/authorization/hooks/usePermission'
+import { invalidatePermissionCache } from '../../shared/permission-cache'
 import { LoadingSpinner, ErrorBanner } from '../../shared/components'
 import type {
   RoleDto,
@@ -57,15 +57,11 @@ const styles: Record<string, React.CSSProperties> = {
 // Permissions Tab
 // ---------------------------------------------------------------------------
 
+/** Pestaña Permisos: solo lectura vía GET /api/authorization/permissions (los permisos se gestionan en backend). */
 function PermissionsTab() {
   const [items, setItems] = useState<PermissionDto[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showForm, setShowForm] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [code, setCode] = useState('')
-  const [description, setDescription] = useState('')
-  const [formError, setFormError] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -82,50 +78,10 @@ function PermissionsTab() {
 
   useEffect(() => { load() }, [])
 
-  const handleCreate = async () => {
-    setFormError(null)
-    if (!code.trim()) { setFormError('Escribe un código (ej. content.edit).'); return }
-    setSaving(true)
-    try {
-      await authorizationApi.createPermission({ code: code.trim(), description: description.trim() || undefined })
-      setCode('')
-      setDescription('')
-      setShowForm(false)
-      invalidatePermissionCache()
-      await load()
-    } catch (e) {
-      setFormError(e instanceof Error ? e.message : 'Error al crear permiso')
-    } finally {
-      setSaving(false)
-    }
-  }
-
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Permisos</h2>
-        <button type="button" style={{ ...styles.button, ...styles.buttonPrimary }} onClick={() => { setShowForm((x) => !x); setFormError(null) }}>
-          {showForm ? 'Cancelar' : 'Crear permiso'}
-        </button>
-      </div>
-
-      {showForm && (
-        <div style={styles.form}>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Código *</label>
-            <input type="text" style={styles.input} value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej. content.edit" />
-          </div>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Descripción (opcional)</label>
-            <input type="text" style={styles.input} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descripción del permiso" />
-          </div>
-          {formError && <ErrorBanner message={formError} />}
-          <button type="button" style={{ ...styles.button, ...styles.buttonPrimary }} disabled={saving} onClick={handleCreate}>
-            {saving ? 'Creando…' : 'Crear'}
-          </button>
-        </div>
-      )}
-
+      <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>Permisos</h2>
+      <p style={styles.hint}>Lista de permisos del sistema (solo lectura). Se gestionan en el backend.</p>
       {error && <ErrorBanner message={error} />}
       {loading ? <LoadingSpinner text="Cargando permisos…" /> : (
         <table style={styles.table}>
@@ -286,7 +242,7 @@ function RolesTab() {
           <p style={styles.hint}>Selecciona los permisos y pulsa «Asignar». Esto <strong>reemplaza</strong> los permisos del rol.</p>
           <div style={{ marginBottom: '0.75rem', maxHeight: 200, overflowY: 'auto', border: '1px solid var(--page-border)', borderRadius: 4, padding: '0.5rem', color: 'var(--page-text)' }}>
             {permissions.length === 0 ? (
-              <p style={styles.hint}>No hay permisos creados. Créalos en la pestaña «Permisos».</p>
+              <p style={styles.hint}>No hay permisos en el sistema.</p>
             ) : permissions.map((p) => (
               <label key={p.id} style={{ display: 'block', padding: '0.25rem 0', cursor: 'pointer', fontSize: '0.875rem' }}>
                 <input

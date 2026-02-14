@@ -1,5 +1,6 @@
 import { config } from '../../../config/env'
 import { createAuthAwareHttpClient } from '../../../shared/api'
+import { buildLoginRedirect } from '../../../shared/auth-redirect'
 import { useAuthStore } from '../../auth/store/auth-store'
 import type { SearchResult } from '../types'
 
@@ -7,9 +8,9 @@ const indexingClient = createAuthAwareHttpClient({
   baseUrl: config.indexingApiUrl,
   getAccessToken: () => useAuthStore.getState().accessToken,
   refreshSession: () => useAuthStore.getState().refreshSession(),
-  onUnauthorized: () => {
+  onUnauthorized: (reason) => {
     useAuthStore.getState().logout()
-    window.location.href = config.routerType === 'hash' ? '/#/login' : '/login'
+    window.location.href = buildLoginRedirect(config.routerType, reason)
   },
 })
 

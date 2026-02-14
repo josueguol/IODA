@@ -6,7 +6,8 @@ export interface AuthAwareClientConfig {
   baseUrl: string
   getAccessToken: () => string | null
   refreshSession: () => Promise<void>
-  onUnauthorized: () => void
+  /** Llamado ante 401 o 403. reason '403' indica permisos insuficientes (p. ej. para mostrar mensaje distinto). */
+  onUnauthorized: (reason?: '401' | '403') => void
   timeout?: number
 }
 
@@ -72,14 +73,15 @@ export function createAuthAwareHttpClient(config: AuthAwareClientConfig) {
           clearTimeout(retryTimeoutId)
         }
       } catch {
-        onUnauthorized()
+        onUnauthorized('401')
         const apiError = await createApiError(response)
         throw apiError
       }
     }
 
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) onUnauthorized()
+      if (response.status === 401) onUnauthorized('401')
+      else if (response.status === 403) onUnauthorized('403')
       const apiError = await createApiError(response)
       throw apiError
     }

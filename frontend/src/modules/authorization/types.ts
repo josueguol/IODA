@@ -63,12 +63,6 @@ export interface PermissionDto {
   description: string
 }
 
-/** Request para POST /api/authorization/permissions. */
-export interface CreatePermissionRequest {
-  code: string
-  description?: string
-}
-
 // ---------------------------------------------------------------------------
 // Access rules
 // ---------------------------------------------------------------------------

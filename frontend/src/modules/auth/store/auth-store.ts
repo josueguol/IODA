@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { invalidatePermissionCache } from '../../../shared/permission-cache'
 import type { AuthUser, LoginResult } from '../types'
 import { authApi } from '../api/auth-api'
 
@@ -54,6 +55,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       expiresAt: parseExpiresAt(result.expiresInSeconds),
       isAuthenticated: true,
     })
+    invalidatePermissionCache()
   },
 
   logout: () => {
