@@ -13,17 +13,20 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
+    private readonly IEffectivePermissionsClient _effectivePermissionsClient;
 
     public RefreshTokenCommandHandler(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IJwtTokenGenerator jwtTokenGenerator,
-        IRefreshTokenGenerator refreshTokenGenerator)
+        IRefreshTokenGenerator refreshTokenGenerator,
+        IEffectivePermissionsClient effectivePermissionsClient)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _jwtTokenGenerator = jwtTokenGenerator;
         _refreshTokenGenerator = refreshTokenGenerator;
+        _effectivePermissionsClient = effectivePermissionsClient;
     }
 
     public async Task<LoginResultDto> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -39,6 +42,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
         storedToken.Revoke();
         await _refreshTokenRepository.UpdateAsync(storedToken, cancellationToken);
 
+        var effectivePermissions = await _effectivePermissionsClient.GetEffectivePermissionsAsync(user.Id, cancellationToken);
         var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email);
         var expiresInSeconds = _jwtTokenGenerator.GetAccessTokenExpirationMinutes() * 60;
 

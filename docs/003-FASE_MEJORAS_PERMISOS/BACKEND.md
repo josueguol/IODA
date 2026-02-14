@@ -25,13 +25,13 @@ Referencia: [PLAN_DE_MIGRACION_PERMISOS_CENTRALIZADOS.md](./PLAN_DE_MIGRACION_PE
 
 ## Fase 2: JWT con permisos y policies por permiso
 
-- [ ] **2.1 Integración Identity → Authorization para permisos**  
+- [x] **2.1 Integración Identity → Authorization para permisos**  
   En Identity: en Login y en Refresh, obtener la lista de “permisos efectivos” del usuario (códigos) desde el servicio Authorization. Opción recomendada: cliente HTTP en Identity.Infrastructure que llame a un endpoint de Authorization (ej. GET /api/authorization/users/{userId}/effective-permissions o interno). Authorization debe exponer ese endpoint (o ya existe GetUserAccessRules + cálculo de permisos). Definir contrato (array de strings con códigos de permiso).
 
 - [ ] **2.2 Incluir permisos en JWT (Identity)**  
   Extender IJwtTokenGenerator.GenerateAccessToken para aceptar `IEnumerable<string> permissionCodes`. Emitir un claim por permiso (ej. tipo "permission", valor el code) o un único claim con lista serializada; debe ser coherente con cómo se validen las policies (RequireClaim). Actualizar LoginCommandHandler y RefreshTokenCommandHandler para pasar los permisos obtenidos en 2.1 al generador.
 
-- [ ] **2.3 Endpoint “effective permissions” (Authorization)**  
+- [x] **2.3 Endpoint “effective permissions” (Authorization)**  
   Si no existe: GET /api/authorization/users/{userId}/effective-permissions que devuelva los códigos de permiso efectivos del usuario (resolviendo reglas → roles → permisos de cada rol, sin duplicados). Proteger este endpoint (solo Identity o solo servicio-a-servicio con API key / JWT de sistema, según arquitectura). Documentar.
 
 - [ ] **2.4 Policies por permiso en cada API**  

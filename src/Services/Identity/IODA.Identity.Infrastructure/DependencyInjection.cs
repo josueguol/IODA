@@ -1,9 +1,11 @@
 using IODA.Identity.Application.Interfaces;
 using IODA.Identity.Domain.Repositories;
-using IODA.Identity.Infrastructure.Services;
+using IODA.Identity.Infrastructure.Clients;
 using IODA.Identity.Infrastructure.Messaging;
+using IODA.Identity.Infrastructure.Options;
 using IODA.Identity.Infrastructure.Persistence;
 using IODA.Identity.Infrastructure.Persistence.Repositories;
+using IODA.Identity.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +39,25 @@ public static class DependencyInjection
         services.AddScoped<IAuthEventPublisher, NoOpAuthEventPublisher>();
         services.AddSingleton<ISetupConfiguration, SetupConfiguration>();
 
+        services.Configure<AuthorizationApiOptions>(configuration.GetSection(AuthorizationApiOptions.SectionName));
+        var authApiBaseUrl = configuration[$"{AuthorizationApiOptions.SectionName}:BaseUrl"]?.TrimEnd('/') ?? "";
+        if (!string.IsNullOrEmpty(authApiBaseUrl))
+        {
+            services.AddHttpClient(AuthorizationEffectivePermissionsClient.HttpClientName, (sp, client) =>
+            {
+                client.BaseAddress = new Uri(authApiBaseUrl + "/api/authorization/");
+                var apiKey = configuration[$"{AuthorizationApiOptions.SectionName}:ServiceApiKey"];
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("X-Service-Api-Key", apiKey);
+            });
+            services.AddScoped<IEffectivePermissionsClient, AuthorizationEffectivePermissionsClient>();
+        }
+        else
+        {
+            services.AddScoped<IEffectivePermissionsClient, NoOpEffectivePermissionsClient>();
+        }
+
         return services;
     }
 }
+

@@ -16,6 +16,16 @@ public class PermissionRepository : IPermissionRepository
     public async Task<Permission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Permissions.FindAsync([id], cancellationToken);
 
+    public async Task<IReadOnlyList<Permission>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    {
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0)
+            return Array.Empty<Permission>();
+        return await _context.Permissions
+            .Where(p => idList.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Permission?> GetByCodeAsync(string code, CancellationToken cancellationToken = default) =>
         await _context.Permissions.FirstOrDefaultAsync(p => p.Code == code, cancellationToken);
 

@@ -10,17 +10,30 @@ namespace IODA.Authorization.API.Controllers;
 /// <summary>
 /// API de autorización: permisos, roles y reglas de acceso.
 /// Todos los endpoints requieren autenticación JWT. CRUD de roles/permisos/reglas requiere rol Admin.
+/// El endpoint effective-permissions admite además API key de servicio (X-Service-Api-Key) para llamadas desde Identity.
 /// </summary>
 [ApiController]
 [Route("api/authorization")]
 [Authorize]
 public class AuthorizationController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    public const string ServiceApiKeyHeaderName = "X-Service-Api-Key";
 
-    public AuthorizationController(IMediator mediator)
+    private readonly IMediator _mediator;
+    private readonly IConfiguration _configuration;
+
+    public AuthorizationController(IMediator mediator, IConfiguration configuration)
     {
         _mediator = mediator;
+        _configuration = configuration;
+    }
+
+    private bool AllowEffectivePermissionsAccess()
+    {
+        var apiKey = _configuration["Authorization:ServiceApiKey"];
+        if (!string.IsNullOrWhiteSpace(apiKey) && Request.Headers.TryGetValue(ServiceApiKeyHeaderName, out var headerKey) && headerKey == apiKey)
+            return true;
+        return User.Identity?.IsAuthenticated == true;
     }
 
     /// <summary>Comprobar si un usuario tiene un permiso en el contexto dado.</summary>
@@ -103,6 +116,23 @@ public class AuthorizationController : ControllerBase
     {
         var rules = await _mediator.Send(new GetUserAccessRulesQuery(userId), cancellationToken);
         return Ok(rules);
+    }
+
+    /// <summary>
+    /// Obtener códigos de permiso efectivos de un usuario (unión de permisos de todos sus roles).
+    /// Admite autenticación JWT o API key de servicio (header X-Service-Api-Key) para llamadas desde Identity.
+    /// </summary>
+    [HttpGet("users/{userId:guid}/effective-permissions")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<string>>> GetEffectivePermissions(Guid userId, CancellationToken cancellationToken)
+    {
+        if (!AllowEffectivePermissionsAccess())
+            return Unauthorized();
+
+        var codes = await _mediator.Send(new GetEffectivePermissionsQuery(userId), cancellationToken);
+        return Ok(codes);
     }
 
     /// <summary>Asignar un rol a un usuario en un ámbito opcional. Requiere rol Admin.</summary>
