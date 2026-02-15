@@ -115,6 +115,14 @@ if (!builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
+// 003-BUGFIXS 2.2: avisar en no-Development si no hay URL de Authorization (JWT sin permisos, bootstrap no se ejecutará)
+if (!app.Environment.IsDevelopment())
+{
+    var authApiBaseUrl = app.Configuration["AuthorizationApi:BaseUrl"];
+    if (string.IsNullOrWhiteSpace(authApiBaseUrl))
+        app.Logger.LogWarning("AuthorizationApi:BaseUrl is not set. JWT will not include permission claims and first-user bootstrap will not run.");
+}
+
 app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())

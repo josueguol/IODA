@@ -29,11 +29,13 @@ Referencia: [README.md](./README.md).
 
 ### 2. Configuración Identity ↔ Authorization
 
-- [ ] **2.1** Documentar en README o en appsettings.example que, para que el primer usuario reciba permisos en el JWT y el bootstrap funcione, debe configurarse:
+- [x] **2.1** Documentar en README o en appsettings.example que, para que el primer usuario reciba permisos en el JWT y el bootstrap funcione, debe configurarse:
   - **Identity:** `AuthorizationApi:BaseUrl` = URL base del Authorization API (ej. `http://localhost:5003`), y `AuthorizationApi:ServiceApiKey` = valor secreto compartido.
   - **Authorization:** `Authorization:ServiceApiKey` = el mismo valor. Así Identity puede llamar a `effective-permissions` y `bootstrap-first-user` con el header `X-Service-Api-Key`.
-- [ ] **2.2** (Opcional) En Identity, si `AuthorizationApi:BaseUrl` está vacío en entorno no-Development, registrar un warning en el log al arrancar indicando que el JWT no incluirá permisos y el bootstrap del primer usuario no se ejecutará.
+- [x] **2.2** (Opcional) En Identity, si `AuthorizationApi:BaseUrl` está vacío en entorno no-Development, registrar un warning en el log al arrancar indicando que el JWT no incluirá permisos y el bootstrap del primer usuario no se ejecutará.
 - **Capa:** Documentación; opcionalmente Identity API (startup).
+
+**Hecho:** Sección "Configuración Identity ↔ Authorization" en [README.md](./README.md) con tablas Identity/Authorization y ejemplos JSON. En Identity API, tras `builder.Build()`, si no es Development y `AuthorizationApi:BaseUrl` está vacío, se registra un warning en log.
 
 ### 3. GET /api/projects — 400 vs 403
 

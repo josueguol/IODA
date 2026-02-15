@@ -6,6 +6,48 @@ Corrección de errores detectados:
 2. **POST /api/authorization/roles → 403** — Al hacer "Crear rol" en la sección de roles, el usuario se desloguea y el servicio devuelve 403 Forbidden.
 3. **GET /api/projects → 400** — El endpoint de proyectos devuelve 400 Bad Request (posiblemente por falta de permiso o validación).
 
+---
+
+## Configuración Identity ↔ Authorization
+
+Para que el **primer usuario** reciba permisos en el JWT y el **bootstrap** (asignación automática del rol SuperAdmin) funcione, debe configurarse la comunicación entre Identity y Authorization:
+
+### Identity API
+
+| Clave | Descripción |
+|-------|-------------|
+| `AuthorizationApi:BaseUrl` | URL base del Authorization API (ej. `http://localhost:5271` o `https://localhost:5003`). Si está vacío, Identity usa `NoOpEffectivePermissionsClient` y el JWT **no incluirá** claims de permiso; el bootstrap del primer usuario tampoco se ejecutará. |
+| `AuthorizationApi:ServiceApiKey` | Valor secreto compartido con Authorization. Se envía en el header `X-Service-Api-Key` al llamar a `GET users/{userId}/effective-permissions` y `POST bootstrap-first-user`. |
+
+**Ejemplo (appsettings o User Secrets):**
+```json
+{
+  "AuthorizationApi": {
+    "BaseUrl": "http://localhost:5271",
+    "ServiceApiKey": "clave-secreta-compartida"
+  }
+}
+```
+
+### Authorization API
+
+| Clave | Descripción |
+|-------|-------------|
+| `Authorization:ServiceApiKey` | Mismo valor que `AuthorizationApi:ServiceApiKey` en Identity. Si está definido, los endpoints `effective-permissions` y `bootstrap-first-user` aceptan el header `X-Service-Api-Key` con este valor (además de JWT Bearer). |
+
+**Ejemplo (appsettings o User Secrets):**
+```json
+{
+  "Authorization": {
+    "ServiceApiKey": "clave-secreta-compartida"
+  }
+}
+```
+
+Con esta configuración, Identity podrá obtener los permisos efectivos del usuario (para incluirlos en el JWT) y asignar el rol SuperAdmin al primer usuario tras el registro.
+
+---
+
 ## Documentos
 
 | Documento | Contenido |
