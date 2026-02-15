@@ -47,8 +47,10 @@ Referencia: [README.md](./README.md).
 
 ### 4. Seeders y bootstrap
 
-- [ ] **4.1** Verificar que al arrancar Authorization API se ejecuten correctamente `PermissionSeeder` y `SuperAdminRoleSeeder` (ya están en Program.cs). Si la base está vacía, debe existir el rol "SuperAdmin" con todos los permisos del catálogo para que `BootstrapFirstUserCommandHandler` pueda asignar ese rol al primer usuario.
+- [x] **4.1** Verificar que al arrancar Authorization API se ejecuten correctamente `PermissionSeeder` y `SuperAdminRoleSeeder` (ya están en Program.cs). Si la base está vacía, debe existir el rol "SuperAdmin" con todos los permisos del catálogo para que `BootstrapFirstUserCommandHandler` pueda asignar ese rol al primer usuario.
 - **Capa:** Authorization.Infrastructure / API. Sin cambio de código si ya corre; solo verificación en el entorno donde falla.
+
+**Verificación:** En `Program.cs` se ejecutan en este orden: (1) `PermissionSeeder.SeedAsync()` — inserta permisos del catálogo si faltan; (2) `SuperAdminRoleSeeder.SeedAsync()` — crea el rol "SuperAdmin" si no existe y le asigna todos los permisos del catálogo. Para comprobar en el entorno afectado: arrancar Authorization API con BD vacía o recién migrada; llamar a `GET /api/authorization/permissions` (debe devolver los permisos del catálogo) y `GET /api/authorization/roles` (debe incluir el rol "SuperAdmin"). Si `POST bootstrap-first-user` devuelve "SuperAdmin role not found", los seeders no se ejecutaron o fallaron (revisar logs y ConnectionString).
 
 ---
 
