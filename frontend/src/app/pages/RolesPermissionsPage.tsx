@@ -4,6 +4,7 @@ import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { useContextStore } from '../../modules/core/store/context-store'
 import { invalidatePermissionCache } from '../../shared/permission-cache'
 import { LoadingSpinner, ErrorBanner } from '../../shared/components'
+import type { ApiError } from '../../shared/api'
 import type {
   RoleDto,
   PermissionDto,
@@ -11,6 +12,17 @@ import type {
 } from '../../modules/authorization/types'
 
 type Tab = 'permissions' | 'roles' | 'rules'
+
+/** Mensaje amigable cuando Authorization API devuelve 403 (no se desloguea al usuario). */
+const AUTHORIZATION_403_MESSAGE =
+  'No tienes permiso para realizar esta acción. Si acabas de configurar tu usuario, cierra sesión y vuelve a entrar para actualizar tus permisos.'
+
+function getAuthorizationErrorMessage(err: unknown, defaultMessage: string): string {
+  if (err && typeof err === 'object' && 'status' in err && (err as ApiError).status === 403) {
+    return AUTHORIZATION_403_MESSAGE
+  }
+  return err instanceof Error ? err.message : defaultMessage
+}
 
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: 960, color: 'var(--page-text)' },
@@ -70,7 +82,7 @@ function PermissionsTab() {
       const list = await authorizationApi.getPermissions()
       setItems(list ?? [])
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al cargar permisos')
+      setError(getAuthorizationErrorMessage(e, 'Error al cargar permisos'))
     } finally {
       setLoading(false)
     }
@@ -132,7 +144,7 @@ function RolesTab() {
       setRoles(r ?? [])
       setPermissions(p ?? [])
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al cargar roles')
+      setError(getAuthorizationErrorMessage(e, 'Error al cargar roles'))
     } finally {
       setLoading(false)
     }
@@ -151,7 +163,7 @@ function RolesTab() {
       setShowForm(false)
       await load()
     } catch (e) {
-      setFormError(e instanceof Error ? e.message : 'Error al crear rol')
+      setFormError(getAuthorizationErrorMessage(e, 'Error al crear rol'))
     } finally {
       setSaving(false)
     }
@@ -180,7 +192,7 @@ function RolesTab() {
       setSelectedPermIds([])
       invalidatePermissionCache()
     } catch (e) {
-      setAssignError(e instanceof Error ? e.message : 'Error al asignar permisos')
+      setAssignError(getAuthorizationErrorMessage(e, 'Error al asignar permisos'))
     } finally {
       setAssignSaving(false)
     }
@@ -312,7 +324,7 @@ function RulesTab() {
       const r = await authorizationApi.getUserRules(userId.trim())
       setRules(r ?? [])
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al cargar reglas')
+      setError(getAuthorizationErrorMessage(e, 'Error al cargar reglas'))
     } finally {
       setLoading(false)
     }
@@ -355,7 +367,7 @@ function RulesTab() {
       invalidatePermissionCache()
       if (lookupUserId.trim()) await loadRules(lookupUserId.trim())
     } catch (e) {
-      setFormError(e instanceof Error ? e.message : 'Error al crear regla')
+      setFormError(getAuthorizationErrorMessage(e, 'Error al crear regla'))
     } finally {
       setSaving(false)
     }
@@ -368,7 +380,7 @@ function RulesTab() {
       setRules((prev) => prev.filter((r) => r.id !== ruleId))
       invalidatePermissionCache()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al revocar regla')
+      setError(getAuthorizationErrorMessage(e, 'Error al revocar regla'))
     }
   }
 
