@@ -207,12 +207,22 @@ export function RegisterPage() {
         const loginResult = await authApi.login({ email, password })
         useAuthStore.getState().setSession(loginResult)
 
-        // 3. Setup SuperAdmin
+        // 3. Setup SuperAdmin (rol, permisos al rol, regla de acceso)
         try {
           await setupSuperAdmin(result.userId)
         } catch (err) {
           console.warn('SuperAdmin setup partially failed:', err)
           // Still navigate to home since user is logged in
+        }
+
+        // 4. Refresco de token para obtener JWT con permisos (Identity + Authorization ya tienen la regla)
+        setSetupStep('Actualizando sesión con permisos…')
+        try {
+          await useAuthStore.getState().refreshSession()
+          // setSession (dentro de refreshSession) ya invalida la caché de permisos
+        } catch {
+          // Si falla el refresh, el usuario sigue logueado con el token anterior (sin permisos en JWT)
+          // La siguiente petición podría recibir 403 hasta que haga login de nuevo
         }
 
         setSetupStep(null)
