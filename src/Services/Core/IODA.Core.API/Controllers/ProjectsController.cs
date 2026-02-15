@@ -21,9 +21,11 @@ public class ProjectsController : ControllerBase
         _mediator = mediator;
     }
 
-    /// <summary>Listar proyectos (paginado).</summary>
+    /// <summary>Listar proyectos (paginado). Requiere permiso project.edit. Sin permiso → 403 Forbidden.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResultDto<ProjectDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResultDto<ProjectDto>>> List(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
