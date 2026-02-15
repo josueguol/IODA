@@ -18,12 +18,14 @@ Referencia: [README.md](./README.md).
 
 ### 1. Refresco de token tras setup del primer usuario (prioritario)
 
-- [ ] **1.1** Tras completar con éxito `setupSuperAdmin` en `RegisterPage` (después de crear rol, asignar permisos y crear la regla de acceso para el primer usuario), forzar la obtención de un **nuevo access token** que incluya los permisos:
+- [x] **1.1** Tras completar con éxito `setupSuperAdmin` en `RegisterPage` (después de crear rol, asignar permisos y crear la regla de acceso para el primer usuario), forzar la obtención de un **nuevo access token** que incluya los permisos:
   - Opción A: Llamar al endpoint de **refresh token** con el refresh token actual y reemplazar en el store el access token (y expiry) por los devueltos.
   - Opción B: Hacer **login de nuevo** con email/password (ya disponibles en ese flujo) y guardar el nuevo resultado en el store.
-- [ ] **1.2** Así las siguientes peticiones (lista de proyectos, crear rol, etc.) usarán un JWT que ya incluye los permisos efectivos (si Identity está configurado con AuthorizationApi:BaseUrl y el usuario tiene la regla SuperAdmin).
-- [ ] **1.3** Invalidar la caché de permisos del módulo de autorización tras actualizar el token (p. ej. `invalidatePermissionCache()`), para que los hooks que usen permisos no sigan con datos obsoletos.
-- **Archivos típicos:** `RegisterPage.tsx` (flujo post-registro primer usuario); módulo de auth (refresh o login); store de auth.
+  - **Hecho:** Opción A. Tras `setupSuperAdmin`, se llama a `useAuthStore.getState().refreshSession()`; el store actualiza access token y expiry con la respuesta de Identity (que ya incluye permisos si AuthorizationApi:BaseUrl está configurado).
+- [x] **1.2** Así las siguientes peticiones (lista de proyectos, crear rol, etc.) usarán un JWT que ya incluye los permisos efectivos (si Identity está configurado con AuthorizationApi:BaseUrl y el usuario tiene la regla SuperAdmin).
+- [x] **1.3** Invalidar la caché de permisos del módulo de autorización tras actualizar el token (p. ej. `invalidatePermissionCache()`), para que los hooks que usen permisos no sigan con datos obsoletos.
+  - **Hecho:** `refreshSession` llama a `setSession(result)` en el auth store, y `setSession` ya invalida la caché con `invalidatePermissionCache()`. No hace falta llamada adicional.
+- **Archivos modificados:** `RegisterPage.tsx` (paso 4: "Actualizando sesión con permisos…" + `refreshSession()` tras setup).
 - **Riesgo:** Bajo. Solo afecta al flujo del primer usuario tras el setup.
 
 ### 2. Manejo de 403 en llamadas a Authorization API
