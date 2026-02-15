@@ -30,9 +30,10 @@ Referencia: [README.md](./README.md).
 
 ### 2. Manejo de 403 en llamadas a Authorization API
 
-- [ ] **2.1** Revisar el comportamiento actual cuando POST /api/authorization/roles (o createRole) devuelve **403**: si se está haciendo logout o redirección a login de forma automática (p. ej. en un interceptor o en el cliente HTTP al recibir 403), valorar no desloguear cuando la respuesta sea 403 en endpoints concretos de "gestión" (crear rol, crear permiso, etc.) y en su lugar mostrar un mensaje al usuario ("No tienes permiso para realizar esta acción" o "Tu sesión no tiene permisos actualizados; intenta cerrar sesión y volver a entrar").
-- [ ] **2.2** Así se evita que el usuario sea deslogueado al pulsar "Crear rol" cuando su JWT aún no tiene el permiso; si el backend ya tiene modo bootstrap, la petición podrá seguir y, tras refrescar el token (tarea 1), la siguiente vez el JWT ya tendrá permisos.
-- **Archivos típicos:** Cliente HTTP que llama a Authorization API (p. ej. `authorization-api.ts` o el que centralice respuestas 401/403); posiblemente store de auth.
+- [x] **2.1** Revisar el comportamiento actual cuando POST /api/authorization/roles (o createRole) devuelve **403**: si se está haciendo logout o redirección a login de forma automática (p. ej. en un interceptor o en el cliente HTTP al recibir 403), valorar no desloguear cuando la respuesta sea 403 en endpoints concretos de "gestión" (crear rol, crear permiso, etc.) y en su lugar mostrar un mensaje al usuario ("No tienes permiso para realizar esta acción" o "Tu sesión no tiene permisos actualizados; intenta cerrar sesión y volver a entrar").
+  - **Hecho:** En `authorization-api.ts`, `onUnauthorized` solo hace logout y redirección cuando `reason === '401'`. Ante 403 no se llama a logout ni redirect; el error se propaga. En `RolesPermissionsPage` se usa `getAuthorizationErrorMessage(err, defaultMessage)`: si el error tiene `status === 403` se muestra: "No tienes permiso para realizar esta acción. Si acabas de configurar tu usuario, cierra sesión y vuelve a entrar para actualizar tus permisos."
+- [x] **2.2** Así se evita que el usuario sea deslogueado al pulsar "Crear rol" cuando su JWT aún no tiene el permiso; si el backend ya tiene modo bootstrap, la petición podrá seguir y, tras refrescar el token (tarea 1), la siguiente vez el JWT ya tendrá permisos.
+- **Archivos modificados:** `authorization-api.ts` (onUnauthorized solo actúa en 401); `RolesPermissionsPage.tsx` (helper `getAuthorizationErrorMessage` y uso en todos los catch de llamadas a Authorization API).
 - **Riesgo:** Bajo. Mejora la UX y evita deslogueos inesperados.
 
 ### 3. GET /projects y mensaje de error
