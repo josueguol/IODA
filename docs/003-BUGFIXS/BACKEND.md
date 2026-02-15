@@ -39,9 +39,11 @@ Referencia: [README.md](./README.md).
 
 ### 3. GET /api/projects — 400 vs 403
 
-- [ ] **3.1** Confirmar el código de estado real que devuelve Core API cuando el usuario no tiene el claim `project.edit`: debe ser **403 Forbidden** (fallo de autorización). Si en las pruebas se obtiene 403, no hay cambio en Core para este punto; el arreglo es que el JWT incluya permisos (tras bootstrap + refresco de token).
-- [ ] **3.2** Si efectivamente se recibe **400** en GET /projects, revisar validadores de `GetProjectsPagedQuery` (p. ej. FluentValidation) y parámetros de ruta/query: asegurar que no se devuelva 400 por parámetros inválidos cuando el problema sea solo de permisos. Ajustar el validador para que errores de autorización no se traduzcan en 400.
+- [x] **3.1** Confirmar el código de estado real que devuelve Core API cuando el usuario no tiene el claim `project.edit`: debe ser **403 Forbidden** (fallo de autorización). Si en las pruebas se obtiene 403, no hay cambio en Core para este punto; el arreglo es que el JWT incluya permisos (tras bootstrap + refresco de token).
+- [x] **3.2** Si efectivamente se recibe **400** en GET /projects, revisar validadores de `GetProjectsPagedQuery` (p. ej. FluentValidation) y parámetros de ruta/query: asegurar que no se devuelva 400 por parámetros inválidos cuando el problema sea solo de permisos. Ajustar el validador para que errores de autorización no se traduzcan en 400.
 - **Capa:** Core.API o Core.Application (validadores).
+
+**Hecho:** La autorización se evalúa antes del action (policy `project.edit`); sin el claim → **403 Forbidden**. Añadido `GetProjectsPagedQueryValidator` (Page ≥ 1, PageSize 1–100) para que parámetros inválidos devuelvan **400** por validación y no se confundan con falta de permiso. Documentado 403/400 en el endpoint List del ProjectsController.
 
 ### 4. Seeders y bootstrap
 
