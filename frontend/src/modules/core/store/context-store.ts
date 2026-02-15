@@ -1,6 +1,16 @@
 import { create } from 'zustand'
+import type { ApiError } from '../../../shared/api'
 import { coreApi } from '../api/core-api'
 import type { Environment, Project, Site } from '../types'
+
+function getProjectsErrorMessage(err: unknown): string {
+  if (err && typeof err === 'object' && 'status' in err) {
+    const status = (err as ApiError).status
+    if (status === 403) return 'No tienes permiso para ver proyectos.'
+    if (status === 400) return 'Parámetros de búsqueda no válidos.'
+  }
+  return err instanceof Error ? err.message : 'Error al cargar proyectos'
+}
 
 const STORAGE_KEY_PROJECT = 'ioda_context_project_id'
 const STORAGE_KEY_ENVIRONMENT = 'ioda_context_environment_id'
@@ -199,7 +209,7 @@ export const useContextStore = create<ContextState>((set, get) => ({
       }
     } catch (e) {
       set({
-        projectsError: e instanceof Error ? e.message : 'Error al cargar proyectos',
+        projectsError: getProjectsErrorMessage(e),
       })
     } finally {
       set({ projectsLoading: false })

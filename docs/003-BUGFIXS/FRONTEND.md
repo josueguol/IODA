@@ -38,8 +38,10 @@ Referencia: [README.md](./README.md).
 
 ### 3. GET /projects y mensaje de error
 
-- [ ] **3.1** Si GET /api/projects devuelve **400** o **403**, mostrar en la UI un mensaje claro según el código (p. ej. "No tienes permiso para ver proyectos" para 403, o "Parámetros de búsqueda no válidos" para 400), en lugar de un error genérico o deslogueo.
-- [ ] **3.2** Tras aplicar la tarea 1 (refresco de token tras setup), comprobar que, con el nuevo token (con permisos), GET /projects devuelve 200 cuando el usuario tiene el permiso `project.edit` (o el que exija el backend).
+- [x] **3.1** Si GET /api/projects devuelve **400** o **403**, mostrar en la UI un mensaje claro según el código (p. ej. "No tienes permiso para ver proyectos" para 403, o "Parámetros de búsqueda no válidos" para 400), en lugar de un error genérico o deslogueo.
+  - **Hecho:** En `context-store.ts`, en el `catch` de `loadProjects`, se usa `getProjectsErrorMessage(e)`: si el error tiene `status === 403` → "No tienes permiso para ver proyectos."; si `status === 400` → "Parámetros de búsqueda no válidos."; en otro caso se mantiene `e.message` o "Error al cargar proyectos". El mensaje se muestra en HomePage vía `projectsError` y `<ErrorBanner />`.
+- [ ] **3.2** Tras aplicar la tarea 1 (refresco de token tras setup), comprobar que, con el nuevo token (con permisos), GET /projects devuelve 200 cuando el usuario tiene el permiso `project.edit` (o el que exija el backend). *(Verificación manual.)*
+- **Archivos modificados:** `context-store.ts` (helper `getProjectsErrorMessage` y uso en `loadProjects`).
 - **Riesgo:** Bajo.
 
 ---
