@@ -41,14 +41,24 @@ public static class DependencyInjection
 
         services.Configure<AuthorizationApiOptions>(configuration.GetSection(AuthorizationApiOptions.SectionName));
         var authApiBaseUrl = configuration[$"{AuthorizationApiOptions.SectionName}:BaseUrl"]?.TrimEnd('/') ?? "";
+        var authApiServiceKey = configuration[$"{AuthorizationApiOptions.SectionName}:ServiceApiKey"]?.Trim() ?? "";
+
+        // En Development, si no está configurada la Authorization API, usar valores por defecto para que el primer usuario reciba SuperAdmin y el JWT incluya permisos.
+        var env = configuration["ASPNETCORE_ENVIRONMENT"];
+        if (string.IsNullOrEmpty(authApiBaseUrl) && string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
+        {
+            authApiBaseUrl = "http://localhost:5271";
+            if (string.IsNullOrEmpty(authApiServiceKey))
+                authApiServiceKey = "dev-service-api-key-32-chars-min";
+        }
+
         if (!string.IsNullOrEmpty(authApiBaseUrl))
         {
             services.AddHttpClient(AuthorizationEffectivePermissionsClient.HttpClientName, (sp, client) =>
             {
                 client.BaseAddress = new Uri(authApiBaseUrl + "/api/authorization/");
-                var apiKey = configuration[$"{AuthorizationApiOptions.SectionName}:ServiceApiKey"];
-                if (!string.IsNullOrWhiteSpace(apiKey))
-                    client.DefaultRequestHeaders.TryAddWithoutValidation("X-Service-Api-Key", apiKey);
+                if (!string.IsNullOrWhiteSpace(authApiServiceKey))
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("X-Service-Api-Key", authApiServiceKey);
             });
             services.AddScoped<IEffectivePermissionsClient, AuthorizationEffectivePermissionsClient>();
             services.AddScoped<IFirstUserBootstrapClient, AuthorizationBootstrapFirstUserClient>();
