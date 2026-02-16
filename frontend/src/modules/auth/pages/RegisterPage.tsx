@@ -3,6 +3,9 @@ import { useNavigate, Link } from 'react-router-dom'
 import { authApi } from '../api/auth-api'
 import { useAuthStore } from '../store/auth-store'
 import { authorizationApi } from '../../authorization/api/authorization-api'
+import { parsePermissionsFromAccessToken } from '../../authorization/utils/jwt-permissions'
+import { config } from '../../../config/env'
+import { buildLoginRedirect } from '../../../shared/auth-redirect'
 import type { ApiError } from '../../../shared/api'
 import type { SetupStatus } from '../types'
 
@@ -144,6 +147,8 @@ export function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null)
   const [setupStep, setSetupStep] = useState<string | null>(null)
+  /** Tras refresh exitoso, si el JWT no incluye permisos se muestra aviso y opción Continuar/Cerrar sesión. */
+  const [postSetupJwtNoPermissions, setPostSetupJwtNoPermissions] = useState(false)
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
@@ -190,7 +195,16 @@ export function RegisterPage() {
       allPermIds = perms.map((p) => p.id)
     } catch (err) {
       const status = (err as ApiError)?.status
-      console.warn(`[setupSuperAdmin] getPermissions falló (status: ${status ?? 'unknown'}):`, err)
+      if (status === 403) {
+        console.warn('[setupSuperAdmin] getPermissions 403: sin permiso; el modo bootstrap puede permitir el resto')
+      } else {
+        console.warn(`[setupSuperAdmin] getPermissions falló (status: ${status ?? 'unknown'}):`, err)
+      }
+    }
+
+    if (allPermIds.length === 0) {
+      setSetupStep('⚠ No se encontraron permisos en el sistema. Verifica que la Authorization API esté en ejecución.')
+      // Continuar el flujo: el rol se puede crear y los permisos se asignarán cuando los seeders corran
     }
 
     setSetupStep('Creando rol SuperAdmin…')
@@ -273,14 +287,27 @@ export function RegisterPage() {
         setSetupStep('Actualizando sesión con permisos…')
         const refreshOk = await refreshWithRetry()
 
+        setSetupStep(null)
+
         if (!refreshOk) {
-          // El usuario queda logueado pero su JWT no tiene permisos → mostrar aviso
+          // El usuario queda logueado pero su JWT no tiene permisos → mostrar aviso y marcar para Home
           setError(
             'Tu sesión no tiene permisos aún. Cierra sesión e inicia sesión de nuevo para obtener acceso completo.'
           )
+          try {
+            sessionStorage.setItem('ioda_first_user_refresh_failed', '1')
+          } catch { /* ignore */ }
+          navigate('/', { replace: true })
+          return
         }
 
-        setSetupStep(null)
+        // Verificación post-setup: si el JWT no incluye permisos, advertir pero permitir continuar (Paso 6)
+        const token = useAuthStore.getState().accessToken
+        const permissions = parsePermissionsFromAccessToken(token ?? null)
+        if (permissions.length === 0) {
+          setPostSetupJwtNoPermissions(true)
+          return
+        }
         navigate('/', { replace: true })
       } else {
         navigate('/login', { replace: true })
@@ -318,6 +345,42 @@ export function RegisterPage() {
           <Link to="/login" style={s.link}>
             Ir a iniciar sesión
           </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Post-setup: sesión creada pero JWT sin permisos (Identity sin AuthorizationApi configurado, etc.)
+  if (postSetupJwtNoPermissions) {
+    return (
+      <div style={s.container}>
+        <div style={s.card}>
+          <h1 style={s.title}>Configuración completada</h1>
+          <p style={{ ...s.subtitle, marginBottom: '1rem' }}>
+            Tu sesión se creó pero el token no incluye permisos. Esto puede deberse a la configuración del backend (Identity ↔ Authorization).
+          </p>
+          <p style={{ fontSize: '0.875rem', color: 'var(--page-text-secondary, #666)', marginBottom: '1rem' }}>
+            Puedes continuar pero algunas funciones estarán limitadas hasta que inicies sesión de nuevo con el backend correctamente configurado.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <button
+              type="button"
+              style={s.button}
+              onClick={() => navigate('/', { replace: true })}
+            >
+              Continuar de todos modos
+            </button>
+            <button
+              type="button"
+              style={{ ...s.button, background: '#6c757d' }}
+              onClick={() => {
+                useAuthStore.getState().logout()
+                window.location.href = buildLoginRedirect(config.routerType)
+              }}
+            >
+              Cerrar sesión
+            </button>
+          </div>
         </div>
       </div>
     )

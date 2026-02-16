@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { authApi } from '../../modules/auth/api/auth-api'
 import { identityAdminApi } from '../../modules/auth/api/identity-admin-api'
 import { authorizationApi } from '../../modules/authorization/api/authorization-api'
+import { SUPERADMIN_ROLE_NAME } from '../../modules/authorization/constants'
 import { invalidatePermissionCache } from '../../modules/authorization/hooks/usePermission'
 import { useContextStore } from '../../modules/core/store/context-store'
 import { Can } from '../../modules/authorization/components/Can'
@@ -223,7 +224,7 @@ function UserRolesPanel({
               <label style={styles.label}>Rol *</label>
               <select style={styles.select} value={selectedRoleId} onChange={(e) => setSelectedRoleId(e.target.value)}>
                 <option value="">— Seleccionar rol —</option>
-                {roles.map((r) => (
+                {roles.filter((r) => r.name !== SUPERADMIN_ROLE_NAME).map((r) => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
               </select>
@@ -267,24 +268,33 @@ function UserRolesPanel({
         <p style={styles.hint}>Este usuario no tiene roles asignados.</p>
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-          {rules.map((rule) => (
-            <span key={rule.id} style={styles.roleTag} title={`Proyecto: ${projectName(rule.projectId)} · Entorno: ${envName(rule.environmentId)}`}>
-              <strong>{roleName(rule.roleId)}</strong>
-              {rule.projectId && (
-                <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
-                  ({projectName(rule.projectId)}{rule.environmentId ? ` / ${envName(rule.environmentId)}` : ''})
-                </span>
-              )}
-              <button
-                type="button"
-                style={styles.revokeBtn}
-                onClick={() => handleRevoke(rule.id)}
-                title="Revocar esta regla"
-              >
-                &#10005;
-              </button>
-            </span>
-          ))}
+          {rules.map((rule) => {
+            const isSuperAdminRule = roleName(rule.roleId) === SUPERADMIN_ROLE_NAME
+            return (
+              <span key={rule.id} style={styles.roleTag} title={isSuperAdminRule ? 'No se puede revocar el rol SuperAdmin' : `Proyecto: ${projectName(rule.projectId)} · Entorno: ${envName(rule.environmentId)}`}>
+                <strong>{roleName(rule.roleId)}</strong>
+                {rule.projectId && (
+                  <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                    ({projectName(rule.projectId)}{rule.environmentId ? ` / ${envName(rule.environmentId)}` : ''})
+                  </span>
+                )}
+                {isSuperAdminRule ? (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--page-text-muted)', marginLeft: '0.25rem' }} title="No se puede revocar el rol SuperAdmin">
+                    (rol del sistema)
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    style={styles.revokeBtn}
+                    onClick={() => handleRevoke(rule.id)}
+                    title="Revocar esta regla"
+                  >
+                    &#10005;
+                  </button>
+                )}
+              </span>
+            )
+          })}
         </div>
       )}
     </div>

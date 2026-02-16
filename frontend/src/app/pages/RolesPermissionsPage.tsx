@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react'
 import { authorizationApi } from '../../modules/authorization/api/authorization-api'
+import { SUPERADMIN_ROLE_NAME } from '../../modules/authorization/constants'
+import { identityAdminApi } from '../../modules/auth/api/identity-admin-api'
 import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { useContextStore } from '../../modules/core/store/context-store'
 import { invalidatePermissionCache } from '../../shared/permission-cache'
-import { LoadingSpinner, ErrorBanner } from '../../shared/components'
+import { LoadingSpinner, ErrorBanner, UserPicker } from '../../shared/components'
 import type { ApiError } from '../../shared/api'
+import type { UserListItemDto } from '../../modules/auth/types'
 import type {
   RoleDto,
   PermissionDto,
   AccessRuleDto,
 } from '../../modules/authorization/types'
 
-type Tab = 'permissions' | 'roles' | 'rules'
+/** Pestañas visibles: Permisos se eliminó de la navegación (solo Roles y Reglas de acceso). */
+type Tab = 'roles' | 'rules'
 
 /** Mensaje amigable cuando Authorization API devuelve 403 (no se desloguea al usuario). */
 const AUTHORIZATION_403_MESSAGE =
@@ -66,11 +70,11 @@ const styles: Record<string, React.CSSProperties> = {
 }
 
 // ---------------------------------------------------------------------------
-// Permissions Tab
+// Permissions Tab (conservado para diagnóstico; no se muestra en la navegación)
 // ---------------------------------------------------------------------------
 
-/** Pestaña Permisos: solo lectura vía GET /api/authorization/permissions (los permisos se gestionan en backend). */
-function PermissionsTab() {
+/** Pestaña Permisos: solo lectura vía GET /api/authorization/permissions (los permisos se gestionan en backend). Exportado por si se necesita para diagnóstico; no se muestra en la navegación. */
+export function PermissionsTab() {
   const [items, setItems] = useState<PermissionDto[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -231,17 +235,26 @@ function RolesTab() {
           <tbody>
             {roles.length === 0 ? (
               <tr><td colSpan={3} style={styles.td}>No hay roles.</td></tr>
-            ) : roles.map((r) => (
-              <tr key={r.id}>
-                <td style={styles.td}><strong>{r.name}</strong></td>
-                <td style={styles.td}>{r.description || '—'}</td>
-                <td style={styles.td}>
-                  <button type="button" style={{ ...styles.button, ...styles.buttonSmall }} onClick={() => startAssign(r.id)}>
-                    Asignar permisos
-                  </button>
-                </td>
-              </tr>
-            ))}
+            ) : roles.map((r) => {
+              const isSuperAdmin = r.name === SUPERADMIN_ROLE_NAME
+              return (
+                <tr key={r.id}>
+                  <td style={styles.td}><strong>{r.name}</strong></td>
+                  <td style={styles.td}>{r.description || '—'}</td>
+                  <td style={styles.td}>
+                    {isSuperAdmin ? (
+                      <span style={{ ...styles.badge, fontSize: '0.75rem', color: 'var(--page-text-muted)' }}>
+                        Rol del sistema — todos los permisos
+                      </span>
+                    ) : (
+                      <button type="button" style={{ ...styles.button, ...styles.buttonSmall }} onClick={() => startAssign(r.id)}>
+                        Asignar permisos
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}
@@ -254,7 +267,9 @@ function RolesTab() {
           <p style={styles.hint}>Selecciona los permisos y pulsa «Asignar». Esto <strong>reemplaza</strong> los permisos del rol.</p>
           <div style={{ marginBottom: '0.75rem', maxHeight: 200, overflowY: 'auto', border: '1px solid var(--page-border)', borderRadius: 4, padding: '0.5rem', color: 'var(--page-text)' }}>
             {permissions.length === 0 ? (
-              <p style={styles.hint}>No hay permisos en el sistema.</p>
+              <p style={styles.hint}>
+                No se pudieron cargar los permisos del sistema. Verifica que la Authorization API está ejecutándose y los seeders se han completado.
+              </p>
             ) : permissions.map((p) => (
               <label key={p.id} style={{ display: 'block', padding: '0.25rem 0', cursor: 'pointer', fontSize: '0.875rem' }}>
                 <input
@@ -287,9 +302,16 @@ function RolesTab() {
 // Access Rules Tab
 // ---------------------------------------------------------------------------
 
+function getUserDisplay(users: UserListItemDto[], userId: string): string {
+  const u = users.find((x) => x.id === userId)
+  if (u) return u.displayName?.trim() ? `${u.displayName} (${u.email})` : u.email
+  return userId
+}
+
 function RulesTab() {
   const user = useAuthStore((s) => s.user)
   const { projects, environments } = useContextStore()
+  const [users, setUsers] = useState<UserListItemDto[]>([])
   const [rules, setRules] = useState<AccessRuleDto[]>([])
   const [roles, setRoles] = useState<RoleDto[]>([])
   const [loading, setLoading] = useState(false)
@@ -306,7 +328,7 @@ function RulesTab() {
   const [ruleSchemaId, setRuleSchemaId] = useState('')
   const [ruleContentStatus, setRuleContentStatus] = useState('')
 
-  // Lookup user rules
+  // Lookup user rules (búsqueda por correo/nombre/ID)
   const [lookupUserId, setLookupUserId] = useState('')
 
   const loadRoles = async () => {
@@ -314,6 +336,13 @@ function RulesTab() {
       const r = await authorizationApi.getRoles()
       setRoles(r ?? [])
     } catch { /* ignore */ }
+  }
+
+  const loadUsers = async () => {
+    try {
+      const list = await identityAdminApi.getUsers()
+      setUsers(Array.isArray(list) ? list : [])
+    } catch { /* sin permiso user.list: lista vacía, se puede pegar GUID */ }
   }
 
   const loadRules = async (userId: string) => {
@@ -332,6 +361,7 @@ function RulesTab() {
 
   useEffect(() => {
     loadRoles()
+    loadUsers()
     if (user?.userId) {
       setLookupUserId(user.userId)
       loadRules(user.userId)
@@ -341,6 +371,11 @@ function RulesTab() {
 
   const handleLookup = () => {
     if (lookupUserId.trim()) loadRules(lookupUserId.trim())
+  }
+
+  const handleLookupUserChange = (userId: string) => {
+    setLookupUserId(userId)
+    if (userId.trim()) loadRules(userId.trim())
   }
 
   const handleCreate = async () => {
@@ -403,18 +438,20 @@ function RulesTab() {
         </button>
       </div>
 
-      {/* Lookup */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Usuario ID:</label>
-        <input
-          type="text"
-          style={{ ...styles.input, maxWidth: 300 }}
-          value={lookupUserId}
-          onChange={(e) => setLookupUserId(e.target.value)}
-          placeholder="GUID del usuario"
-        />
-        <button type="button" style={{ ...styles.button, ...styles.buttonSmall }} onClick={handleLookup}>
-          Buscar reglas
+      {/* Búsqueda de usuario por correo, nombre o ID */}
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div>
+          <label style={{ ...styles.label, marginBottom: '0.25rem' }}>Usuario</label>
+          <UserPicker
+            users={users}
+            value={lookupUserId}
+            onChange={handleLookupUserChange}
+            placeholder="Buscar por correo, nombre o ID…"
+            allowRawGuid
+          />
+        </div>
+        <button type="button" style={{ ...styles.button, ...styles.buttonSmall, marginTop: '1.5rem' }} onClick={handleLookup} title="Recargar reglas del usuario seleccionado">
+          Buscar / Actualizar
         </button>
       </div>
 
@@ -423,17 +460,26 @@ function RulesTab() {
           <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem' }}>Nueva regla de acceso</h3>
           <p style={styles.hint}>Asigna un rol a un usuario, opcionalmente limitado a un proyecto, entorno, schema o estado de contenido.</p>
           <div style={styles.formRow}>
-            <label style={styles.label}>ID del usuario *</label>
-            <input type="text" style={styles.input} value={ruleUserId} onChange={(e) => setRuleUserId(e.target.value)} placeholder="GUID del usuario" />
+            <label style={styles.label}>Usuario *</label>
+            <UserPicker
+              users={users}
+              value={ruleUserId}
+              onChange={setRuleUserId}
+              placeholder="Buscar por correo, nombre o ID…"
+              allowRawGuid
+            />
           </div>
           <div style={styles.formRow}>
             <label style={styles.label}>Rol *</label>
             <select style={styles.select} value={ruleRoleId} onChange={(e) => setRuleRoleId(e.target.value)}>
               <option value="">— Seleccionar rol —</option>
-              {roles.map((r) => (
+              {roles.filter((r) => r.name !== SUPERADMIN_ROLE_NAME).map((r) => (
                 <option key={r.id} value={r.id}>{r.name}</option>
               ))}
             </select>
+            <p style={{ ...styles.hint, marginTop: '0.25rem' }}>
+              El rol SuperAdmin se asigna solo por el flujo del primer usuario (bootstrap); no está disponible aquí.
+            </p>
           </div>
           <div style={styles.formRow}>
             <label style={styles.label}>Proyecto (opcional)</label>
@@ -475,6 +521,11 @@ function RulesTab() {
       )}
 
       {error && <ErrorBanner message={error} />}
+      {lookupUserId && (
+        <p style={{ ...styles.hint, marginBottom: '0.5rem' }}>
+          Reglas de: <strong>{getUserDisplay(users, lookupUserId)}</strong>
+        </p>
+      )}
       {loading ? <LoadingSpinner text="Cargando reglas…" /> : (
         <table style={styles.table}>
           <thead>
@@ -490,20 +541,29 @@ function RulesTab() {
           <tbody>
             {rules.length === 0 ? (
               <tr><td colSpan={6} style={styles.td}>No hay reglas para este usuario.</td></tr>
-            ) : rules.map((rule) => (
-              <tr key={rule.id}>
-                <td style={styles.td}><strong>{roleName(rule.roleId)}</strong></td>
-                <td style={styles.td}>{projectName(rule.projectId)}</td>
-                <td style={styles.td}>{envName(rule.environmentId)}</td>
-                <td style={styles.td}>{rule.schemaId ?? '—'}</td>
-                <td style={styles.td}>{rule.contentStatus ?? '—'}</td>
-                <td style={styles.td}>
-                  <button type="button" style={{ ...styles.button, ...styles.buttonSmall, ...styles.buttonDanger }} onClick={() => handleRevoke(rule.id)}>
-                    Revocar
-                  </button>
-                </td>
-              </tr>
-            ))}
+            ) : rules.map((rule) => {
+              const isSuperAdminRule = roleName(rule.roleId) === SUPERADMIN_ROLE_NAME
+              return (
+                <tr key={rule.id}>
+                  <td style={styles.td}><strong>{roleName(rule.roleId)}</strong></td>
+                  <td style={styles.td}>{projectName(rule.projectId)}</td>
+                  <td style={styles.td}>{envName(rule.environmentId)}</td>
+                  <td style={styles.td}>{rule.schemaId ?? '—'}</td>
+                  <td style={styles.td}>{rule.contentStatus ?? '—'}</td>
+                  <td style={styles.td}>
+                    <button
+                      type="button"
+                      style={{ ...styles.button, ...styles.buttonSmall, ...styles.buttonDanger }}
+                      disabled={isSuperAdminRule}
+                      onClick={() => handleRevoke(rule.id)}
+                      title={isSuperAdminRule ? 'No se puede revocar el rol SuperAdmin' : 'Revocar esta regla'}
+                    >
+                      Revocar
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}
@@ -516,16 +576,13 @@ function RulesTab() {
 // ---------------------------------------------------------------------------
 
 export function RolesPermissionsPage() {
-  const [tab, setTab] = useState<Tab>('permissions')
+  const [tab, setTab] = useState<Tab>('roles')
 
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Roles y permisos</h1>
 
       <div style={styles.tabs}>
-        <button type="button" style={{ ...styles.tab, ...(tab === 'permissions' ? styles.tabActive : {}) }} onClick={() => setTab('permissions')}>
-          Permisos
-        </button>
         <button type="button" style={{ ...styles.tab, ...(tab === 'roles' ? styles.tabActive : {}) }} onClick={() => setTab('roles')}>
           Roles
         </button>
@@ -534,7 +591,6 @@ export function RolesPermissionsPage() {
         </button>
       </div>
 
-      {tab === 'permissions' && <PermissionsTab />}
       {tab === 'roles' && <RolesTab />}
       {tab === 'rules' && <RulesTab />}
     </div>
