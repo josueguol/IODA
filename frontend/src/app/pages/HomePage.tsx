@@ -337,7 +337,26 @@ export function HomePage() {
         Sigue los pasos a continuación para elegir un <strong>proyecto</strong>, un <strong>entorno</strong> y un <strong>sitio</strong>.
       </p>
 
-      {projectsError && <ErrorBanner message={projectsError} />}
+      {projectsError && (
+        <div>
+          <ErrorBanner message={projectsError} />
+          {projectsError.includes('No tienes permiso') && (
+            <p style={{ fontSize: '0.875rem', color: 'var(--page-text-muted)', marginTop: '0.5rem' }}>
+              Si acabas de configurar tu usuario, cierra sesión y vuelve a entrar para obtener permisos.{' '}
+              <button
+                type="button"
+                style={{ ...styles.button, ...styles.buttonSecondary, padding: '0.25rem 0.75rem', fontSize: '0.8125rem' }}
+                onClick={() => {
+                  useAuthStore.getState().logout()
+                  window.location.href = '/#/login'
+                }}
+              >
+                Cerrar sesión
+              </button>
+            </p>
+          )}
+        </div>
+      )}
       {environmentsError && <ErrorBanner message={environmentsError} />}
 
       {/* Paso 1: Proyecto */}

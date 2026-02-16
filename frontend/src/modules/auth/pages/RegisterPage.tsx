@@ -6,6 +6,26 @@ import { authorizationApi } from '../../authorization/api/authorization-api'
 import type { ApiError } from '../../../shared/api'
 import type { SetupStatus } from '../types'
 
+/** Espera `ms` milisegundos. */
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
+/** Intenta refreshSession con un reintento tras retraso (cubre latencia de persistencia en Authorization). */
+async function refreshWithRetry(): Promise<boolean> {
+  try {
+    await useAuthStore.getState().refreshSession()
+    return true
+  } catch {
+    // Primer intento falló — esperar y reintentar
+    await wait(1500)
+    try {
+      await useAuthStore.getState().refreshSession()
+      return true
+    } catch {
+      return false
+    }
+  }
+}
+
 function getRegisterErrorMessage(err: unknown): string {
   if (err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('Load failed'))) {
     return 'No se puede conectar con el servidor. ¿Está la Identity API en ejecución?'
@@ -145,20 +165,33 @@ export function RegisterPage() {
   const isFirstUserSetup = setupStatus !== null && !setupStatus.hasUsers
   const registrationBlocked = setupStatus !== null && setupStatus.hasUsers && !setupStatus.selfRegistrationEnabled
 
-  /** Configurar SuperAdmin: rol + asignar todos los permisos (GET /permissions) + regla de acceso. No crea permisos (backend/catálogo). */
+  /**
+   * Configurar SuperAdmin: rol + asignar todos los permisos (GET /permissions) + regla de acceso.
+   * No crea permisos (backend/catálogo).
+   * Distingue errores 401 (no autenticado), 403 (sin permiso / modo bootstrap no activo)
+   * y 409 (recurso ya existe / bootstrap ya hecho).
+   */
   const setupSuperAdmin = async (userId: string) => {
     // Si el backend ya asignó reglas al primer usuario (ej. bootstrap-first-user), no hacer setup
     try {
       const existingRules = await authorizationApi.getUserRules(userId)
       if (existingRules.length > 0) return
-    } catch { /* seguir con setup si falla la consulta */ }
+    } catch (err) {
+      // Si falla con 401/403 es posible que el JWT no tenga permisos y no haya modo bootstrap;
+      // continuamos para intentar crear desde cero (modo bootstrap permite acceso Admin cuando 0 reglas)
+      const status = (err as ApiError)?.status
+      console.warn(`[setupSuperAdmin] getUserRules falló (status: ${status ?? 'unknown'}):`, err)
+    }
 
     setSetupStep('Obteniendo permisos del sistema…')
     let allPermIds: string[] = []
     try {
       const perms = await authorizationApi.getPermissions()
       allPermIds = perms.map((p) => p.id)
-    } catch { /* permisos no disponibles */ }
+    } catch (err) {
+      const status = (err as ApiError)?.status
+      console.warn(`[setupSuperAdmin] getPermissions falló (status: ${status ?? 'unknown'}):`, err)
+    }
 
     setSetupStep('Creando rol SuperAdmin…')
     let roleId: string
@@ -167,25 +200,45 @@ export function RegisterPage() {
         name: 'SuperAdmin',
         description: 'Administrador con acceso total al sistema',
       })
-    } catch {
-      // Role may already exist, try to find it
+    } catch (err) {
+      const status = (err as ApiError)?.status
+      if (status === 403) {
+        console.warn('[setupSuperAdmin] createRole 403: sin permiso role.manage y modo bootstrap no activo')
+      } else if (status === 409) {
+        console.info('[setupSuperAdmin] createRole 409: el rol SuperAdmin ya existe')
+      } else {
+        console.warn(`[setupSuperAdmin] createRole falló (status: ${status ?? 'unknown'}):`, err)
+      }
+      // El rol puede ya existir, intentar buscarlo
       const roles = await authorizationApi.getRoles()
       const existing = roles.find((r) => r.name === 'SuperAdmin')
-      if (!existing) throw new Error('No se pudo crear el rol SuperAdmin')
+      if (!existing) throw new Error('No se pudo crear ni encontrar el rol SuperAdmin')
       roleId = existing.id
     }
 
     setSetupStep('Asignando permisos al rol…')
     if (allPermIds.length > 0) {
-      await authorizationApi.assignPermissionsToRole(roleId, { permissionIds: allPermIds })
+      try {
+        await authorizationApi.assignPermissionsToRole(roleId, { permissionIds: allPermIds })
+      } catch (err) {
+        const status = (err as ApiError)?.status
+        console.warn(`[setupSuperAdmin] assignPermissionsToRole falló (status: ${status ?? 'unknown'}):`, err)
+      }
     }
 
-    // Create access rule for the user
+    // Crear regla de acceso para el usuario
     setSetupStep('Asignando rol al usuario…')
-    await authorizationApi.createAccessRule({
-      userId,
-      roleId,
-    })
+    try {
+      await authorizationApi.createAccessRule({ userId, roleId })
+    } catch (err) {
+      const status = (err as ApiError)?.status
+      if (status === 409) {
+        console.info('[setupSuperAdmin] createAccessRule 409: la regla ya existe (bootstrap ya hecho)')
+      } else {
+        console.warn(`[setupSuperAdmin] createAccessRule falló (status: ${status ?? 'unknown'}):`, err)
+        throw err
+      }
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -216,13 +269,15 @@ export function RegisterPage() {
         }
 
         // 4. Refresco de token para obtener JWT con permisos (Identity + Authorization ya tienen la regla)
+        //    Se reintenta una vez tras 1.5 s para cubrir latencia de persistencia en Authorization
         setSetupStep('Actualizando sesión con permisos…')
-        try {
-          await useAuthStore.getState().refreshSession()
-          // setSession (dentro de refreshSession) ya invalida la caché de permisos
-        } catch {
-          // Si falla el refresh, el usuario sigue logueado con el token anterior (sin permisos en JWT)
-          // La siguiente petición podría recibir 403 hasta que haga login de nuevo
+        const refreshOk = await refreshWithRetry()
+
+        if (!refreshOk) {
+          // El usuario queda logueado pero su JWT no tiene permisos → mostrar aviso
+          setError(
+            'Tu sesión no tiene permisos aún. Cierra sesión e inicia sesión de nuevo para obtener acceso completo.'
+          )
         }
 
         setSetupStep(null)

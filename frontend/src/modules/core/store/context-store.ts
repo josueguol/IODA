@@ -162,7 +162,7 @@ export const useContextStore = create<ContextState>((set, get) => ({
   loadProjects: async () => {
     set({ projectsLoading: true, projectsError: null })
     try {
-      const response = await coreApi.getProjects()
+      const response = await coreApi.getProjects({ page: 1, pageSize: 50 })
       const projects = response?.items ?? []
       set({ projects })
       const storedProjectId = getStoredProjectId()

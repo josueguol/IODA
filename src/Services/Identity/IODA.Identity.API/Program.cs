@@ -115,12 +115,11 @@ if (!builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-// 003-BUGFIXS 2.2: avisar en no-Development si no hay URL de Authorization (JWT sin permisos, bootstrap no se ejecutará)
-if (!app.Environment.IsDevelopment())
+// 004: avisar si no hay URL de Authorization (JWT sin permisos, bootstrap no se ejecutará)
 {
     var authApiBaseUrl = app.Configuration["AuthorizationApi:BaseUrl"];
     if (string.IsNullOrWhiteSpace(authApiBaseUrl))
-        app.Logger.LogWarning("AuthorizationApi:BaseUrl is not set. JWT will not include permission claims and first-user bootstrap will not run.");
+        app.Logger.LogWarning("AuthorizationApi:BaseUrl is not set. JWT will not include permission claims and first-user bootstrap will not run. Configure AuthorizationApi:BaseUrl and AuthorizationApi:ServiceApiKey (must match Authorization:ServiceApiKey in the Authorization API).");
 }
 
 app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();

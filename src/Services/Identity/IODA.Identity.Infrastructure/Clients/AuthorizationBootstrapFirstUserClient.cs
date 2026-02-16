@@ -24,9 +24,14 @@ public class AuthorizationBootstrapFirstUserClient : IFirstUserBootstrapClient
         {
             var response = await client.PostAsJsonAsync("bootstrap-first-user", new { UserId = userId }, cancellationToken);
             if (response.IsSuccessStatusCode)
+            {
                 _logger.LogInformation("First user {UserId} assigned SuperAdmin role in Authorization", userId);
+            }
             else
-                _logger.LogWarning("Authorization bootstrap-first-user returned {StatusCode} for user {UserId}", response.StatusCode, userId);
+            {
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogWarning("Authorization bootstrap-first-user returned {StatusCode} for user {UserId}. Response: {Body}", response.StatusCode, userId, body);
+            }
         }
         catch (Exception ex)
         {
