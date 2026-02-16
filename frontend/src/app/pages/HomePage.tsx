@@ -360,10 +360,27 @@ export function HomePage() {
               </button>
             </p>
           )}
-          {projectsError.includes('Parámetros de búsqueda no válidos') && (
+          {projectsError.includes('autenticación JWT configurada') && (
             <p style={{ fontSize: '0.875rem', color: 'var(--page-text-muted)', marginTop: '0.5rem' }}>
-              Error de parámetros de búsqueda. Recarga la página o contacta soporte.
+              {projectsError} Recarga la página cuando hayas reiniciado la Core API.
             </p>
+          )}
+          {projectsError.includes('Parámetros de búsqueda no válidos') && !projectsError.includes('autenticación JWT') && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--page-text-muted)', marginBottom: '0.5rem' }}>
+                Error de parámetros al cargar proyectos. Si acabas de registrarte como primer usuario, cierra sesión e inicia sesión de nuevo; si no, recarga la página o contacta soporte.
+              </p>
+              <button
+                type="button"
+                style={{ ...styles.button, ...styles.buttonSecondary, padding: '0.25rem 0.75rem', fontSize: '0.8125rem' }}
+                onClick={() => {
+                  useAuthStore.getState().logout()
+                  window.location.href = buildLoginRedirect(config.routerType)
+                }}
+              >
+                Cerrar sesión e iniciar de nuevo
+              </button>
+            </div>
           )}
         </div>
       )}

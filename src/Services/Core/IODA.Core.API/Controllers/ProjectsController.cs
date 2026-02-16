@@ -25,15 +25,16 @@ public class ProjectsController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PagedResultDto<ProjectDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PagedResultDto<ProjectDto>>> List(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PagedResultDto<ProjectDto>>> List(CancellationToken cancellationToken = default)
     {
-        // 004 6.2: defaults defensivos — evitar 400 cuando el cliente no envía query o envía valores fuera de rango
-        if (page < 1) page = 1;
-        if (pageSize < 1 || pageSize > 100) pageSize = 20;
+        // Leer query a mano para no devolver 400 por model binding (ej. page= vacío o no numérico); primer usuario / clientes antiguos pueden no enviar params.
+        var query = Request.Query;
+        var page = 1;
+        var pageSize = 20;
+        if (query.TryGetValue("page", out var pageVal) && int.TryParse(pageVal, out var p) && p >= 1)
+            page = p;
+        if (query.TryGetValue("pageSize", out var sizeVal) && int.TryParse(sizeVal, out var s) && s >= 1 && s <= 100)
+            pageSize = s;
         var result = await _mediator.Send(new GetProjectsPagedQuery(page, pageSize), cancellationToken);
         return Ok(result);
     }

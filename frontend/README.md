@@ -140,12 +140,15 @@ Si necesitas reindexar contenido publicado manualmente:
 
 ### Probar Auth (Fase 1)
 
-1. **Levanta primero la Identity API** (si no, verás "ERR_CONNECTION_REFUSED" o "No se puede conectar con el servidor"):
+1. **Levanta Identity API y Authorization API** (si no, verás "ERR_CONNECTION_REFUSED" al hacer login o al comprobar permisos como `project.create`):
    ```bash
    # Desde la raíz del repo (ioda)
    dotnet run --project src/Services/Identity/IODA.Identity.API/IODA.Identity.API.csproj
+   dotnet run --project src/Services/Authorization/IODA.Authorization.API/IODA.Authorization.API.csproj
    ```
-   La API suele escuchar en **http://localhost:5270** (revisa el puerto en `launchSettings.json` del proyecto Identity). Si usas otro puerto, crea un `.env` en `frontend/` con `VITE_IDENTITY_API_URL=http://localhost:TU_PUERTO`.
+   - Identity suele escuchar en **http://localhost:5270**, Authorization en **http://localhost:5271** (revisa `launchSettings.json` de cada proyecto).
+   - Si usas **Docker** para las APIs, los puertos en el host son 5002 (Identity) y 5003 (Authorization). En `frontend/.env` define `VITE_IDENTITY_API_URL=http://localhost:5002` y `VITE_AUTHORIZATION_API_URL=http://localhost:5003`.
+   - Tras cambiar `.env`, reinicia `npm run dev`.
 2. En el frontend: `npm run dev` → abre http://localhost:5173.
 3. Serás redirigido a `/login`. Crea una cuenta en "Crear cuenta" o inicia sesión si ya tienes usuario.
 4. Tras login correcto irás a la home; "Cerrar sesión" limpia la sesión y vuelve a `/login`.

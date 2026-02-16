@@ -5,9 +5,14 @@ import type { Environment, Project, Site } from '../types'
 
 function getProjectsErrorMessage(err: unknown): string {
   if (err && typeof err === 'object' && 'status' in err) {
-    const status = (err as ApiError).status
-    if (status === 403) return 'No tienes permiso para ver proyectos.'
-    if (status === 400) return 'Parámetros de búsqueda no válidos.'
+    const apiErr = err as ApiError
+    if (apiErr.status === 403) return 'No tienes permiso para ver proyectos.'
+    if (apiErr.status === 400) {
+      const detail = apiErr.body && typeof apiErr.body === 'object' && 'detail' in apiErr.body ? String((apiErr.body as { detail?: string }).detail) : ''
+      if (detail && /authenticationScheme|DefaultChallengeScheme/i.test(detail))
+        return 'La Core API no tiene autenticación JWT configurada. Configura Jwt:SecretKey (mismo valor que Identity) y reinicia la Core API.'
+      return 'Parámetros de búsqueda no válidos.'
+    }
   }
   return err instanceof Error ? err.message : 'Error al cargar proyectos'
 }

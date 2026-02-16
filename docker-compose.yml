@@ -24,6 +24,9 @@ services:
       - RabbitMQ__VirtualHost=ioda_cms
       - RabbitMQ__Username=dev
       - RabbitMQ__Password=dev
+      - Jwt__SecretKey=your-super-secret-key-min-32-chars-change-in-production
+      - Jwt__Issuer=ioda-identity
+      - Jwt__Audience=ioda-cms
     depends_on: []  # [postgres, rabbitmq] cuando uses compose para infra
     networks:
       - local-dev-network
@@ -50,6 +53,8 @@ services:
       - Jwt__Audience=ioda-cms
       - Jwt__ExpirationMinutes=60
       - Jwt__RefreshTokenExpirationDays=7
+      - AuthorizationApi__BaseUrl=http://ioda-authorization-api:8080
+      - AuthorizationApi__ServiceApiKey=dev-service-api-key-32-chars-min
     depends_on: []
     networks:
       - local-dev-network
@@ -74,6 +79,7 @@ services:
       - Jwt__SecretKey=your-super-secret-key-min-32-chars-change-in-production
       - Jwt__Issuer=ioda-identity
       - Jwt__Audience=ioda-cms
+      - Authorization__ServiceApiKey=dev-service-api-key-32-chars-min
     depends_on: []
     networks:
       - local-dev-network
