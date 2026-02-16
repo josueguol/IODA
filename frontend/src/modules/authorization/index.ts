@@ -1,3 +1,4 @@
+export { SUPERADMIN_ROLE_NAME } from './constants'
 export type {
   CheckAccessRequest,
   CheckAccessResult,

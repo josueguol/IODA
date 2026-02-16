@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { config } from '../../config/env'
 import { coreApi } from '../../modules/core/api/core-api'
 import { useContextStore } from '../../modules/core/store/context-store'
 import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { Can } from '../../modules/authorization/components/Can'
+import { buildLoginRedirect } from '../../shared/auth-redirect'
 import { LoadingSpinner, ErrorBanner } from '../../shared/components'
 
 const styles: Record<string, React.CSSProperties> = {
@@ -342,17 +344,25 @@ export function HomePage() {
           <ErrorBanner message={projectsError} />
           {projectsError.includes('No tienes permiso') && (
             <p style={{ fontSize: '0.875rem', color: 'var(--page-text-muted)', marginTop: '0.5rem' }}>
-              Si acabas de configurar tu usuario, cierra sesión y vuelve a entrar para obtener permisos.{' '}
+              {typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ioda_first_user_refresh_failed') === '1'
+                ? 'Parece que acabas de registrarte; el refresco de permisos no pudo completarse. Cierra sesión e inicia sesión de nuevo para actualizar tus permisos.'
+                : 'Si acabas de registrarte como primer usuario, cierra sesión e inicia sesión de nuevo para actualizar tus permisos.'}{' '}
               <button
                 type="button"
                 style={{ ...styles.button, ...styles.buttonSecondary, padding: '0.25rem 0.75rem', fontSize: '0.8125rem' }}
                 onClick={() => {
+                  try { sessionStorage.removeItem('ioda_first_user_refresh_failed') } catch { /* ignore */ }
                   useAuthStore.getState().logout()
-                  window.location.href = '/#/login'
+                  window.location.href = buildLoginRedirect(config.routerType)
                 }}
               >
-                Cerrar sesión
+                Cerrar sesión e iniciar de nuevo
               </button>
+            </p>
+          )}
+          {projectsError.includes('Parámetros de búsqueda no válidos') && (
+            <p style={{ fontSize: '0.875rem', color: 'var(--page-text-muted)', marginTop: '0.5rem' }}>
+              Error de parámetros de búsqueda. Recarga la página o contacta soporte.
             </p>
           )}
         </div>
