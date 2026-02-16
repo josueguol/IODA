@@ -28,7 +28,8 @@ public class AuthorizationEffectivePermissionsClient : IEffectivePermissionsClie
             var response = await client.GetAsync($"users/{userId}/effective-permissions", cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Authorization API returned {StatusCode} for user {UserId}", response.StatusCode, userId);
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogWarning("Authorization API effective-permissions returned {StatusCode} for user {UserId}. Response: {Body}", response.StatusCode, userId, body);
                 return Array.Empty<string>();
             }
             var codes = await response.Content.ReadFromJsonAsync<string[]>(cancellationToken);

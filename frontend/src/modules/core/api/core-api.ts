@@ -21,8 +21,11 @@ const coreClient = createAuthAwareHttpClient({
   getAccessToken: () => useAuthStore.getState().accessToken,
   refreshSession: () => useAuthStore.getState().refreshSession(),
   onUnauthorized: (reason) => {
-    useAuthStore.getState().logout()
-    window.location.href = buildLoginRedirect(config.routerType, reason)
+    if (reason === '401') {
+      useAuthStore.getState().logout()
+      window.location.href = buildLoginRedirect(config.routerType, reason)
+    }
+    // 403: no desloguear; el error se propaga y la UI muestra mensaje de falta de permiso
   },
 })
 

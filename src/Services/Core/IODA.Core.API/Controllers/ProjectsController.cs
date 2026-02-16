@@ -31,6 +31,9 @@ public class ProjectsController : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
+        // 004 6.2: defaults defensivos — evitar 400 cuando el cliente no envía query o envía valores fuera de rango
+        if (page < 1) page = 1;
+        if (pageSize < 1 || pageSize > 100) pageSize = 20;
         var result = await _mediator.Send(new GetProjectsPagedQuery(page, pageSize), cancellationToken);
         return Ok(result);
     }
