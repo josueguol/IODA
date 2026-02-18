@@ -264,3 +264,16 @@ Desarrollado con 💙 por el equipo IODA
 
 Para preguntas o soporte, por favor abrir un issue en el repositorio.
 # IODA
+
+
+## IA Commands
+
+# ARTCHITECT
+```
+Crea plan de trabajo para el fullstack de los requerimientos en docs/006-SCHEME-N-SITECONFIG/REQUERIMIENTOS.md
+Actúa como definido en ai/agents/architect.agent.md
+Antes de responder, valida que tu propuesta no contradiga:
+- ai/memory/project.context.md
+- ai/memory/decisions.log.md
+````
+
