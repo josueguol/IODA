@@ -1,4 +1,0 @@
-"""
-Memoria adaptativa persistente.
-"""
-
