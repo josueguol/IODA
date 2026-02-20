@@ -1,7 +1,8 @@
 namespace IODA.Core.Application.Commands.Schemas;
 
 public record CreateSchemaFieldDto(
-    string FieldName,
+    string Label,
+    string Slug,
     string FieldType,
     bool IsRequired = false,
     object? DefaultValue = null,

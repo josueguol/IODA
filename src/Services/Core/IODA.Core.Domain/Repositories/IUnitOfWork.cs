@@ -10,6 +10,11 @@ public interface IUnitOfWork : IDisposable
     IContentSchemaRepository Schemas { get; }
     IMediaItemRepository MediaItems { get; }
     ISiteRepository Sites { get; }
+    ITagRepository Tags { get; }
+    IContentTagRepository ContentTags { get; }
+    IHierarchyRepository Hierarchies { get; }
+    IContentHierarchyRepository ContentHierarchies { get; }
+    IContentSiteRepository ContentSites { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);

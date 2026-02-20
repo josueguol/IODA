@@ -31,6 +31,11 @@ public class ListContentByProjectQueryHandler : IRequestHandler<ListContentByPro
             query = query.Where(c => c.Status.Value == request.Status);
         }
 
+        if (request.ParentContentId.HasValue)
+        {
+            query = query.Where(c => c.ParentContentId == request.ParentContentId.Value);
+        }
+
         var totalCount = query.Count();
         var items = query
             .OrderByDescending(c => c.CreatedAt)

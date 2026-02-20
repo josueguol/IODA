@@ -10,4 +10,5 @@ public record CreateSiteCommand(
     string? Subdomain = null,
     string? Subpath = null,
     string? ThemeId = null,
+    string? UrlTemplate = null,
     Guid CreatedBy = default) : IRequest<Guid>;

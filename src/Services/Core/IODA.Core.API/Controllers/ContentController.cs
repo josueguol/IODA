@@ -1,3 +1,4 @@
+using IODA.Core.API.Extensions;
 using IODA.Core.Application.Commands.Content;
 using IODA.Core.Application.DTOs;
 using IODA.Core.Application.Queries.Content;
@@ -19,25 +20,34 @@ public class ContentController : ControllerBase
         _mediator = mediator;
     }
 
-    /// <summary>Crear contenido en el proyecto.</summary>
+    /// <summary>Crear contenido en el proyecto. CreatedBy se toma del JWT (ADR-011).</summary>
     [HttpPost("content")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Guid>> Create(
         Guid projectId,
         [FromBody] CreateContentRequest request,
         CancellationToken cancellationToken)
     {
+        var userId = User.GetUserId();
+        if (userId == null)
+            return Unauthorized();
+
         var command = new CreateContentCommand(
             projectId,
             request.EnvironmentId,
             request.SiteId,
+            request.ParentContentId,
             request.SchemaId,
             request.Title,
             request.ContentType,
             request.Fields,
-            request.CreatedBy);
+            request.TagIds,
+            request.HierarchyIds,
+            request.SiteIds,
+            userId.Value);
         var id = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { projectId, contentId = id }, id);
     }
@@ -67,18 +77,20 @@ public class ContentController : ControllerBase
         [FromQuery] string? contentType = null,
         [FromQuery] string? status = null,
         [FromQuery] Guid? siteId = null,
+        [FromQuery] Guid? parentContentId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(
-            new ListContentByProjectQuery(projectId, page, pageSize, contentType, status, siteId),
+            new ListContentByProjectQuery(projectId, page, pageSize, contentType, status, siteId, parentContentId),
             cancellationToken);
         return Ok(result);
     }
 
-    /// <summary>Actualizar contenido.</summary>
+    /// <summary>Actualizar contenido. UpdatedBy se toma del JWT (ADR-011).</summary>
     [HttpPut("content/{contentId:guid}")]
     [ProducesResponseType(typeof(ContentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ContentDto>> Update(
         Guid projectId,
@@ -86,35 +98,48 @@ public class ContentController : ControllerBase
         [FromBody] UpdateContentRequest request,
         CancellationToken cancellationToken)
     {
+        var userId = User.GetUserId();
+        if (userId == null)
+            return Unauthorized();
+
         var command = new UpdateContentCommand(
             contentId,
             request.Title,
             request.Fields,
-            request.UpdatedBy);
+            userId.Value,
+            request.ParentContentId,
+            request.TagIds,
+            request.HierarchyIds,
+            request.SiteIds);
         var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
     }
 
-    /// <summary>Publicar contenido.</summary>
+    /// <summary>Publicar contenido. PublishedBy se toma del JWT (ADR-011).</summary>
     [HttpPost("content/{contentId:guid}/publish")]
     [ProducesResponseType(typeof(ContentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ContentDto>> Publish(
         Guid projectId,
         Guid contentId,
-        [FromBody] PublishContentRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new PublishContentCommand(contentId, request.PublishedBy);
+        var userId = User.GetUserId();
+        if (userId == null)
+            return Unauthorized();
+
+        var command = new PublishContentCommand(contentId, userId.Value);
         var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
     }
 
-    /// <summary>Despublicar contenido.</summary>
+    /// <summary>Despublicar contenido. UnpublishedBy se toma del JWT (ADR-011).</summary>
     [HttpPost("content/{contentId:guid}/unpublish")]
     [ProducesResponseType(typeof(ContentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ContentDto>> Unpublish(
         Guid projectId,
@@ -122,7 +147,11 @@ public class ContentController : ControllerBase
         [FromBody] UnpublishContentRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new UnpublishContentCommand(contentId, request.Reason, request.UnpublishedBy);
+        var userId = User.GetUserId();
+        if (userId == null)
+            return Unauthorized();
+
+        var command = new UnpublishContentCommand(contentId, request.Reason, userId.Value);
         var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
     }
@@ -193,14 +222,21 @@ public class ContentController : ControllerBase
 public record CreateContentRequest(
     Guid EnvironmentId,
     Guid? SiteId,
+    Guid? ParentContentId,
     Guid SchemaId,
     string Title,
     string ContentType,
     Dictionary<string, object> Fields,
-    Guid CreatedBy);
+    IReadOnlyList<Guid>? TagIds,
+    IReadOnlyList<Guid>? HierarchyIds,
+    IReadOnlyList<Guid>? SiteIds);
 
-public record UpdateContentRequest(string Title, Dictionary<string, object> Fields, Guid UpdatedBy);
+public record UpdateContentRequest(
+    string Title,
+    Dictionary<string, object> Fields,
+    Guid? ParentContentId,
+    IReadOnlyList<Guid>? TagIds,
+    IReadOnlyList<Guid>? HierarchyIds,
+    IReadOnlyList<Guid>? SiteIds);
 
-public record PublishContentRequest(Guid PublishedBy);
-
-public record UnpublishContentRequest(string Reason, Guid UnpublishedBy);
+public record UnpublishContentRequest(string Reason);

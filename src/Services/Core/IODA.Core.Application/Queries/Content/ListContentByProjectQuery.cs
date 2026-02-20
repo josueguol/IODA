@@ -9,4 +9,5 @@ public record ListContentByProjectQuery(
     int PageSize = 20,
     string? ContentType = null,
     string? Status = null,
-    Guid? SiteId = null) : IRequest<PagedResultDto<ContentListItemDto>>;
+    Guid? SiteId = null,
+    Guid? ParentContentId = null) : IRequest<PagedResultDto<ContentListItemDto>>;

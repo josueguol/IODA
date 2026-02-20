@@ -137,4 +137,62 @@ public class ContentRepository : IContentRepository
     {
         return await _context.Contents.CountAsync(c => c.ProjectId == projectId, cancellationToken);
     }
+
+    public async Task<Guid?> GetParentIdAsync(Guid contentId, CancellationToken cancellationToken = default)
+    {
+        var parentId = await _context.Contents
+            .AsNoTracking()
+            .Where(c => c.Id == contentId)
+            .Select(c => c.ParentContentId)
+            .FirstOrDefaultAsync(cancellationToken);
+        return parentId;
+    }
+
+    public async Task<IReadOnlyList<Guid>> GetAncestorIdsAsync(Guid contentId, int maxDepth = 50, CancellationToken cancellationToken = default)
+    {
+        var ancestors = new List<Guid>();
+        var currentId = contentId;
+        for (var i = 0; i < maxDepth; i++)
+        {
+            var parentId = await _context.Contents
+                .AsNoTracking()
+                .Where(c => c.Id == currentId)
+                .Select(c => c.ParentContentId)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (parentId == null || parentId == Guid.Empty)
+                break;
+            ancestors.Add(parentId.Value);
+            currentId = parentId.Value;
+        }
+        return ancestors;
+    }
+
+    public async Task<IReadOnlyList<Content>> GetChildrenAsync(Guid parentContentId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Contents
+            .Include(c => c.Versions)
+            .Where(c => c.ParentContentId == parentContentId)
+            .OrderBy(c => c.Title)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Content?> GetPublishedBySiteAndSlugAsync(Guid siteId, string slug, CancellationToken cancellationToken = default)
+    {
+        var contentId = await _context.ContentSites
+            .Where(cs => cs.SiteId == siteId)
+            .Join(_context.Contents,
+                cs => cs.ContentId,
+                c => c.Id,
+                (cs, c) => c)
+            .Where(c => c.Status == ContentStatus.Published && c.Slug.Value == slug)
+            .Select(c => c.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (contentId == default)
+            return null;
+
+        return await _context.Contents
+            .Include(c => c.Versions)
+            .FirstOrDefaultAsync(c => c.Id == contentId, cancellationToken);
+    }
 }

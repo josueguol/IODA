@@ -54,6 +54,10 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("fields");
 
+                    b.Property<Guid?>("ParentContentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_content_id");
+
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid")
                         .HasColumnName("project_id");
@@ -110,6 +114,8 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EnvironmentId");
 
+                    b.HasIndex("ParentContentId");
+
                     b.HasIndex("PublicId")
                         .IsUnique()
                         .HasDatabaseName("ix_contents_public_id");
@@ -129,6 +135,24 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_contents_project_env_status");
 
                     b.ToTable("contents", (string)null);
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.ContentHierarchy", b =>
+                {
+                    b.Property<Guid>("ContentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("content_id");
+
+                    b.Property<Guid>("HierarchyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hierarchy_id");
+
+                    b.HasKey("ContentId", "HierarchyId");
+
+                    b.HasIndex("HierarchyId")
+                        .HasDatabaseName("ix_content_hierarchies_hierarchy_id");
+
+                    b.ToTable("content_hierarchies", (string)null);
                 });
 
             modelBuilder.Entity("IODA.Core.Domain.Entities.ContentSchema", b =>
@@ -200,6 +224,42 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_content_schemas_project_type");
 
                     b.ToTable("content_schemas", (string)null);
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.ContentSite", b =>
+                {
+                    b.Property<Guid>("ContentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("content_id");
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("site_id");
+
+                    b.HasKey("ContentId", "SiteId");
+
+                    b.HasIndex("SiteId")
+                        .HasDatabaseName("ix_content_sites_site_id");
+
+                    b.ToTable("content_sites", (string)null);
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.ContentTag", b =>
+                {
+                    b.Property<Guid>("ContentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("content_id");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tag_id");
+
+                    b.HasKey("ContentId", "TagId");
+
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_content_tags_tag_id");
+
+                    b.ToTable("content_tags", (string)null);
                 });
 
             modelBuilder.Entity("IODA.Core.Domain.Entities.ContentVersion", b =>
@@ -346,9 +406,21 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_required");
 
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("label");
+
                     b.Property<Guid>("SchemaId")
                         .HasColumnType("uuid")
                         .HasColumnName("schema_id");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("slug");
 
                     b.Property<string>("ValidationRules")
                         .HasColumnType("jsonb")
@@ -360,7 +432,63 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_field_definitions_schema_name");
 
+                    b.HasIndex("SchemaId", "Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_field_definitions_schema_slug");
+
                     b.ToTable("field_definitions", (string)null);
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.Hierarchy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid?>("HierarchyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("image_url");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid?>("ParentHierarchyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_hierarchy_id");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("slug");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HierarchyId");
+
+                    b.HasIndex("ParentHierarchyId")
+                        .HasDatabaseName("ix_hierarchies_parent_id");
+
+                    b.HasIndex("ProjectId", "Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_hierarchies_project_slug");
+
+                    b.ToTable("hierarchies", (string)null);
                 });
 
             modelBuilder.Entity("IODA.Core.Domain.Entities.MediaItem", b =>
@@ -545,6 +673,11 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<string>("UrlTemplate")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("url_template");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EnvironmentId");
@@ -559,6 +692,36 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                     b.ToTable("sites", (string)null);
                 });
 
+            modelBuilder.Entity("IODA.Core.Domain.Entities.Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("slug");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tags_project_slug");
+
+                    b.ToTable("tags", (string)null);
+                });
+
             modelBuilder.Entity("IODA.Core.Domain.Entities.Content", b =>
                 {
                     b.HasOne("IODA.Core.Domain.Entities.Environment", "Environment")
@@ -566,6 +729,11 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .HasForeignKey("EnvironmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("IODA.Core.Domain.Entities.Content", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentContentId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IODA.Core.Domain.Entities.Project", "Project")
                         .WithMany()
@@ -586,11 +754,32 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Environment");
 
+                    b.Navigation("Parent");
+
                     b.Navigation("Project");
 
                     b.Navigation("Schema");
 
                     b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.ContentHierarchy", b =>
+                {
+                    b.HasOne("IODA.Core.Domain.Entities.Content", "Content")
+                        .WithMany()
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IODA.Core.Domain.Entities.Hierarchy", "Hierarchy")
+                        .WithMany()
+                        .HasForeignKey("HierarchyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+
+                    b.Navigation("Hierarchy");
                 });
 
             modelBuilder.Entity("IODA.Core.Domain.Entities.ContentSchema", b =>
@@ -609,6 +798,44 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                     b.Navigation("ParentSchema");
 
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.ContentSite", b =>
+                {
+                    b.HasOne("IODA.Core.Domain.Entities.Content", "Content")
+                        .WithMany()
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IODA.Core.Domain.Entities.Site", "Site")
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+
+                    b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.ContentTag", b =>
+                {
+                    b.HasOne("IODA.Core.Domain.Entities.Content", "Content")
+                        .WithMany()
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IODA.Core.Domain.Entities.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("IODA.Core.Domain.Entities.ContentVersion", b =>
@@ -648,6 +875,28 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                     b.Navigation("Schema");
                 });
 
+            modelBuilder.Entity("IODA.Core.Domain.Entities.Hierarchy", b =>
+                {
+                    b.HasOne("IODA.Core.Domain.Entities.Hierarchy", null)
+                        .WithMany("Children")
+                        .HasForeignKey("HierarchyId");
+
+                    b.HasOne("IODA.Core.Domain.Entities.Hierarchy", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentHierarchyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("IODA.Core.Domain.Entities.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("IODA.Core.Domain.Entities.MediaItem", b =>
                 {
                     b.HasOne("IODA.Core.Domain.Entities.Project", "Project")
@@ -677,6 +926,17 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("IODA.Core.Domain.Entities.Tag", b =>
+                {
+                    b.HasOne("IODA.Core.Domain.Entities.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("IODA.Core.Domain.Entities.Content", b =>
                 {
                     b.Navigation("Versions");
@@ -685,6 +945,11 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("IODA.Core.Domain.Entities.ContentSchema", b =>
                 {
                     b.Navigation("Fields");
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.Hierarchy", b =>
+                {
+                    b.Navigation("Children");
                 });
 
             modelBuilder.Entity("IODA.Core.Domain.Entities.Project", b =>

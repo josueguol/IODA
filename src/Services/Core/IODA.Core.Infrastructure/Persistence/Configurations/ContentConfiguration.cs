@@ -33,6 +33,9 @@ public class ContentConfiguration : IEntityTypeConfiguration<Content>
         builder.Property(c => c.SiteId)
             .HasColumnName("site_id");
 
+        builder.Property(c => c.ParentContentId)
+            .HasColumnName("parent_content_id");
+
         builder.Property(c => c.SchemaId)
             .HasColumnName("schema_id")
             .IsRequired();
@@ -103,6 +106,11 @@ public class ContentConfiguration : IEntityTypeConfiguration<Content>
             .WithMany()
             .HasForeignKey(c => c.SiteId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(c => c.Parent)
+            .WithMany()
+            .HasForeignKey(c => c.ParentContentId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(c => c.Schema)
             .WithMany()

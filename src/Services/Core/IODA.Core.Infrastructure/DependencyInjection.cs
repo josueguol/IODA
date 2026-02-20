@@ -34,6 +34,11 @@ public static class DependencyInjection
         services.AddScoped<IContentSchemaRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Schemas);
         services.AddScoped<IMediaItemRepository>(sp => sp.GetRequiredService<IUnitOfWork>().MediaItems);
         services.AddScoped<ISiteRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Sites);
+        services.AddScoped<ITagRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Tags);
+        services.AddScoped<IContentTagRepository>(sp => sp.GetRequiredService<IUnitOfWork>().ContentTags);
+        services.AddScoped<IHierarchyRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Hierarchies);
+        services.AddScoped<IContentHierarchyRepository>(sp => sp.GetRequiredService<IUnitOfWork>().ContentHierarchies);
+        services.AddScoped<IContentSiteRepository>(sp => sp.GetRequiredService<IUnitOfWork>().ContentSites);
         services.AddScoped<IEnvironmentRepository, Persistence.Repositories.EnvironmentRepository>();
         services.AddScoped<Application.Interfaces.IMediaStorage, Storage.LocalMediaStorage>();
 

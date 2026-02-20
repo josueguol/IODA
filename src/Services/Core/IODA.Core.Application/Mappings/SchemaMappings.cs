@@ -41,6 +41,8 @@ public static class SchemaMappings
         return new FieldDefinitionDto(
             field.Id,
             field.FieldName,
+            field.Label,
+            field.Slug,
             field.FieldType,
             field.IsRequired,
             field.DefaultValue,

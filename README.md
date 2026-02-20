@@ -277,3 +277,11 @@ Antes de responder, valida que tu propuesta no contradiga:
 - ai/memory/decisions.log.md
 ````
 
+# FULLSTACK
+```
+Realiza las tareas definidas en docs/006-SCHEME-N-SITECONFIG/PLAN_DE_TRABAJO_FULLSTACK.md
+Actúa como definido en ai/agents/fullstack.agent.md
+Antes de desarrollar, valida que no violes lo definido en:
+- ai/memory/project.context.md
+- ai/memory/decisions.log.md
+```

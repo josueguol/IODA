@@ -37,6 +37,7 @@ public class SitesController : ControllerBase
             request.Subdomain,
             request.Subpath,
             request.ThemeId,
+            request.UrlTemplate,
             request.CreatedBy);
         var id = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { projectId, siteId = id }, id);
@@ -96,7 +97,8 @@ public class SitesController : ControllerBase
             request.Domain,
             request.Subdomain,
             request.Subpath,
-            request.ThemeId);
+            request.ThemeId,
+            request.UrlTemplate);
         var result = await _mediator.Send(command, cancellationToken);
         if (result.ProjectId != projectId)
             return NotFound();
@@ -150,11 +152,13 @@ public record CreateSiteRequest(
     Guid CreatedBy,
     string? Subdomain = null,
     string? Subpath = null,
-    string? ThemeId = null);
+    string? ThemeId = null,
+    string? UrlTemplate = null);
 
 public record UpdateSiteRequest(
     string Name,
     string Domain,
     string? Subdomain = null,
     string? Subpath = null,
-    string? ThemeId = null);
+    string? ThemeId = null,
+    string? UrlTemplate = null);

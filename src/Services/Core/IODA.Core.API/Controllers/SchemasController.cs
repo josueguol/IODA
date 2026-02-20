@@ -1,6 +1,7 @@
 using IODA.Core.Application.Commands.Schemas;
 using IODA.Core.Application.DTOs;
 using IODA.Core.Application.Queries.Schemas;
+using IODA.Core.Application.Schemas;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +42,17 @@ public class SchemasController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { projectId, schemaId = id }, id);
     }
 
+    /// <summary>Campos sugeridos al crear un nuevo schema (title, teaser, image, content). Son editables y eliminables antes de guardar.</summary>
+    [HttpGet("default-fields")]
+    [ProducesResponseType(typeof(IReadOnlyList<DefaultFieldSuggestionDto>), StatusCodes.Status200OK)]
+    public ActionResult<IReadOnlyList<DefaultFieldSuggestionDto>> GetDefaultFields(Guid projectId)
+    {
+        var list = DefaultSchemaFields.SuggestedFields
+            .Select(f => new DefaultFieldSuggestionDto(f.Label, f.Slug, f.FieldType))
+            .ToList();
+        return Ok(list);
+    }
+
     /// <summary>Obtener un schema por ID.</summary>
     [HttpGet("{schemaId:guid}")]
     [ProducesResponseType(typeof(ContentSchemaDto), StatusCodes.Status200OK)]
@@ -70,6 +82,8 @@ public class SchemasController : ControllerBase
         return Ok(result);
     }
 }
+
+public record DefaultFieldSuggestionDto(string Label, string Slug, string FieldType);
 
 public record CreateSchemaRequest(
     string SchemaName,

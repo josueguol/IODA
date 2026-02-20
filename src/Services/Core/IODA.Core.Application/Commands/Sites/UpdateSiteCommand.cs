@@ -9,4 +9,5 @@ public record UpdateSiteCommand(
     string Domain,
     string? Subdomain = null,
     string? Subpath = null,
-    string? ThemeId = null) : IRequest<SiteDto>;
+    string? ThemeId = null,
+    string? UrlTemplate = null) : IRequest<SiteDto>;

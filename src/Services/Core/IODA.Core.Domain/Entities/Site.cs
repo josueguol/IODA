@@ -17,6 +17,8 @@ public class Site : AggregateRoot<Guid>
     public string? Subdomain { get; private set; }
     public string? Subpath { get; private set; }
     public string? ThemeId { get; private set; }
+    /// <summary>Plantilla de URL para resolución de rutas (Req 5). Placeholders: {slug}, {createdAt:format}, {section}, campos custom. Ej: "/{slug}" o "/{section}/{createdAt:yyyy/MM}/{slug}".</summary>
+    public string? UrlTemplate { get; private set; }
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
@@ -38,6 +40,7 @@ public class Site : AggregateRoot<Guid>
         string? subdomain,
         string? subpath,
         string? themeId,
+        string? urlTemplate,
         Guid createdBy)
     {
         Id = id;
@@ -49,6 +52,7 @@ public class Site : AggregateRoot<Guid>
         Subdomain = subdomain;
         Subpath = subpath;
         ThemeId = themeId;
+        UrlTemplate = urlTemplate;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
         CreatedBy = createdBy;
@@ -62,6 +66,7 @@ public class Site : AggregateRoot<Guid>
         string? subdomain = null,
         string? subpath = null,
         string? themeId = null,
+        string? urlTemplate = null,
         Guid createdBy = default)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -72,7 +77,7 @@ public class Site : AggregateRoot<Guid>
         var id = Guid.NewGuid();
         var publicId = Identifier.Create("sit");
 
-        return new Site(id, publicId, projectId, environmentId, name, domain, subdomain, subpath, themeId, createdBy);
+        return new Site(id, publicId, projectId, environmentId, name, domain, subdomain, subpath, themeId, urlTemplate, createdBy);
     }
 
     public void Update(
@@ -80,7 +85,8 @@ public class Site : AggregateRoot<Guid>
         string domain,
         string? subdomain = null,
         string? subpath = null,
-        string? themeId = null)
+        string? themeId = null,
+        string? urlTemplate = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Site name cannot be empty", nameof(name));
@@ -92,6 +98,7 @@ public class Site : AggregateRoot<Guid>
         Subdomain = subdomain;
         Subpath = subpath;
         ThemeId = themeId;
+        UrlTemplate = string.IsNullOrWhiteSpace(urlTemplate) ? null : urlTemplate.Trim();
         UpdatedAt = DateTime.UtcNow;
     }
 

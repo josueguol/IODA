@@ -343,6 +343,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Link to="/sites" style={styles.dropdownItem} role="menuitem">
               Sitios
             </Link>
+            <Link to="/admin/hierarchies" style={styles.dropdownItem} role="menuitem">
+              Jerarquías
+            </Link>
+            <Link to="/admin/tags" style={styles.dropdownItem} role="menuitem">
+              Etiquetas
+            </Link>
             <div style={styles.dropdownSep} />
             <Link to="/admin/roles" style={styles.dropdownItem} role="menuitem">
               Roles y permisos

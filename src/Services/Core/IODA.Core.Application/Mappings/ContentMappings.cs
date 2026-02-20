@@ -5,7 +5,11 @@ namespace IODA.Core.Application.Mappings;
 
 public static class ContentMappings
 {
-    public static ContentDto ToDto(this Content content)
+    public static ContentDto ToDto(
+        this Content content,
+        IReadOnlyList<Guid>? tagIds = null,
+        IReadOnlyList<Guid>? hierarchyIds = null,
+        IReadOnlyList<Guid>? siteIds = null)
     {
         return new ContentDto(
             content.Id,
@@ -13,6 +17,7 @@ public static class ContentMappings
             content.ProjectId,
             content.EnvironmentId,
             content.SiteId,
+            content.ParentContentId,
             content.SchemaId,
             content.Title,
             content.Slug.Value,
@@ -25,7 +30,10 @@ public static class ContentMappings
             content.PublishedAt,
             content.CreatedBy,
             content.UpdatedBy,
-            content.PublishedBy);
+            content.PublishedBy,
+            tagIds ?? Array.Empty<Guid>(),
+            hierarchyIds ?? Array.Empty<Guid>(),
+            siteIds ?? Array.Empty<Guid>());
     }
 
     public static ContentListItemDto ToListItemDto(this Content content)
@@ -38,6 +46,7 @@ public static class ContentMappings
             content.Status.Value,
             content.ContentType,
             content.SiteId,
+            content.ParentContentId,
             content.CreatedAt,
             content.PublishedAt);
     }

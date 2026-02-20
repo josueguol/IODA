@@ -45,6 +45,9 @@ public class PublishContentCommandHandler : IRequestHandler<PublishContentComman
 
         await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
-        return content.ToDto();
+        var tagIds = await _unitOfWork.ContentTags.GetTagIdsByContentIdAsync(content.Id, cancellationToken);
+        var hierarchyIds = await _unitOfWork.ContentHierarchies.GetHierarchyIdsByContentIdAsync(content.Id, cancellationToken);
+        var siteIds = await _unitOfWork.ContentSites.GetSiteIdsByContentIdAsync(content.Id, cancellationToken);
+        return content.ToDto(tagIds, hierarchyIds, siteIds);
     }
 }

@@ -37,6 +37,7 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, Guid>
             request.Subdomain,
             request.Subpath,
             request.ThemeId,
+            request.UrlTemplate,
             request.CreatedBy);
 
         await _unitOfWork.Sites.AddAsync(site, cancellationToken);
