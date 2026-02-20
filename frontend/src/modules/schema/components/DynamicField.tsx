@@ -22,6 +22,8 @@ function getInputType(fieldType: string): string {
   return 'text'
 }
 
+const fieldLabel = (field: FieldDefinition): string => field.label ?? field.fieldName
+
 const defaultForType = (field: FieldDefinition): string | number | boolean | string[] => {
   const t = field.fieldType.toLowerCase()
   if (field.defaultValue !== undefined && field.defaultValue !== null) {
@@ -56,12 +58,12 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
                   onChange={(e) => f.onChange(e.target.checked)}
                   onBlur={f.onBlur}
                 />
-                <span style={styles.label}>{field.fieldName}</span>
+                <span style={styles.label}>{fieldLabel(field)}</span>
               </label>
             ) : typeLower === 'list' ? (
               <>
                 <label style={styles.label}>
-                  {field.fieldName}
+                  {fieldLabel(field)}
                   {field.isRequired && ' *'}
                 </label>
                 <ListRepeater
@@ -75,7 +77,7 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
             ) : typeLower === 'reference' && projectId ? (
               <>
                 <label style={styles.label}>
-                  {field.fieldName}
+                  {fieldLabel(field)}
                   {field.isRequired && ' *'}
                 </label>
                 <ReferenceSelector
@@ -88,7 +90,7 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
             ) : typeLower === 'media' && projectId ? (
               <>
                 <label style={styles.label}>
-                  {field.fieldName}
+                  {fieldLabel(field)}
                   {field.isRequired && ' *'}
                 </label>
                 <MediaPicker
@@ -101,7 +103,7 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
             ) : typeLower === 'richtext' || typeLower === 'text' || typeLower === 'json' ? (
               <>
                 <label style={styles.label} htmlFor={field.fieldName}>
-                  {field.fieldName}
+                  {fieldLabel(field)}
                   {field.isRequired && ' *'}
                 </label>
                 <textarea
@@ -117,7 +119,7 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
             ) : (
               <>
                 <label style={styles.label} htmlFor={field.fieldName}>
-                  {field.fieldName}
+                  {fieldLabel(field)}
                   {field.isRequired && ' *'}
                 </label>
                 <input

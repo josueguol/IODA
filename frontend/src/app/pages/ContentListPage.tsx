@@ -2,10 +2,13 @@ import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { coreApi } from '../../modules/core/api/core-api'
 import { useContextStore } from '../../modules/core/store/context-store'
-import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { useSchemaStore } from '../../modules/schema/store/schema-store'
 import { LoadingSpinner, ErrorBanner } from '../../shared/components'
 import { DynamicForm, type DynamicFormProps } from '../../modules/schema/components/DynamicForm'
+import { ParentContentSelector } from '../../modules/core/components/ParentContentSelector'
+import { TagsSelector } from '../../modules/core/components/TagsSelector'
+import { HierarchySelector } from '../../modules/core/components/HierarchySelector'
+import { SiteSelector } from '../../modules/core/components/SiteSelector'
 import type { ContentListItem, ContentSchemaListItem } from '../../modules/core/types'
 
 /* ─── Estilos ─── */
@@ -119,7 +122,6 @@ const PAGE_SIZE = 20
 
 export function ContentListPage() {
   const { currentProjectId, currentEnvironmentId, currentSiteId, sites } = useContextStore()
-  const user = useAuthStore((st) => st.user)
   const { schemaList, loadSchemas, listLoading } = useSchemaStore()
 
   /* ── Estado: lista ── */
@@ -135,6 +137,10 @@ export function ContentListPage() {
   /* ── Estado: creación inline ── */
   const [createSchema, setCreateSchema] = useState<ContentSchemaListItem | null>(null)
   const [contentTitle, setContentTitle] = useState('')
+  const [createParentContentId, setCreateParentContentId] = useState<string | null>(null)
+  const [createTagIds, setCreateTagIds] = useState<string[]>([])
+  const [createHierarchyIds, setCreateHierarchyIds] = useState<string[]>([])
+  const [createSiteIds, setCreateSiteIds] = useState<string[]>([])
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   /* ── Cargar schemas ── */
@@ -197,6 +203,10 @@ export function ContentListPage() {
   const handleCancelCreate = () => {
     setCreateSchema(null)
     setContentTitle('')
+    setCreateParentContentId(null)
+    setCreateTagIds([])
+    setCreateHierarchyIds([])
+    setCreateSiteIds([])
     setSubmitError(null)
   }
 
@@ -205,18 +215,19 @@ export function ContentListPage() {
       setSubmitError('Proyecto, entorno, schema y título son obligatorios.')
       return
     }
-    const createdBy = user?.userId
-    if (!createdBy) { setSubmitError('Usuario no identificado.'); return }
     setSubmitError(null)
     try {
       await coreApi.createContent(currentProjectId, {
         environmentId: currentEnvironmentId,
         siteId: currentSiteId ?? undefined,
+        parentContentId: createParentContentId ?? undefined,
         schemaId: createSchema.id,
         title: contentTitle.trim(),
         contentType: createSchema.schemaType,
         fields: values as Record<string, unknown>,
-        createdBy,
+        tagIds: createTagIds.length > 0 ? createTagIds : undefined,
+        hierarchyIds: createHierarchyIds.length > 0 ? createHierarchyIds : undefined,
+        siteIds: createSiteIds.length > 0 ? createSiteIds : undefined,
       })
       handleCancelCreate()
       // Reload list
@@ -307,6 +318,24 @@ export function ContentListPage() {
               autoFocus
             />
           </div>
+
+          {currentProjectId && (
+            <>
+              <ParentContentSelector
+                projectId={currentProjectId}
+                value={createParentContentId}
+                onChange={setCreateParentContentId}
+              />
+              <TagsSelector projectId={currentProjectId} value={createTagIds} onChange={setCreateTagIds} />
+              <HierarchySelector projectId={currentProjectId} value={createHierarchyIds} onChange={setCreateHierarchyIds} />
+              <SiteSelector
+                projectId={currentProjectId}
+                environmentId={currentEnvironmentId}
+                value={createSiteIds}
+                onChange={setCreateSiteIds}
+              />
+            </>
+          )}
 
           {submitError && <p style={s.error}>{submitError}</p>}
 

@@ -29,15 +29,27 @@ public class CreateContentSchemaCommandValidator : AbstractValidator<CreateConte
 
         RuleForEach(x => x.Fields).ChildRules(field =>
         {
-            field.RuleFor(f => f.FieldName)
-                .NotEmpty().WithMessage("Field name is required.")
-                .MaximumLength(100).WithMessage("Field name must not exceed 100 characters.")
-                .Matches("^[a-zA-Z][a-zA-Z0-9_]*$").WithMessage("Field name must start with a letter and contain only letters, numbers, and underscores.");
+            field.RuleFor(f => f.Label)
+                .NotEmpty().WithMessage("Field label is required.")
+                .MaximumLength(200).WithMessage("Field label must not exceed 200 characters.");
+
+            field.RuleFor(f => f.Slug)
+                .NotEmpty().WithMessage("Field slug is required.")
+                .MaximumLength(100).WithMessage("Field slug must not exceed 100 characters.")
+                .Matches("^[a-z0-9]+(-[a-z0-9]+)*$").WithMessage("Field slug must be kebab-case (lowercase letters, numbers, hyphens only).");
 
             field.RuleFor(f => f.FieldType)
                 .NotEmpty().WithMessage("Field type is required.")
                 .MaximumLength(50).WithMessage("Field type must not exceed 50 characters.");
         });
+
+        RuleFor(x => x.Fields)
+            .Must(fields =>
+            {
+                var slugs = fields.Where(f => !string.IsNullOrWhiteSpace(f.Slug)).Select(f => f.Slug!.Trim().ToLowerInvariant()).ToList();
+                return slugs.Count == slugs.Distinct().Count();
+            })
+            .WithMessage("Field slugs must be unique within the schema.");
 
         RuleFor(x => x.CreatedBy)
             .NotEmpty().WithMessage("CreatedBy is required.");

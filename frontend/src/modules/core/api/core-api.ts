@@ -9,11 +9,14 @@ import type {
   ContentSchemaListItem,
   ContentVersion,
   CreateSchemaRequest,
+  DefaultFieldSuggestionDto,
   Environment,
+  Hierarchy,
   MediaItem,
   PagedResult,
   Project,
   Site,
+  Tag,
 } from '../types'
 
 const coreClient = createAuthAwareHttpClient({
@@ -78,6 +81,7 @@ export const coreApi = {
       subdomain?: string | null
       subpath?: string | null
       themeId?: string | null
+      urlTemplate?: string | null
       createdBy: string
     }
   ) => coreClient.post<string>(`api/projects/${projectId}/sites`, body),
@@ -92,6 +96,7 @@ export const coreApi = {
       subdomain?: string | null
       subpath?: string | null
       themeId?: string | null
+      urlTemplate?: string | null
     }
   ) => coreClient.put<Site>(`api/projects/${projectId}/sites/${siteId}`, body),
 
@@ -119,6 +124,12 @@ export const coreApi = {
       `api/projects/${projectId}/schemas/${schemaId}`
     ),
 
+  /** Campos sugeridos al crear schema. GET /api/projects/{projectId}/schemas/default-fields */
+  getDefaultSchemaFields: (projectId: string) =>
+    coreClient.get<DefaultFieldSuggestionDto[]>(
+      `api/projects/${projectId}/schemas/default-fields`
+    ),
+
   /** Crea un schema de contenido. POST /api/projects/{projectId}/schemas → devuelve schemaId */
   createSchema: (projectId: string, body: CreateSchemaRequest) =>
     coreClient.post<string>(`api/projects/${projectId}/schemas`, body),
@@ -127,7 +138,7 @@ export const coreApi = {
   /** Lista contenido del proyecto (paginado). GET /api/projects/{projectId}/content */
   getContentList: (
     projectId: string,
-    params?: { page?: number; pageSize?: number; contentType?: string; status?: string; siteId?: string }
+    params?: { page?: number; pageSize?: number; contentType?: string; status?: string; siteId?: string; parentContentId?: string }
   ) => {
     const search = new URLSearchParams()
     if (params?.page != null) search.set('page', String(params.page))
@@ -135,6 +146,7 @@ export const coreApi = {
     if (params?.contentType) search.set('contentType', params.contentType)
     if (params?.status) search.set('status', params.status)
     if (params?.siteId) search.set('siteId', params.siteId)
+    if (params?.parentContentId) search.set('parentContentId', params.parentContentId)
     const q = search.toString()
     return coreClient.get<PagedResult<ContentListItem>>(
       `api/projects/${projectId}/content${q ? `?${q}` : ''}`
@@ -145,27 +157,70 @@ export const coreApi = {
   getContent: (projectId: string, contentId: string) =>
     coreClient.get<Content>(`api/projects/${projectId}/content/${contentId}`),
 
-  /** Crea contenido. POST /api/projects/{projectId}/content */
+  /** Crea contenido. POST /api/projects/{projectId}/content (CreatedBy desde JWT). */
   createContent: (
     projectId: string,
     body: {
       environmentId: string
       siteId?: string | null
+      parentContentId?: string | null
       schemaId: string
       title: string
       contentType: string
       fields: Record<string, unknown>
-      createdBy: string
+      tagIds?: string[] | null
+      hierarchyIds?: string[] | null
+      siteIds?: string[] | null
     }
   ) => coreClient.post<string>(`api/projects/${projectId}/content`, body),
 
-  /** Actualiza contenido. PUT /api/projects/{projectId}/content/{contentId} */
+  /** Actualiza contenido. PUT /api/projects/{projectId}/content/{contentId} (UpdatedBy desde JWT). */
   updateContent: (
     projectId: string,
     contentId: string,
-    body: { title: string; fields: Record<string, unknown>; updatedBy: string }
+    body: {
+      title: string
+      fields: Record<string, unknown>
+      parentContentId?: string | null
+      tagIds?: string[] | null
+      hierarchyIds?: string[] | null
+      siteIds?: string[] | null
+    }
   ) =>
     coreClient.put<Content>(`api/projects/${projectId}/content/${contentId}`, body),
+
+  /** Lista jerarquías del proyecto. GET /api/projects/{projectId}/hierarchies */
+  getHierarchies: (projectId: string) =>
+    coreClient.get<Hierarchy[]>(`api/projects/${projectId}/hierarchies`),
+
+  /** Obtiene jerarquía por id. GET /api/projects/{projectId}/hierarchies/{hierarchyId} */
+  getHierarchy: (projectId: string, hierarchyId: string) =>
+    coreClient.get<Hierarchy>(`api/projects/${projectId}/hierarchies/${hierarchyId}`),
+
+  /** Crea jerarquía. POST /api/projects/{projectId}/hierarchies */
+  createHierarchy: (
+    projectId: string,
+    body: { name: string; slug?: string | null; description?: string | null; imageUrl?: string | null; parentHierarchyId?: string | null }
+  ) => coreClient.post<Hierarchy>(`api/projects/${projectId}/hierarchies`, body),
+
+  /** Actualiza jerarquía. PUT /api/projects/{projectId}/hierarchies/{hierarchyId} */
+  updateHierarchy: (
+    projectId: string,
+    hierarchyId: string,
+    body: { name: string; slug?: string | null; description?: string | null; imageUrl?: string | null; parentHierarchyId?: string | null }
+  ) => coreClient.put<Hierarchy>(`api/projects/${projectId}/hierarchies/${hierarchyId}`, body),
+
+  /** Elimina jerarquía. DELETE /api/projects/{projectId}/hierarchies/{hierarchyId} */
+  deleteHierarchy: (projectId: string, hierarchyId: string) =>
+    coreClient.delete<void>(`api/projects/${projectId}/hierarchies/${hierarchyId}`),
+
+  /** Lista etiquetas del proyecto. GET /api/projects/{projectId}/tags */
+  getTags: (projectId: string) =>
+    coreClient.get<Tag[]>(`api/projects/${projectId}/tags`),
+
+  /** Crea etiqueta. POST /api/projects/{projectId}/tags */
+  createTag: (projectId: string, body: { name: string; slug?: string | null }) =>
+    coreClient.post<Tag>(`api/projects/${projectId}/tags`, body),
 
   /** Elimina contenido. DELETE /api/projects/{projectId}/content/{contentId} */
   deleteContent: (projectId: string, contentId: string) =>

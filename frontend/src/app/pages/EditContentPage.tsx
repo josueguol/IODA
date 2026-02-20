@@ -10,6 +10,10 @@ import { indexingApi } from '../../modules/indexing/api/indexing-api'
 import { DynamicForm, type DynamicFormProps } from '../../modules/schema/components/DynamicForm'
 import type { DynamicFormValues } from '../../modules/schema/utils/field-validation'
 import type { Content, ContentVersion } from '../../modules/core/types'
+import { ParentContentSelector } from '../../modules/core/components/ParentContentSelector'
+import { TagsSelector } from '../../modules/core/components/TagsSelector'
+import { HierarchySelector } from '../../modules/core/components/HierarchySelector'
+import { SiteSelector } from '../../modules/core/components/SiteSelector'
 
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: 640, color: 'var(--page-text)' },
@@ -33,6 +37,10 @@ export function EditContentPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [editTitle, setEditTitle] = useState('')
+  const [editParentContentId, setEditParentContentId] = useState<string | null>(null)
+  const [editTagIds, setEditTagIds] = useState<string[]>([])
+  const [editHierarchyIds, setEditHierarchyIds] = useState<string[]>([])
+  const [editSiteIds, setEditSiteIds] = useState<string[]>([])
   const [requestingPublication, setRequestingPublication] = useState(false)
   const [requestPublicationMessage, setRequestPublicationMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [reindexing, setReindexing] = useState(false)
@@ -55,6 +63,10 @@ export function EditContentPage() {
       .then((data) => {
         setContent(data ?? null)
         setEditTitle(data?.title ?? '')
+        setEditParentContentId(data?.parentContentId ?? null)
+        setEditTagIds(data?.tagIds ?? [])
+        setEditHierarchyIds(data?.hierarchyIds ?? [])
+        setEditSiteIds(data?.siteIds ?? [])
         if (data?.schemaId) {
           loadSchema(currentProjectId, data.schemaId).catch(() => {})
         }
@@ -73,22 +85,24 @@ export function EditContentPage() {
 
   const handleSubmit: DynamicFormProps['onSubmit'] = async (values) => {
     if (!currentProjectId || !contentId || !content) return
-    const updatedBy = user?.userId
-    if (!updatedBy) {
-      setSubmitError('Usuario no identificado.')
-      return
-    }
     setSubmitError(null)
     try {
       await coreApi.updateContent(currentProjectId, contentId, {
         title: editTitle.trim() || content.title,
         fields: values as Record<string, unknown>,
-        updatedBy,
+        parentContentId: editParentContentId ?? undefined,
+        tagIds: editTagIds,
+        hierarchyIds: editHierarchyIds,
+        siteIds: editSiteIds,
       })
       const updated = await coreApi.getContent(currentProjectId, contentId)
       if (updated) {
         setContent(updated)
         setEditTitle(updated.title)
+        setEditParentContentId(updated.parentContentId ?? null)
+        setEditTagIds(updated.tagIds ?? [])
+        setEditHierarchyIds(updated.hierarchyIds ?? [])
+        setEditSiteIds(updated.siteIds ?? [])
       }
       if (showHistory) await loadVersions()
     } catch (e) {
@@ -147,18 +161,21 @@ export function EditContentPage() {
   }
 
   const handleRestoreVersion = async (version: ContentVersion) => {
-    if (!currentProjectId || !contentId || !user?.userId) return
+    if (!currentProjectId || !contentId) return
     setSubmitError(null)
     try {
       await coreApi.updateContent(currentProjectId, contentId, {
         title: version.title,
         fields: version.fields as Record<string, unknown>,
-        updatedBy: user.userId,
       })
       const updated = await coreApi.getContent(currentProjectId, contentId)
       if (updated) {
         setContent(updated)
         setEditTitle(updated.title)
+        setEditParentContentId(updated.parentContentId ?? null)
+        setEditTagIds(updated.tagIds ?? [])
+        setEditHierarchyIds(updated.hierarchyIds ?? [])
+        setEditSiteIds(updated.siteIds ?? [])
       }
       await loadVersions()
     } catch (e) {
@@ -229,7 +246,40 @@ export function EditContentPage() {
         </span>
       </div>
 
+      {/* Metadata y auditoría (Fase 2): no se envían en create/update; se muestran solo lectura */}
+      <div style={{ marginBottom: '1rem', fontSize: '0.8125rem', color: 'var(--page-text-muted)' }}>
+        Creado: {new Date(content.createdAt).toLocaleString()}
+        {content.updatedAt != null && (
+          <> · Actualizado: {new Date(content.updatedAt).toLocaleString()}</>
+        )}
+        {content.createdBy && (
+          <> · Creado por: {content.createdBy}</>
+        )}
+        {content.updatedBy != null && content.updatedBy !== '' && (
+          <> · Actualizado por: {content.updatedBy}</>
+        )}
+      </div>
+
       {submitError && <p style={styles.error}>{submitError}</p>}
+
+      {currentProjectId && contentId && (
+        <>
+          <ParentContentSelector
+            projectId={currentProjectId}
+            value={editParentContentId}
+            onChange={setEditParentContentId}
+            excludeContentId={contentId}
+          />
+          <TagsSelector projectId={currentProjectId} value={editTagIds} onChange={setEditTagIds} />
+          <HierarchySelector projectId={currentProjectId} value={editHierarchyIds} onChange={setEditHierarchyIds} />
+          <SiteSelector
+            projectId={currentProjectId}
+            environmentId={content.environmentId}
+            value={editSiteIds}
+            onChange={setEditSiteIds}
+          />
+        </>
+      )}
 
       {/* Sección publicación: solo Draft, con entorno y permiso */}
       {content.status === 'Draft' && currentEnvironmentId && (

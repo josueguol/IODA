@@ -7,7 +7,6 @@ import { RegisterPage } from '../modules/auth/pages/RegisterPage'
 import { ProtectedRoute } from '../modules/auth/components/ProtectedRoute'
 import { ProtectedRouteByPermission } from '../modules/authorization/components/ProtectedRouteByPermission'
 import { AppLayout } from './components/AppLayout'
-import { RequireContext } from './components/RequireContext'
 import { RequireFullContext } from './components/RequireFullContext'
 import { HomePage } from './pages/HomePage'
 import { ForbiddenPage } from './pages/ForbiddenPage'
@@ -18,6 +17,8 @@ import { SearchPage } from './pages/SearchPage'
 import { SitesPage } from './pages/SitesPage'
 import { RolesPermissionsPage } from './pages/RolesPermissionsPage'
 import { SchemaDesignerPage } from './pages/SchemaDesignerPage'
+import { HierarchiesPage } from './pages/HierarchiesPage'
+import { TagsPage } from './pages/TagsPage'
 import { UsersPage } from './pages/UsersPage'
 
 function AppRoutes() {
@@ -140,6 +141,30 @@ function AppRoutes() {
             <RequireFullContext>
               <AppLayout>
                 <SchemaDesignerPage />
+              </AppLayout>
+            </RequireFullContext>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/hierarchies"
+        element={
+          <ProtectedRoute>
+            <RequireFullContext>
+              <AppLayout>
+                <HierarchiesPage />
+              </AppLayout>
+            </RequireFullContext>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/tags"
+        element={
+          <ProtectedRoute>
+            <RequireFullContext>
+              <AppLayout>
+                <TagsPage />
               </AppLayout>
             </RequireFullContext>
           </ProtectedRoute>

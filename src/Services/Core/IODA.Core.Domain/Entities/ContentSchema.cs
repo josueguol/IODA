@@ -108,9 +108,9 @@ public class ContentSchema : AggregateRoot<Guid>
 
     public void AddField(FieldDefinition field)
     {
-        if (_fields.Any(f => f.FieldName == field.FieldName))
+        if (_fields.Any(f => f.Slug == field.Slug))
         {
-            throw new InvalidOperationException($"Field '{field.FieldName}' already exists");
+            throw new InvalidOperationException($"A field with slug '{field.Slug}' already exists in this schema.");
         }
 
         _fields.Add(field);
@@ -120,12 +120,12 @@ public class ContentSchema : AggregateRoot<Guid>
         RaiseDomainEvent(new SchemaUpdatedDomainEvent(Id, SchemaName, SchemaVersion));
     }
 
-    public void RemoveField(string fieldName)
+    public void RemoveField(string slug)
     {
-        var field = _fields.FirstOrDefault(f => f.FieldName == fieldName);
+        var field = _fields.FirstOrDefault(f => f.Slug == slug);
         if (field == null)
         {
-            throw new InvalidOperationException($"Field '{fieldName}' not found");
+            throw new InvalidOperationException($"Field with slug '{slug}' not found.");
         }
 
         _fields.Remove(field);
@@ -135,12 +135,17 @@ public class ContentSchema : AggregateRoot<Guid>
         RaiseDomainEvent(new SchemaUpdatedDomainEvent(Id, SchemaName, SchemaVersion));
     }
 
-    public void UpdateField(string fieldName, FieldDefinition updatedField)
+    public void UpdateField(string slug, FieldDefinition updatedField)
     {
-        var field = _fields.FirstOrDefault(f => f.FieldName == fieldName);
+        var field = _fields.FirstOrDefault(f => f.Slug == slug);
         if (field == null)
         {
-            throw new InvalidOperationException($"Field '{fieldName}' not found");
+            throw new InvalidOperationException($"Field with slug '{slug}' not found.");
+        }
+
+        if (updatedField.Slug != slug && _fields.Any(f => f.Slug == updatedField.Slug))
+        {
+            throw new InvalidOperationException($"A field with slug '{updatedField.Slug}' already exists in this schema.");
         }
 
         _fields.Remove(field);
@@ -165,34 +170,36 @@ public class ContentSchema : AggregateRoot<Guid>
 }
 
 /// <summary>
-/// Defines a field within a schema
+/// Defines a field within a schema. Label is visible in UI; Slug is the technical key (kebab-case, unique per schema).
+/// FieldName is kept for backward compatibility and equals Slug for new fields (used as key in content JSON).
 /// </summary>
 public class FieldDefinition : Entity<Guid>
 {
     public Guid SchemaId { get; private set; }
+    /// <summary>Technical key for APIs and content storage; kebab-case, unique per schema. Same as Slug for new fields.</summary>
     public string FieldName { get; private set; } = null!;
+    /// <summary>Human-readable label for UI (e.g. "Descripción corta").</summary>
+    public string Label { get; private set; } = null!;
+    /// <summary>Technical slug: kebab-case, unique within schema (e.g. "descripcion-corta").</summary>
+    public string Slug { get; private set; } = null!;
     public string FieldType { get; private set; } = null!;
     public bool IsRequired { get; private set; }
     public object? DefaultValue { get; private set; }
     public string? HelpText { get; private set; }
-    
-    /// <summary>
-    /// Validation rules stored as JSON (e.g., min/max length, regex pattern, etc.)
-    /// </summary>
     public Dictionary<string, object>? ValidationRules { get; private set; }
-    
     public int DisplayOrder { get; private set; }
 
     // Navigation
     public ContentSchema Schema { get; private set; } = null!;
 
-    // EF Core constructor
     private FieldDefinition() { }
 
     private FieldDefinition(
         Guid id,
         Guid schemaId,
         string fieldName,
+        string label,
+        string slug,
         string fieldType,
         bool isRequired,
         object? defaultValue,
@@ -203,6 +210,8 @@ public class FieldDefinition : Entity<Guid>
         Id = id;
         SchemaId = schemaId;
         FieldName = fieldName;
+        Label = label;
+        Slug = slug;
         FieldType = fieldType;
         IsRequired = isRequired;
         DefaultValue = defaultValue;
@@ -211,17 +220,30 @@ public class FieldDefinition : Entity<Guid>
         DisplayOrder = displayOrder;
     }
 
-    /// <summary>
-    /// Sets the schema id (used when creating schema with fields - pass Guid.Empty initially).
-    /// </summary>
     internal void SetSchemaId(Guid schemaId)
     {
         SchemaId = schemaId;
     }
 
+    /// <summary>Kebab-case: lowercase, hyphens, no spaces. Regex: ^[a-z0-9]+(-[a-z0-9]+)*$</summary>
+    public static bool IsValidSlugFormat(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug)) return false;
+        return System.Text.RegularExpressions.Regex.IsMatch(slug, @"^[a-z0-9]+(-[a-z0-9]+)*$");
+    }
+
+    /// <summary>Convert label to slug (kebab-case). Non-alphanumeric to hyphen; collapse hyphens; lowercase.</summary>
+    public static string LabelToSlug(string label)
+    {
+        if (string.IsNullOrWhiteSpace(label)) return string.Empty;
+        var normalized = System.Text.RegularExpressions.Regex.Replace(label.Trim().ToLowerInvariant(), @"[^a-z0-9]+", "-");
+        return System.Text.RegularExpressions.Regex.Replace(normalized, @"-+", "-").Trim('-');
+    }
+
     public static FieldDefinition Create(
         Guid schemaId,
-        string fieldName,
+        string label,
+        string slug,
         string fieldType,
         bool isRequired = false,
         object? defaultValue = null,
@@ -229,22 +251,24 @@ public class FieldDefinition : Entity<Guid>
         Dictionary<string, object>? validationRules = null,
         int displayOrder = 0)
     {
-        if (string.IsNullOrWhiteSpace(fieldName))
-        {
-            throw new ArgumentException("Field name cannot be empty", nameof(fieldName));
-        }
-
+        if (string.IsNullOrWhiteSpace(label))
+            throw new ArgumentException("Field label cannot be empty", nameof(label));
+        if (string.IsNullOrWhiteSpace(slug))
+            throw new ArgumentException("Field slug cannot be empty", nameof(slug));
+        if (!IsValidSlugFormat(slug))
+            throw new ArgumentException("Slug must be kebab-case (lowercase letters, numbers, hyphens only).", nameof(slug));
         if (string.IsNullOrWhiteSpace(fieldType))
-        {
             throw new ArgumentException("Field type cannot be empty", nameof(fieldType));
-        }
 
         var id = Guid.NewGuid();
+        var fieldName = slug;
 
         return new FieldDefinition(
             id,
             schemaId,
             fieldName,
+            label,
+            slug,
             fieldType,
             isRequired,
             defaultValue,

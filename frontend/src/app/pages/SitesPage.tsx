@@ -55,6 +55,7 @@ export function SitesPage() {
   const [newSubdomain, setNewSubdomain] = useState('')
   const [newSubpath, setNewSubpath] = useState('')
   const [newThemeId, setNewThemeId] = useState('')
+  const [newUrlTemplate, setNewUrlTemplate] = useState('')
   const [newEnvironmentId, setNewEnvironmentId] = useState<string>('')
 
   // Edit form (when editingId is set)
@@ -63,6 +64,7 @@ export function SitesPage() {
   const [editSubdomain, setEditSubdomain] = useState('')
   const [editSubpath, setEditSubpath] = useState('')
   const [editThemeId, setEditThemeId] = useState('')
+  const [editUrlTemplate, setEditUrlTemplate] = useState('')
 
   useEffect(() => {
     if (currentProjectId) {
@@ -94,6 +96,7 @@ export function SitesPage() {
         subdomain: newSubdomain.trim() || null,
         subpath: newSubpath.trim() || null,
         themeId: newThemeId.trim() || null,
+        urlTemplate: newUrlTemplate.trim() || null,
         createdBy: user.userId,
       })
       setNewName('')
@@ -101,6 +104,7 @@ export function SitesPage() {
       setNewSubdomain('')
       setNewSubpath('')
       setNewThemeId('')
+      setNewUrlTemplate('')
       setNewEnvironmentId('')
       setShowCreate(false)
       const list = await coreApi.getSites(currentProjectId)
@@ -120,6 +124,7 @@ export function SitesPage() {
     setEditSubdomain(site.subdomain ?? '')
     setEditSubpath(site.subpath ?? '')
     setEditThemeId(site.themeId ?? '')
+    setEditUrlTemplate(site.urlTemplate ?? '')
     setUpdateError(null)
   }
 
@@ -135,6 +140,7 @@ export function SitesPage() {
         subdomain: editSubdomain.trim() || null,
         subpath: editSubpath.trim() || null,
         themeId: editThemeId.trim() || null,
+        urlTemplate: editUrlTemplate.trim() || null,
       })
       setEditingId(null)
       const list = await coreApi.getSites(currentProjectId)
@@ -271,6 +277,17 @@ export function SitesPage() {
             />
           </div>
           <div style={styles.formRow}>
+            <label style={styles.label}>Plantilla URL (opcional)</label>
+            <input
+              type="text"
+              style={styles.input}
+              value={newUrlTemplate}
+              onChange={(e) => setNewUrlTemplate(e.target.value)}
+              placeholder="/{slug}"
+            />
+            <p style={{ ...styles.hint, marginTop: '0.25rem' }}>Ej: /{'{slug}'} para rutas por slug. Usado por el endpoint de entrega por path.</p>
+          </div>
+          <div style={styles.formRow}>
             <label style={styles.label}>Entorno (opcional)</label>
             <select
               style={styles.select}
@@ -303,6 +320,7 @@ export function SitesPage() {
                 <th style={styles.th}>Subdominio</th>
                 <th style={styles.th}>Subruta</th>
                 <th style={styles.th}>Tema</th>
+                <th style={styles.th}>Plantilla URL</th>
                 <th style={styles.th}>Estado</th>
                 <th style={styles.th}>Acciones</th>
               </tr>
@@ -310,7 +328,7 @@ export function SitesPage() {
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={styles.td}>
+                  <td colSpan={8} style={styles.td}>
                     No hay sitios. Crea uno con el botón «Crear sitio».
                   </td>
                 </tr>
@@ -319,7 +337,7 @@ export function SitesPage() {
                   <tr key={site.id}>
                     {editingId === site.id ? (
                       <>
-                        <td colSpan={7} style={styles.td}>
+                        <td colSpan={8} style={styles.td}>
                           <form onSubmit={handleUpdate} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                             <input
                               type="text"
@@ -358,6 +376,13 @@ export function SitesPage() {
                               onChange={(e) => setEditThemeId(e.target.value)}
                               placeholder="Tema"
                             />
+                            <input
+                              type="text"
+                              style={{ ...styles.input, maxWidth: 140 }}
+                              value={editUrlTemplate}
+                              onChange={(e) => setEditUrlTemplate(e.target.value)}
+                              placeholder="/{slug}"
+                            />
                             {updateError && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>{updateError}</span>}
                             <button type="submit" style={{ ...styles.button, ...styles.buttonPrimary, ...styles.buttonSmall }} disabled={!!actionLoading}>
                               Guardar
@@ -375,6 +400,7 @@ export function SitesPage() {
                         <td style={styles.td}>{site.subdomain ?? '—'}</td>
                         <td style={styles.td}>{site.subpath ?? '—'}</td>
                         <td style={styles.td}>{site.themeId ?? '—'}</td>
+                        <td style={styles.td}>{site.urlTemplate ?? '—'}</td>
                         <td style={styles.td}>
                           <span style={{ ...styles.badge, ...(site.isActive ? styles.badgeActive : styles.badgeInactive) }}>
                             {site.isActive ? 'Activo' : 'Inactivo'}

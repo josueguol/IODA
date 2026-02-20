@@ -19,6 +19,11 @@ public class CoreDbContext : DbContext
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
     public DbSet<MediaItem> MediaItems => Set<MediaItem>();
     public DbSet<Site> Sites => Set<Site>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<ContentTag> ContentTags => Set<ContentTag>();
+    public DbSet<Hierarchy> Hierarchies => Set<Hierarchy>();
+    public DbSet<ContentHierarchy> ContentHierarchies => Set<ContentHierarchy>();
+    public DbSet<ContentSite> ContentSites => Set<ContentSite>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

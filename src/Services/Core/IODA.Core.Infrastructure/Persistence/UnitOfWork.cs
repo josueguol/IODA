@@ -16,6 +16,11 @@ public class UnitOfWork : IUnitOfWork
         Schemas = new Repositories.ContentSchemaRepository(context);
         MediaItems = new Repositories.MediaItemRepository(context);
         Sites = new Repositories.SiteRepository(context);
+        Tags = new Repositories.TagRepository(context);
+        ContentTags = new Repositories.ContentTagRepository(context);
+        Hierarchies = new Repositories.HierarchyRepository(context);
+        ContentHierarchies = new Repositories.ContentHierarchyRepository(context);
+        ContentSites = new Repositories.ContentSiteRepository(context);
     }
 
     public IProjectRepository Projects { get; }
@@ -23,6 +28,11 @@ public class UnitOfWork : IUnitOfWork
     public IContentSchemaRepository Schemas { get; }
     public IMediaItemRepository MediaItems { get; }
     public ISiteRepository Sites { get; }
+    public ITagRepository Tags { get; }
+    public IContentTagRepository ContentTags { get; }
+    public IHierarchyRepository Hierarchies { get; }
+    public IContentHierarchyRepository ContentHierarchies { get; }
+    public IContentSiteRepository ContentSites { get; }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

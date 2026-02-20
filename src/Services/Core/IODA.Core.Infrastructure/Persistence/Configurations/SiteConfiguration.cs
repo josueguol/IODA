@@ -51,6 +51,10 @@ public class SiteConfiguration : IEntityTypeConfiguration<Site>
             .HasColumnName("theme_id")
             .HasMaxLength(200);
 
+        builder.Property(s => s.UrlTemplate)
+            .HasColumnName("url_template")
+            .HasMaxLength(500);
+
         builder.Property(s => s.IsActive)
             .HasColumnName("is_active")
             .IsRequired();

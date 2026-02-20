@@ -4,7 +4,7 @@ import { useContextStore } from '../../modules/core/store/context-store'
 import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { useSchemaStore } from '../../modules/schema/store/schema-store'
 import { ErrorBanner } from '../../shared/components'
-import type { CreateSchemaFieldDto, ContentSchemaListItem, ContentSchema } from '../../modules/core/types'
+import type { CreateSchemaFieldDto, ContentSchemaListItem, ContentSchema, FieldDefinition } from '../../modules/core/types'
 
 const FIELD_TYPES = [
   'string',
@@ -21,6 +21,20 @@ const FIELD_TYPES = [
   'reference',
   'media',
 ] as const
+
+/** Convierte label a slug kebab-case (solo letras, números, guiones). */
+function labelToSlug(label: string): string {
+  return label
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+const SLUG_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/
+function isValidSlug(slug: string): boolean {
+  return slug.length > 0 && SLUG_REGEX.test(slug)
+}
 
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: 800, color: 'var(--page-text)' },
@@ -92,7 +106,8 @@ export function SchemaDesignerPage() {
       ...prev,
       {
         _key: nextKey(),
-        fieldName: '',
+        label: '',
+        slug: '',
         fieldType: 'string',
         isRequired: false,
         defaultValue: undefined,
@@ -101,6 +116,28 @@ export function SchemaDesignerPage() {
         displayOrder: prev.length,
       },
     ])
+  }
+
+  const loadDefaultFields = () => {
+    if (!currentProjectId) return
+    coreApi
+      .getDefaultSchemaFields(currentProjectId)
+      .then((list) => {
+        setFields(
+          list.map((s, i) => ({
+            _key: nextKey(),
+            label: s.label,
+            slug: s.slug,
+            fieldType: s.fieldType,
+            isRequired: false,
+            defaultValue: undefined,
+            helpText: null,
+            validationRules: null,
+            displayOrder: i,
+          }))
+        )
+      })
+      .catch(() => {})
   }
 
   const removeField = (key: string) => {
@@ -138,28 +175,33 @@ export function SchemaDesignerPage() {
       setError('El tipo de schema es obligatorio (ej. article, page).')
       return
     }
-    const fieldNames = fields.map((f) => f.fieldName.trim()).filter(Boolean)
-    if (fieldNames.length === 0) {
-      setError('Añade al menos un campo.')
+    const validFields = fields.filter((f) => f.label.trim() && f.slug.trim())
+    if (validFields.length === 0) {
+      setError('Añade al menos un campo con etiqueta y slug.')
       return
     }
-    const unique = new Set(fieldNames)
-    if (unique.size !== fieldNames.length) {
-      setError('Los nombres de campo no pueden repetirse.')
+    const slugs = validFields.map((f) => f.slug.trim().toLowerCase())
+    if (new Set(slugs).size !== slugs.length) {
+      setError('Los slugs de campo no pueden repetirse.')
       return
+    }
+    for (const f of validFields) {
+      if (!isValidSlug(f.slug.trim())) {
+        setError(`El slug «${f.slug}» no es válido. Debe ser kebab-case (ej. descripcion-corta).`)
+        return
+      }
     }
 
-    const payload: CreateSchemaFieldDto[] = fields
-      .filter((f) => f.fieldName.trim())
-      .map((f, i) => ({
-        fieldName: f.fieldName.trim(),
-        fieldType: f.fieldType,
-        isRequired: f.isRequired ?? false,
-        defaultValue: f.defaultValue ?? undefined,
-        helpText: f.helpText?.trim() || null,
-        validationRules: f.validationRules ?? null,
-        displayOrder: i,
-      }))
+    const payload: CreateSchemaFieldDto[] = validFields.map((f, i) => ({
+      label: f.label.trim(),
+      slug: f.slug.trim(),
+      fieldType: f.fieldType,
+      isRequired: f.isRequired ?? false,
+      defaultValue: f.defaultValue ?? undefined,
+      helpText: f.helpText?.trim() || null,
+      validationRules: f.validationRules ?? null,
+      displayOrder: i,
+    }))
 
     setSaving(true)
     try {
@@ -185,10 +227,11 @@ export function SchemaDesignerPage() {
     }
   }
 
-  // Preview: build a minimal schema-like shape so we can show DynamicForm (read-only preview would need a fake schema with ids)
-  const previewFields = fields.filter((f) => f.fieldName.trim()).map((f, i) => ({
+  const previewFields = fields.filter((f) => f.label.trim() && f.slug.trim()).map((f, i) => ({
     id: `preview-${i}`,
-    fieldName: f.fieldName.trim(),
+    fieldName: f.slug.trim(),
+    label: f.label.trim(),
+    slug: f.slug.trim(),
     fieldType: f.fieldType,
     isRequired: f.isRequired ?? false,
     defaultValue: f.defaultValue ?? null,
@@ -277,7 +320,7 @@ export function SchemaDesignerPage() {
           <div style={{ opacity: 0.7 }}>
             {inheritedFields.map((f, i) => (
               <div key={`inh-${i}`} style={{ ...styles.fieldRow, background: 'var(--page-bg)', padding: '0.4rem 0.5rem', borderRadius: 4 }}>
-                <span style={{ fontWeight: 600, minWidth: 120 }}>{f.fieldName}</span>
+                <span style={{ fontWeight: 600, minWidth: 120 }}>{(f as FieldDefinition).label ?? f.fieldName}</span>
                 <span style={{ color: 'var(--page-text-muted)', fontSize: '0.8125rem' }}>{f.fieldType}</span>
                 {f.isRequired && <span style={{ color: '#dc3545', fontSize: '0.75rem', fontWeight: 600 }}>Requerido</span>}
                 {f.helpText && <span style={{ color: 'var(--page-text-muted)', fontSize: '0.75rem', fontStyle: 'italic' }}>{f.helpText}</span>}
@@ -289,20 +332,54 @@ export function SchemaDesignerPage() {
 
       <section style={styles.section}>
         <h2 style={styles.sectionTitle}>Campos</h2>
-        <p style={styles.hint}>Añade campos, ordénalos con ↑/↓ y rellena nombre y tipo. El orden aquí será el orden en el formulario.</p>
-        <button type="button" style={{ ...styles.button, ...styles.buttonPrimary }} onClick={addField}>
-          + Añadir campo
-        </button>
+        <p style={styles.hint}>
+          Etiqueta (visible en la UI) y slug (técnico, kebab-case, único). El slug se puede autogenerar desde la etiqueta.
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+          <button type="button" style={{ ...styles.button, ...styles.buttonPrimary }} onClick={addField}>
+            + Añadir campo
+          </button>
+          <button type="button" style={styles.button} onClick={loadDefaultFields}>
+            Sugerir campos por defecto (título, teaser, imagen, contenido)
+          </button>
+        </div>
 
         {fields.map((f) => (
-          <div key={f._key} style={styles.fieldRow}>
-            <input
-              type="text"
-              style={{ ...styles.input, minWidth: 120, maxWidth: 200 }}
-              value={f.fieldName}
-              onChange={(e) => updateField(f._key, { fieldName: e.target.value })}
-              placeholder="Nombre del campo"
-            />
+          <div key={f._key} style={{ ...styles.fieldRow, flexDirection: 'column', alignItems: 'stretch', gap: '0.35rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                style={{ ...styles.input, minWidth: 140, maxWidth: 220 }}
+                value={f.label}
+                onChange={(e) => {
+                  const label = e.target.value
+                  const keepSlugInSync = !f.slug || f.slug === labelToSlug(f.label)
+                  updateField(f._key, keepSlugInSync ? { label, slug: labelToSlug(label) } : { label })
+                }}
+                onBlur={(e) => {
+                  const label = e.target.value.trim()
+                  if (label && (!f.slug || f.slug === labelToSlug(f.label))) {
+                    updateField(f._key, { slug: labelToSlug(label) })
+                  }
+                }}
+                placeholder="Etiqueta (ej. Título)"
+              />
+              <input
+                type="text"
+                style={{
+                  ...styles.input,
+                  minWidth: 140,
+                  maxWidth: 220,
+                  fontFamily: 'monospace',
+                  fontSize: '0.8125rem',
+                }}
+                value={f.slug}
+                onChange={(e) => updateField(f._key, { slug: e.target.value })}
+                placeholder="slug (ej. titulo)"
+                title="kebab-case, único en el schema"
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <select
               style={styles.select}
               value={f.fieldType}
@@ -338,6 +415,7 @@ export function SchemaDesignerPage() {
             <button type="button" style={{ ...styles.button, ...styles.buttonSmall, ...styles.buttonDanger }} onClick={() => removeField(f._key)}>
               Quitar
             </button>
+            </div>
           </div>
         ))}
       </section>
@@ -350,7 +428,7 @@ export function SchemaDesignerPage() {
             {inheritedFields.map((f, i) => (
               <div key={`prev-inh-${i}`} style={{ ...styles.formRow, opacity: 0.7 }}>
                 <label style={styles.label}>
-                  {f.fieldName}
+                  {(f as FieldDefinition).label ?? f.fieldName}
                   {f.isRequired && ' *'}
                   <span style={{ fontSize: '0.7rem', color: 'var(--page-text-muted)', marginLeft: '0.5rem' }}>(heredado)</span>
                 </label>
@@ -367,7 +445,7 @@ export function SchemaDesignerPage() {
             {previewFields.map((f) => (
               <div key={f.id} style={styles.formRow}>
                 <label style={styles.label}>
-                  {f.fieldName}
+                  {f.label}
                   {f.isRequired && ' *'}
                 </label>
                 <input

@@ -92,7 +92,6 @@ export function UserPicker({
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   const selectedUser = value ? users.find((u) => u.id === value) : null
-  const displayLabel = selectedUser ? getLabel(selectedUser) : value || ''
   const filtered = filterUsers(users, query)
 
   useEffect(() => {

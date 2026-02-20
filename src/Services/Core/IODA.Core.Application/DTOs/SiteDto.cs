@@ -10,6 +10,7 @@ public record SiteDto(
     string? Subdomain,
     string? Subpath,
     string? ThemeId,
+    string? UrlTemplate,
     bool IsActive,
     DateTime CreatedAt,
     DateTime? UpdatedAt,

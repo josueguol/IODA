@@ -17,6 +17,7 @@ public static class SiteMappings
             site.Subdomain,
             site.Subpath,
             site.ThemeId,
+            site.UrlTemplate,
             site.IsActive,
             site.CreatedAt,
             site.UpdatedAt,

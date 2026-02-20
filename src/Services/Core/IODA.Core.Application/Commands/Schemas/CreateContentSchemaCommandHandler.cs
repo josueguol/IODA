@@ -38,8 +38,9 @@ public class CreateContentSchemaCommandHandler : IRequestHandler<CreateContentSc
 
         var fieldDefinitions = request.Fields
             .Select((f, index) => FieldDefinition.Create(
-                Guid.Empty, // Will be set when schema is created
-                f.FieldName,
+                Guid.Empty,
+                f.Label,
+                f.Slug,
                 f.FieldType,
                 f.IsRequired,
                 f.DefaultValue,
@@ -68,7 +69,7 @@ public class CreateContentSchemaCommandHandler : IRequestHandler<CreateContentSc
             ProjectId = schema.ProjectId,
             CreatedBy = request.CreatedBy,
             Fields = schema.Fields.Select(f => new IODA.Shared.Contracts.Events.V1.FieldDefinitionDto(
-                f.FieldName,
+                f.Slug,
                 f.FieldType,
                 f.IsRequired,
                 f.DefaultValue,

@@ -174,6 +174,7 @@ export function HomePage() {
   const [newSiteSubdomain, setNewSiteSubdomain] = useState('')
   const [newSiteSubpath, setNewSiteSubpath] = useState('')
   const [newSiteThemeId, setNewSiteThemeId] = useState('')
+  const [newSiteUrlTemplate, setNewSiteUrlTemplate] = useState('')
   const [createSiteError, setCreateSiteError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -313,6 +314,7 @@ export function HomePage() {
         subdomain: newSiteSubdomain.trim() || null,
         subpath: newSiteSubpath.trim() || null,
         themeId: newSiteThemeId.trim() || null,
+        urlTemplate: newSiteUrlTemplate.trim() || null,
         createdBy: user.userId,
       })
       if (id) {
@@ -321,6 +323,7 @@ export function HomePage() {
         setNewSiteSubdomain('')
         setNewSiteSubpath('')
         setNewSiteThemeId('')
+        setNewSiteUrlTemplate('')
         setShowCreateSite(false)
         await loadSites(currentProjectId, currentEnvironmentId ?? undefined)
         setSite(id)
@@ -665,6 +668,17 @@ export function HomePage() {
                       value={newSiteThemeId}
                       onChange={(e) => setNewSiteThemeId(e.target.value)}
                       placeholder="theme-default"
+                    />
+                  </div>
+                  <div style={styles.formRow}>
+                    <label>Plantilla URL (opcional)</label>
+                    <br />
+                    <input
+                      type="text"
+                      style={styles.input}
+                      placeholder="/{slug}"
+                      value={newSiteUrlTemplate}
+                      onChange={(e) => setNewSiteUrlTemplate(e.target.value)}
                     />
                   </div>
                   {createSiteError && <ErrorBanner message={createSiteError} />}

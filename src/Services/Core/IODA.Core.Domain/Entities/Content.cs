@@ -16,6 +16,8 @@ public class Content : AggregateRoot<Guid>
     public Guid ProjectId { get; private set; }
     public Guid EnvironmentId { get; private set; }
     public Guid? SiteId { get; private set; }
+    /// <summary>Contenido padre para jerarquía (Req 3). Null = raíz.</summary>
+    public Guid? ParentContentId { get; private set; }
     public Guid SchemaId { get; private set; }
     public string Title { get; private set; } = null!;
     public Slug Slug { get; private set; } = null!;
@@ -41,6 +43,8 @@ public class Content : AggregateRoot<Guid>
     public Environment Environment { get; private set; } = null!;
     public Site? Site { get; private set; }
     public ContentSchema Schema { get; private set; } = null!;
+    /// <summary>Navegación al contenido padre (solo para EF).</summary>
+    public Content? Parent { get; private set; }
     public IReadOnlyCollection<ContentVersion> Versions => _versions.AsReadOnly();
 
     // EF Core constructor
@@ -52,6 +56,7 @@ public class Content : AggregateRoot<Guid>
         Guid projectId,
         Guid environmentId,
         Guid? siteId,
+        Guid? parentContentId,
         Guid schemaId,
         string title,
         Slug slug,
@@ -64,6 +69,7 @@ public class Content : AggregateRoot<Guid>
         ProjectId = projectId;
         EnvironmentId = environmentId;
         SiteId = siteId;
+        ParentContentId = parentContentId;
         SchemaId = schemaId;
         Title = title;
         Slug = slug;
@@ -98,6 +104,7 @@ public class Content : AggregateRoot<Guid>
         Guid projectId,
         Guid environmentId,
         Guid? siteId,
+        Guid? parentContentId,
         Guid schemaId,
         string title,
         string contentType,
@@ -124,12 +131,20 @@ public class Content : AggregateRoot<Guid>
             projectId,
             environmentId,
             siteId,
+            parentContentId,
             schemaId,
             title,
             slug,
             contentType,
             fields,
             createdBy);
+    }
+
+    /// <summary>Asigna o cambia el contenido padre (jerarquía). Validación anti-ciclos en aplicación.</summary>
+    public void SetParent(Guid? parentContentId)
+    {
+        ParentContentId = parentContentId;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>Asigna o cambia el sitio asociado al contenido (opcional).</summary>

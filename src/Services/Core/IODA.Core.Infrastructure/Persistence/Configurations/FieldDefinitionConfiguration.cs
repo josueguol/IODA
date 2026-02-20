@@ -25,6 +25,16 @@ public class FieldDefinitionConfiguration : IEntityTypeConfiguration<FieldDefini
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(f => f.Label)
+            .HasColumnName("label")
+            .HasMaxLength(200)
+            .IsRequired();
+
+        builder.Property(f => f.Slug)
+            .HasColumnName("slug")
+            .HasMaxLength(100)
+            .IsRequired();
+
         builder.Property(f => f.FieldType)
             .HasColumnName("field_type")
             .HasMaxLength(50)
@@ -60,6 +70,10 @@ public class FieldDefinitionConfiguration : IEntityTypeConfiguration<FieldDefini
         builder.HasIndex(f => new { f.SchemaId, f.FieldName })
             .IsUnique()
             .HasDatabaseName("ix_field_definitions_schema_name");
+
+        builder.HasIndex(f => new { f.SchemaId, f.Slug })
+            .IsUnique()
+            .HasDatabaseName("ix_field_definitions_schema_slug");
 
         builder.Ignore(f => f.DomainEvents);
     }

@@ -37,6 +37,8 @@ export interface Site {
   subdomain: string | null
   subpath: string | null
   themeId: string | null
+  /** Plantilla de URL para resolución por path. Ej: /{slug} */
+  urlTemplate: string | null
   isActive: boolean
   createdAt: string
   updatedAt: string | null
@@ -64,6 +66,10 @@ export type ValidationRules = Record<string, unknown>
 export interface FieldDefinition {
   id: string
   fieldName: string
+  /** Etiqueta visible en la UI (ej. "Descripción corta"). */
+  label: string
+  /** Clave técnica, kebab-case, única en el schema (ej. "descripcion-corta"). */
+  slug: string
   fieldType: string
   isRequired: boolean
   defaultValue: unknown
@@ -102,13 +108,21 @@ export interface ContentSchemaListItem {
 
 /** Campo para crear schema. POST /api/projects/{projectId}/schemas */
 export interface CreateSchemaFieldDto {
-  fieldName: string
+  label: string
+  slug: string
   fieldType: string
   isRequired?: boolean
   defaultValue?: unknown
   helpText?: string | null
   validationRules?: Record<string, unknown> | null
   displayOrder?: number
+}
+
+/** Sugerencia de campo por defecto. GET /api/projects/{projectId}/schemas/default-fields */
+export interface DefaultFieldSuggestionDto {
+  label: string
+  slug: string
+  fieldType: string
 }
 
 /** Request para crear schema. POST /api/projects/{projectId}/schemas */
@@ -128,6 +142,7 @@ export interface Content {
   projectId: string
   environmentId: string
   siteId: string | null
+  parentContentId: string | null
   schemaId: string
   title: string
   slug: string
@@ -141,6 +156,20 @@ export interface Content {
   createdBy: string
   updatedBy: string | null
   publishedBy: string | null
+  tagIds: string[]
+  hierarchyIds: string[]
+  siteIds: string[]
+}
+
+/** Jerarquía/categoría del proyecto (HierarchyDto). */
+export interface Hierarchy {
+  id: string
+  projectId: string
+  name: string
+  slug: string
+  description: string | null
+  imageUrl: string | null
+  parentHierarchyId: string | null
 }
 
 /** Item de lista (ContentListItemDto). */
@@ -152,8 +181,17 @@ export interface ContentListItem {
   status: string
   contentType: string
   siteId: string | null
+  parentContentId: string | null
   createdAt: string
   publishedAt: string | null
+}
+
+/** Etiqueta del proyecto (TagDto). */
+export interface Tag {
+  id: string
+  projectId: string
+  name: string
+  slug: string
 }
 
 export interface PagedResult<T> {

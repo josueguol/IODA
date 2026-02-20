@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { coreApi } from '../../modules/core/api/core-api'
 import { useContextStore } from '../../modules/core/store/context-store'
-import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { useSchemaStore } from '../../modules/schema/store/schema-store'
 import { DynamicForm, type DynamicFormProps } from '../../modules/schema/components/DynamicForm'
+import { ParentContentSelector } from '../../modules/core/components/ParentContentSelector'
+import { TagsSelector } from '../../modules/core/components/TagsSelector'
+import { HierarchySelector } from '../../modules/core/components/HierarchySelector'
+import { SiteSelector } from '../../modules/core/components/SiteSelector'
 
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: 640, color: 'var(--page-text)' },
@@ -19,10 +22,13 @@ const styles: Record<string, React.CSSProperties> = {
 export function CreateContentPage() {
   const navigate = useNavigate()
   const { currentProjectId, currentEnvironmentId, currentSiteId } = useContextStore()
-  const user = useAuthStore((s) => s.user)
   const { schemaList, loadSchemas, getSchemaSync, listLoading, listError } = useSchemaStore()
   const [selectedSchemaId, setSelectedSchemaId] = useState<string>('')
   const [contentTitle, setContentTitle] = useState('')
+  const [parentContentId, setParentContentId] = useState<string | null>(null)
+  const [tagIds, setTagIds] = useState<string[]>([])
+  const [hierarchyIds, setHierarchyIds] = useState<string[]>([])
+  const [siteIds, setSiteIds] = useState<string[]>([])
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -39,22 +45,20 @@ export function CreateContentPage() {
       setSubmitError('Proyecto, entorno, schema y título son obligatorios.')
       return
     }
-    const createdBy = user?.userId
-    if (!createdBy) {
-      setSubmitError('Usuario no identificado.')
-      return
-    }
     setSubmitError(null)
     try {
       const fields = values as Record<string, unknown>
       await coreApi.createContent(currentProjectId, {
         environmentId: currentEnvironmentId,
         siteId: currentSiteId ?? undefined,
+        parentContentId: parentContentId ?? undefined,
         schemaId: selectedSchemaId,
         title: contentTitle.trim(),
         contentType,
         fields,
-        createdBy,
+        tagIds: tagIds.length > 0 ? tagIds : undefined,
+        hierarchyIds: hierarchyIds.length > 0 ? hierarchyIds : undefined,
+        siteIds: siteIds.length > 0 ? siteIds : undefined,
       })
       navigate('/content', { replace: true })
     } catch (e) {
@@ -104,7 +108,7 @@ export function CreateContentPage() {
         {listError && <p style={styles.error}>{listError}</p>}
       </div>
 
-      {selectedSchemaId && (
+      {selectedSchemaId && currentProjectId && (
         <>
           <div>
             <label htmlFor="content-title">Título del contenido *</label>
@@ -118,6 +122,20 @@ export function CreateContentPage() {
               placeholder="Ej. Mi primer artículo"
             />
           </div>
+
+          <ParentContentSelector
+            projectId={currentProjectId}
+            value={parentContentId}
+            onChange={setParentContentId}
+          />
+          <TagsSelector projectId={currentProjectId} value={tagIds} onChange={setTagIds} />
+          <HierarchySelector projectId={currentProjectId} value={hierarchyIds} onChange={setHierarchyIds} />
+          <SiteSelector
+            projectId={currentProjectId}
+            environmentId={currentEnvironmentId}
+            value={siteIds}
+            onChange={setSiteIds}
+          />
 
           {submitError && <p style={styles.error}>{submitError}</p>}
 

@@ -8,7 +8,9 @@ export type {
   ContentVersion,
   Environment,
   FieldDefinition,
+  Hierarchy,
   PagedResult,
   Project,
+  Tag,
   ValidationRules,
 } from './types'

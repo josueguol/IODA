@@ -26,7 +26,8 @@ public class UpdateSiteCommandHandler : IRequestHandler<UpdateSiteCommand, SiteD
             request.Domain,
             request.Subdomain,
             request.Subpath,
-            request.ThemeId);
+            request.ThemeId,
+            request.UrlTemplate);
 
         await _unitOfWork.Sites.UpdateAsync(site, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
