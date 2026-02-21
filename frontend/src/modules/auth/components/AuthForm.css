@@ -1,0 +1,157 @@
+/* Estilos compartidos de formulario auth: mobile-first, flexbox */
+.auth-form__title {
+  margin: 0 0 1.25rem;
+  color: #fff;
+  font-size: clamp(1.75rem, 5vw, 2rem);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+}
+
+.auth-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.auth-form__label {
+  display: block;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.auth-form__input {
+  width: 100%;
+  min-height: 2.35rem;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: 10px;
+  background: #fcfcfc;
+  color: #1a1a1a;
+  font-size: 0.9375rem;
+  box-sizing: border-box;
+}
+
+.auth-form__input:disabled {
+  opacity: 0.8;
+}
+
+.auth-form__submit {
+  margin-top: 0.5rem;
+  min-height: 3.35rem;
+  padding: 0 1rem;
+  border: none;
+  border-radius: 10px;
+  background: #35a0e8;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+
+.auth-form__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auth-form__submit--secondary {
+  background: #6c757d;
+}
+
+.auth-form__error,
+.auth-form__notice {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.auth-form__error {
+  color: #842029;
+  background: #f8d7da;
+}
+
+.auth-form__notice {
+  color: #856404;
+  background: #fff3cd;
+}
+
+.auth-form__link {
+  display: block;
+  margin-top: 1.25rem;
+  text-align: center;
+  color: #35a0e8;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.auth-form__link:hover {
+  text-decoration: underline;
+}
+
+.auth-form__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.auth-form__progress {
+  margin: 0 0 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.875rem;
+}
+
+.auth-form__progress-spinner {
+  display: inline-block;
+  margin-right: 0.4rem;
+  animation: spin 1s linear infinite;
+}
+
+/* Primera configuración (registro primer usuario) */
+.auth-form__badge-wrap {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.auth-form__badge {
+  display: inline-block;
+  background: #ffc702;
+  color: #000;
+  border-radius: 999px;
+  padding: 0.28rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.auth-form__subtitle {
+  margin: 0 0 1.25rem;
+  color: #a7a7ab;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  max-width: 22rem;
+}
+
+.auth-form__subtitle--spaced {
+  margin-bottom: 1rem;
+}
+
+.auth-form__helper {
+  margin: 0 0 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -45,12 +45,33 @@ Temas:
    - Controllers solo adaptadores.
 
 3. Frontend:
-   - Componentes limpios.
-   - Tipado fuerte.
-   - Separación de UI y lógica.
-   - Consumir APIs contract-first.
-   - Manejar errores explícitamente.
-
+   - Performance
+      - En SPA debes saber:
+      - Code splitting
+      - Lazy loading
+      - Memoización cuando es necesaria
+      - Evitar renders innecesarios
+      - No abusar de context global
+   - Siempre debes considerar:
+      - Atomic Design
+      - Componentes limpios.
+      - Componentes reutilizables
+      - Tipado fuerte.
+         - Props tipadas
+      - Separación de UI y lógica.
+      - Consumir APIs contract-first.
+      - Manejar errores explícitamente.
+      - Uso de Semantic HTML siempre.
+   - Debe evitar hacer:
+      - Colocar estilos inline.
+      - Agregar Tags HTML innecesarios.
+      - Evitar componentes gigantes.
+      - Crear componentes de mas de 200–300 líneas.
+   - Convenciones
+      - Convenciones de nombres claras
+      - Estructura de carpetas coherente
+      - Principios SOLID aplicados al frontend
+      - DR
 4. Handlebars:
    - Solo presentación.
    - Sin lógica de negocio.

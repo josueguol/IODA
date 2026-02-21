@@ -1,0 +1,79 @@
+/* Mobile-first: una columna, panel a ancho completo */
+.auth-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  color: #fff;
+  font-family: Inter, system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+.auth-layout__panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 100vh;
+  padding: 1.5rem 1.25rem 2rem;
+  box-sizing: border-box;
+  align-items: center;
+}
+
+.auth-layout__brand {
+  font-family: "AR One Sans", system-ui, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin: 1.5rem 0 2rem;
+}
+
+.auth-layout__content {
+  width: 100%;
+  max-width: 22rem;
+}
+
+.auth-layout__content> h1, p {
+  text-align: center;
+}
+
+.auth-layout__spacer {
+  display: none;
+}
+
+/* Desktop: fila, panel fijo a la izquierda, resto gris */
+@media (min-width: 900px) {
+  .auth-layout {
+    flex-direction: row;
+  }
+
+  .auth-layout__panel {
+    flex: 0 0 auto;
+    width: min(28vw, 428px);
+    min-width: 320px;
+    min-height: 100vh;
+    padding: 4.5rem 2.5rem;
+    align-items: center;
+  }
+
+  .auth-layout__brand {
+    margin-bottom: 5rem;
+    font-size: 3rem;
+  }
+
+  .auth-layout__content {
+    max-width: 248px;
+  }
+
+  .auth-layout__spacer {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    background-image: url('/ioda.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}
