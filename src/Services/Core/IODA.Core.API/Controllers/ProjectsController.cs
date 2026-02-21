@@ -3,6 +3,7 @@ using IODA.Core.Application.Commands.Projects;
 using IODA.Core.Application.DTOs;
 using IODA.Core.Application.Queries.Environments;
 using IODA.Core.Application.Queries.Projects;
+using IODA.Core.API.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,17 +12,19 @@ namespace IODA.Core.API.Controllers;
 
 [ApiController]
 [Route("api/projects")]
-[Authorize(Policy = "project.edit")]
+[Authorize]
 public class ProjectsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private const string PermissionClaimType = "permission";
+    private const string ProjectEditPermission = "project.edit";
 
     public ProjectsController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    /// <summary>Listar proyectos (paginado). Requiere permiso project.edit. Sin permiso → 403 Forbidden.</summary>
+    /// <summary>Listar proyectos (paginado). Si no hay proyectos aún, permite bootstrap del primer usuario; luego requiere project.edit.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResultDto<ProjectDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -35,6 +38,21 @@ public class ProjectsController : ControllerBase
             page = p;
         if (query.TryGetValue("pageSize", out var sizeVal) && int.TryParse(sizeVal, out var s) && s >= 1 && s <= 100)
             pageSize = s;
+
+        if (!User.HasClaim(PermissionClaimType, ProjectEditPermission))
+        {
+            var bootstrapCheck = await _mediator.Send(new GetProjectsPagedQuery(1, 1), cancellationToken);
+            var userId = User.GetUserId();
+            var isSingleProjectOwnedByCurrentUser =
+                userId.HasValue &&
+                bootstrapCheck.TotalCount == 1 &&
+                bootstrapCheck.Items.Count == 1 &&
+                bootstrapCheck.Items[0].CreatedBy == userId.Value;
+
+            if (bootstrapCheck.TotalCount > 0 && !isSingleProjectOwnedByCurrentUser)
+                return Forbid();
+        }
+
         var result = await _mediator.Send(new GetProjectsPagedQuery(page, pageSize), cancellationToken);
         return Ok(result);
     }
@@ -43,8 +61,16 @@ public class ProjectsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Guid>> Create([FromBody] CreateProjectRequest request, CancellationToken cancellationToken)
     {
+        if (!User.HasClaim(PermissionClaimType, ProjectEditPermission))
+        {
+            var bootstrapCheck = await _mediator.Send(new GetProjectsPagedQuery(1, 1), cancellationToken);
+            if (bootstrapCheck.TotalCount > 0)
+                return Forbid();
+        }
+
         var command = new CreateProjectCommand(
             request.Name,
             request.Description,
@@ -55,6 +81,7 @@ public class ProjectsController : ControllerBase
 
     /// <summary>Obtener un proyecto por ID.</summary>
     [HttpGet("{projectId:guid}")]
+    [Authorize(Policy = "project.edit")]
     [ProducesResponseType(typeof(ProjectDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProjectDto>> GetById(Guid projectId, CancellationToken cancellationToken)
@@ -67,6 +94,7 @@ public class ProjectsController : ControllerBase
 
     /// <summary>Listar entornos del proyecto.</summary>
     [HttpGet("{projectId:guid}/environments")]
+    [Authorize(Policy = "project.edit")]
     [ProducesResponseType(typeof(IReadOnlyList<EnvironmentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<EnvironmentDto>>> ListEnvironments(Guid projectId, CancellationToken cancellationToken)
     {
@@ -76,6 +104,7 @@ public class ProjectsController : ControllerBase
 
     /// <summary>Obtener un entorno por ID.</summary>
     [HttpGet("{projectId:guid}/environments/{environmentId:guid}")]
+    [Authorize(Policy = "project.edit")]
     [ProducesResponseType(typeof(EnvironmentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<EnvironmentDto>> GetEnvironmentById(Guid projectId, Guid environmentId, CancellationToken cancellationToken)
@@ -88,6 +117,7 @@ public class ProjectsController : ControllerBase
 
     /// <summary>Crear un entorno en el proyecto.</summary>
     [HttpPost("{projectId:guid}/environments")]
+    [Authorize(Policy = "project.edit")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

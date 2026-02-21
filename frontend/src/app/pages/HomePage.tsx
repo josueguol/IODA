@@ -196,6 +196,7 @@ export function HomePage() {
   const currentProject = projects.find((p) => p.id === currentProjectId)
   const currentEnvironment = environments.find((e) => e.id === currentEnvironmentId)
   const currentSite = sites.find((s) => s.id === currentSiteId)
+  const hasNoProjects = !projectsLoading && projects.length === 0
   const hasFullContext = Boolean(currentProjectId && currentEnvironmentId && currentSiteId)
   const contextState: 'EMPTY' | 'PROJECT_SELECTED' | 'PROJECT_ENV_SELECTED' | 'FULL_CONTEXT' =
     !currentProjectId
@@ -392,7 +393,14 @@ export function HomePage() {
       {/* Paso 1: Proyecto */}
       {contextState === 'EMPTY' && (
         <section style={styles.step}>
-          <h2 style={styles.stepTitle}>Paso 1 — Selecciona un proyecto</h2>
+          <h2 style={styles.stepTitle}>
+            {hasNoProjects ? 'Paso 1 — Crea tu primer proyecto' : 'Paso 1 — Selecciona un proyecto'}
+          </h2>
+          {hasNoProjects && (
+            <p style={styles.hint}>
+              No hay proyectos todavía. Crea el primero para iniciar la configuración del CMS.
+            </p>
+          )}
           {projectsLoading && !projects.length ? (
             <LoadingSpinner text="Cargando proyectos…" />
           ) : (
@@ -419,16 +427,27 @@ export function HomePage() {
                 ))}
               </ul>
               <div style={styles.actions}>
-                <Can permission="project.create" fallback={null}>
+                {hasNoProjects ? (
                   <button
                     type="button"
                     style={{ ...styles.button, ...styles.buttonSecondary }}
                     onClick={handleToggleCreateProject}
                     aria-expanded={showCreateProject}
                   >
-                    {showCreateProject ? 'Cancelar' : 'Crear proyecto'}
+                    {showCreateProject ? 'Cancelar' : 'Crear primer proyecto'}
                   </button>
-                </Can>
+                ) : (
+                  <Can permission="project.create" fallback={null}>
+                    <button
+                      type="button"
+                      style={{ ...styles.button, ...styles.buttonSecondary }}
+                      onClick={handleToggleCreateProject}
+                      aria-expanded={showCreateProject}
+                    >
+                      {showCreateProject ? 'Cancelar' : 'Crear proyecto'}
+                    </button>
+                  </Can>
+                )}
               </div>
               {showCreateProject && (
                 <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--input-bg)', borderRadius: 6, border: '1px solid var(--page-border)', color: 'var(--page-text)' }}>
