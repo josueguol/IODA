@@ -46,3 +46,28 @@ export function parsePermissionsFromAccessToken(accessToken: string | null): str
   }
   return []
 }
+
+/** Claim type de rol en JWT (Identity usa ClaimTypes.Role; en payload suele serializarse como "role"). */
+const JWT_ROLE_CLAIM_TYPES = [
+  'role',
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
+]
+
+/**
+ * Extrae los nombres de roles del access token.
+ * Compatible con "role" como string o string[] (backend Identity incluye roles desde Authorization).
+ */
+export function parseRolesFromAccessToken(accessToken: string | null): string[] {
+  if (!accessToken?.trim()) return []
+  const payload = decodeJwtPayload(accessToken)
+  if (!payload || typeof payload !== 'object') return []
+  for (const claimType of JWT_ROLE_CLAIM_TYPES) {
+    const raw = payload[claimType]
+    if (raw == null) continue
+    if (typeof raw === 'string') return raw ? [raw] : []
+    if (Array.isArray(raw)) {
+      return raw.filter((r): r is string => typeof r === 'string' && r.length > 0)
+    }
+  }
+  return []
+}

@@ -1,0 +1,497 @@
+/* Paso 1, 2 y 3: mismo estilo de formulario (login.pen). Mobile-first, flexbox. */
+.onboarding-step {
+  background: var(--cms-step-bg, var(--page-bg-elevated));
+  color: var(--page-text);
+  box-sizing: border-box;
+}
+
+/* Área de trabajo: contenido fluye sin overflow; el main hace scroll si hace falta */
+.onboarding-step--work-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 24px 16px;
+  overflow: visible;
+}
+
+.onboarding-step--work-area .onboarding-step__list-wrap {
+  margin-top: 0.5rem;
+}
+
+/* Paso único en pantalla (solo Step2 o Step3): área limpia sin caja apilada */
+.onboarding-step--clean {
+  background: transparent;
+  border: none;
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: 0;
+}
+
+.onboarding-step__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  font-weight: 600;
+  color: var(--page-text);
+  line-height: 1.25;
+}
+
+.onboarding-step__hint {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--page-text-muted);
+  line-height: 1.4;
+}
+
+/* Estado vacío (.pen): tarjeta grande + dos líneas de texto 32px — también usado por OnboardingEmptyCard */
+.onboarding-step__empty,
+.onboarding-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 520px) {
+  .onboarding-step__empty,
+  .onboarding-empty {
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+  }
+}
+
+.onboarding-step__empty-card,
+.onboarding-empty__card {
+  flex-shrink: 0;
+  width: min(160px, 40vw);
+  aspect-ratio: 1;
+  min-width: 120px;
+  min-height: 120px;
+  border-radius: 25px;
+  border: 3px solid var(--onboarding-empty-card-border);
+  background: var(--onboarding-empty-card-bg);
+  color: var(--onboarding-empty-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.onboarding-step__empty-card:hover,
+.onboarding-empty__card:hover {
+  border-color: var(--cms-primary);
+  color: var(--cms-primary);
+}
+
+.onboarding-step__empty-card {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.onboarding-empty__icon {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.onboarding-step__empty-text,
+.onboarding-empty__text {
+  color: var(--onboarding-empty-text);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 400;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.onboarding-step__empty-text span,
+.onboarding-empty__text span {
+  display: block;
+}
+
+/* Área de trabajo vacía: grid responsive; elementos bajan al llegar al final, sin scroll interno */
+.work-area {
+  width: 100%;
+  min-width: 0;
+}
+
+.work-area--empty {
+  display: grid;
+  height: 100%;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, 160px);
+  grid-auto-rows: 160px;
+  gap: 16px;
+  justify-content: start;
+  align-content: start;
+}
+
+.work-area__center-message {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  font-weight: 400;
+  color: var(--page-text-muted);
+  line-height: 1.35;
+  padding: 40px 0;
+  grid-column: 1 / -1;
+  text-align: center;
+}
+
+.work-area__first-action {
+  gap: 1rem;
+  display: flex;
+}
+
+.work-area__add-card {
+  flex-shrink: 0;
+  width: min(160px, 40vw);
+  aspect-ratio: 1;
+  min-width: 120px;
+  min-height: 120px;
+  border-radius: 25px;
+  border: 3px solid var(--onboarding-add-card-border);
+  background: var(--onboarding-add-card-bg);
+  color: var(--onboarding-add-card-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+  padding: 0;
+  font: inherit;
+}
+
+.work-area__add-card:hover {
+  border-color: var(--onboarding-add-card-border-hover);
+  background: var(--onboarding-add-card-bg-hover);
+  color: var(--cms-primary);
+}
+
+.work-area__add-card-icon {
+  color: inherit;
+}
+
+.work-area__helper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--page-text-muted);
+}
+
+.work-area__helper-arrow {
+  flex-shrink: 0;
+  color: var(--cms-primary);
+}
+
+.work-area__helper-text {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 500;
+  color: var(--page-text);
+  width: max-content;
+}
+
+/* Área de trabajo: filas de tarjetas que se agregan hacia la derecha */
+.onboarding-step__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  align-items: flex-start;
+}
+
+.onboarding-step__list-wrap {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  align-items: flex-start;
+}
+
+/* Tarjetas de proyecto: azul como en la imagen (borde e iniciales/nombre) */
+.onboarding-card {
+  flex-shrink: 0;
+  width: min(160px, 40vw);
+  aspect-ratio: 1;
+  min-width: 120px;
+  min-height: 120px;
+  border-radius: 25px;
+  border: 3px solid var(--cms-primary);
+  background: var(--onboarding-project-card-bg);
+  color: var(--cms-primary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: Inter, system-ui, sans-serif;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s, box-shadow 0.2s;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.onboarding-card:hover {
+  border-color: var(--cms-primary);
+  color: var(--cms-primary);
+  box-shadow: 0 2px 8px rgba(53, 160, 232, 0.2);
+}
+
+.onboarding-card--selected {
+  border-color: var(--cms-primary);
+  background: var(--card-selected-bg);
+  color: var(--cms-primary);
+}
+
+/* Tarjeta "Crear proyecto": gris, no apariencia deshabilitada */
+.onboarding-add-card {
+  flex-shrink: 0;
+  width: min(160px, 40vw);
+  aspect-ratio: 1;
+  min-width: 120px;
+  min-height: 120px;
+  border-radius: 25px;
+  border: 3px solid var(--onboarding-add-card-border);
+  background: var(--onboarding-add-card-bg);
+  color: var(--onboarding-add-card-text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: Inter, system-ui, sans-serif;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.onboarding-add-card:hover {
+  border-color: var(--onboarding-add-card-border-hover);
+  background: var(--onboarding-add-card-bg-hover);
+  color: var(--cms-primary);
+}
+
+.onboarding-add-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.onboarding-add-card__icon svg {
+  color: inherit;
+}
+
+.onboarding-add-card__legend {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.onboarding-card__initials {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.onboarding-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  word-break: break-word;
+}
+
+/* Legacy: cards en lista compacta (por si se usa en algún step como fallback) */
+button.onboarding-step__card {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: inherit;
+  color: var(--page-text);
+  background: var(--card-bg);
+  border: 1px solid var(--page-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+button.onboarding-step__card:hover {
+  border-color: var(--cms-primary);
+  color: var(--cms-primary);
+}
+
+button.onboarding-step__card--selected {
+  border-color: var(--cms-primary);
+  background: var(--card-selected-bg);
+  color: var(--cms-primary);
+}
+
+.onboarding-step__card-title {
+  font-weight: 600;
+}
+
+.onboarding-step__card-desc {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--page-text-muted);
+}
+
+.onboarding-step__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Contenedor del formulario: igual que Step 1 - Project Creation - Form (.pen) */
+.onboarding-step__form-wrap {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: #ecf4f9;
+  border-radius: 10px;
+  border: 1px solid var(--page-border);
+  color: #1a1a1a;
+}
+
+/* Solo formulario de crear proyecto: centrado sin afectar entorno/sitio */
+.onboarding-step__form-wrap--centered {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 28rem;
+  width: 100%;
+}
+
+/* Tache para cancelar creación (esquina superior derecha); colores que contrastan con #ecf4f9 */
+.onboarding-step__form-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.onboarding-step__form-close:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.1);
+  color: #111827;
+}
+
+.onboarding-step__form-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  color: #6b7280;
+}
+
+.onboarding-step__form-title {
+  margin: 0 0 1rem;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 400;
+  color: #000;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.onboarding-step__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+}
+
+.onboarding-step__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.onboarding-step__label {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #000;
+}
+
+/* Inputs: #ffffff, 37px, border-radius 10 (.pen); sobrescriben estilos globales */
+input.onboarding-step__input {
+  width: 100%;
+  max-width: 100%;
+  min-height: 2.3125rem; /* 37px */
+  padding: 0 0.75rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1a1a1a;
+  box-sizing: border-box;
+}
+
+input.onboarding-step__input::placeholder {
+  color: var(--page-text-muted);
+}
+
+input.onboarding-step__input:disabled {
+  opacity: 0.8;
+}
+
+/* Botón principal: #35a0e8, 54px (.pen); sobrescribe estilos globales de button */
+button.onboarding-step__submit {
+  min-height: 3.375rem; /* 54px */
+  padding: 0 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--cms-primary);
+  color: #fff;
+}
+
+button.onboarding-step__submit:hover {
+  border-color: transparent;
+}
+
+button.onboarding-step__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Secundario (Cancelar): fondo blanco, texto oscuro (.pen) */
+button.onboarding-step__submit--secondary {
+  background: #ffffff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+button.onboarding-step__submit--secondary:hover {
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Paso 3: formulario sitio tiene más campos; mismo ancho máximo por campo */
+.onboarding-step__form--wide input.onboarding-step__input {
+  max-width: 22rem;
+}

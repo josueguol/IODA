@@ -6,6 +6,8 @@ import { authorizationApi } from '../../authorization/api/authorization-api'
 import { parsePermissionsFromAccessToken } from '../../authorization/utils/jwt-permissions'
 import { config } from '../../../config/env'
 import { buildLoginRedirect } from '../../../shared/auth-redirect'
+import { AuthLayout } from '../components/AuthLayout'
+import '../components/AuthForm.css'
 import type { ApiError } from '../../../shared/api'
 import type { SetupStatus } from '../types'
 
@@ -39,109 +41,11 @@ function getRegisterErrorMessage(err: unknown): string {
   return 'Error al registrar'
 }
 
-const s: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100vh',
-    padding: '1rem',
-    background: 'var(--page-bg)',
-    color: 'var(--page-text)',
-    fontFamily: 'system-ui, sans-serif',
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    padding: '2rem',
-    background: 'var(--page-bg-elevated, #fff)',
-    borderRadius: 12,
-    border: '1px solid var(--page-border, #e0e0e0)',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-  },
-  title: {
-    marginTop: 0,
-    marginBottom: '0.5rem',
-    fontSize: '1.5rem',
-    fontWeight: 700,
-    textAlign: 'center',
-    color: 'var(--page-text)',
-  },
-  subtitle: {
-    marginTop: 0,
-    marginBottom: '1.5rem',
-    fontSize: '0.875rem',
-    textAlign: 'center',
-    color: 'var(--page-text-secondary, #666)',
-  },
-  form: { display: 'flex', flexDirection: 'column', gap: '1rem' },
-  label: { display: 'block', marginBottom: 4, fontWeight: 500, fontSize: '0.875rem' },
-  input: {
-    width: '100%',
-    padding: '0.65rem 0.75rem',
-    border: '1px solid var(--input-border, #ccc)',
-    borderRadius: 6,
-    boxSizing: 'border-box' as const,
-    fontSize: '0.9375rem',
-    color: 'var(--input-text, #222)',
-    background: 'var(--input-bg, #fff)',
-  },
-  button: {
-    padding: '0.7rem 1rem',
-    background: '#0d6efd',
-    color: 'white',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: '0.9375rem',
-    marginTop: '0.25rem',
-  },
-  error: {
-    color: '#dc3545',
-    fontSize: '0.875rem',
-    padding: '0.5rem 0.75rem',
-    background: '#f8d7da',
-    borderRadius: 6,
-  },
-  setupProgress: {
-    fontSize: '0.875rem',
-    color: 'var(--page-text-secondary, #666)',
-    textAlign: 'center',
-    padding: '1rem 0',
-  },
-  link: {
-    color: '#0d6efd',
-    textDecoration: 'none',
-    fontSize: '0.875rem',
-    textAlign: 'center',
-    display: 'block',
-    marginTop: '1rem',
-  },
-  badge: {
-    display: 'inline-block',
-    padding: '0.25rem 0.75rem',
-    background: '#ffc107',
-    color: '#333',
-    borderRadius: 20,
-    fontSize: '0.75rem',
-    fontWeight: 600,
-    letterSpacing: '0.02em',
-    marginBottom: '0.25rem',
-  },
-  blocked: {
-    textAlign: 'center',
-    padding: '2rem 0',
-    fontSize: '0.95rem',
-    color: 'var(--page-text-secondary, #666)',
-  },
-}
-
 export function RegisterPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -258,6 +162,10 @@ export function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    if (isFirstUserSetup && password !== confirmPassword) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
     setLoading(true)
     setSetupStep(null)
     try {
@@ -321,149 +229,161 @@ export function RegisterPage() {
     }
   }
 
-  // Waiting for setup status
   if (setupStatus === null) {
     return (
-      <div style={s.container}>
-        <div style={s.card}>
-          <p style={{ textAlign: 'center', color: 'var(--page-text-secondary, #666)' }}>Cargando…</p>
-        </div>
-      </div>
+      <AuthLayout>
+        <p className="auth-form__progress" aria-live="polite">Cargando…</p>
+      </AuthLayout>
     )
   }
 
-  // Registration blocked
   if (registrationBlocked) {
     return (
-      <div style={s.container}>
-        <div style={s.card}>
-          <h1 style={s.title}>Registro deshabilitado</h1>
-          <p style={s.blocked}>
-            El auto-registro está deshabilitado en este sistema.<br />
-            Contacta a un administrador para obtener una cuenta.
-          </p>
-          <Link to="/login" style={s.link}>
-            Ir a iniciar sesión
-          </Link>
-        </div>
-      </div>
+      <AuthLayout>
+        <h1 className="auth-form__title">Registro deshabilitado</h1>
+        <p className="auth-form__helper">
+          El auto-registro está deshabilitado en este sistema.
+          Contacta a un administrador para obtener una cuenta.
+        </p>
+        <Link to="/login" className="auth-form__link">
+          Ir a iniciar sesión
+        </Link>
+      </AuthLayout>
     )
   }
 
-  // Post-setup: sesión creada pero JWT sin permisos (Identity sin AuthorizationApi configurado, etc.)
   if (postSetupJwtNoPermissions) {
     return (
-      <div style={s.container}>
-        <div style={s.card}>
-          <h1 style={s.title}>Configuración completada</h1>
-          <p style={{ ...s.subtitle, marginBottom: '1rem' }}>
-            Tu sesión se creó pero el token no incluye permisos. Esto puede deberse a la configuración del backend (Identity ↔ Authorization).
-          </p>
-          <p style={{ fontSize: '0.875rem', color: 'var(--page-text-secondary, #666)', marginBottom: '1rem' }}>
-            Puedes continuar pero algunas funciones estarán limitadas hasta que inicies sesión de nuevo con el backend correctamente configurado.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <button
-              type="button"
-              style={s.button}
-              onClick={() => navigate('/', { replace: true })}
-            >
-              Continuar de todos modos
-            </button>
-            <button
-              type="button"
-              style={{ ...s.button, background: '#6c757d' }}
-              onClick={() => {
-                useAuthStore.getState().logout()
-                window.location.href = buildLoginRedirect(config.routerType)
-              }}
-            >
-              Cerrar sesión
-            </button>
-          </div>
+      <AuthLayout>
+        <h1 className="auth-form__title">Configuración completada</h1>
+        <p className="auth-form__subtitle auth-form__subtitle--spaced">
+          Tu sesión se creó pero el token no incluye permisos. Esto puede deberse a la configuración del backend (Identity ↔ Authorization).
+        </p>
+        <p className="auth-form__helper">
+          Puedes continuar pero algunas funciones estarán limitadas hasta que inicies sesión de nuevo con el backend correctamente configurado.
+        </p>
+        <div className="auth-form__actions">
+          <button
+            type="button"
+            className="auth-form__submit"
+            onClick={() => navigate('/', { replace: true })}
+          >
+            Continuar de todos modos
+          </button>
+          <button
+            type="button"
+            className="auth-form__submit auth-form__submit--secondary"
+            onClick={() => {
+              useAuthStore.getState().logout()
+              window.location.href = buildLoginRedirect(config.routerType)
+            }}
+          >
+            Cerrar sesión
+          </button>
         </div>
-      </div>
+      </AuthLayout>
     )
   }
 
   return (
-    <div style={s.container}>
-      <div style={s.card}>
-        {isFirstUserSetup && (
-          <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-            <span style={s.badge}>CONFIGURACIÓN INICIAL</span>
-          </div>
-        )}
-        <h1 style={s.title}>
-          {isFirstUserSetup ? 'Crear administrador' : 'Crear cuenta'}
-        </h1>
-        <p style={s.subtitle}>
-          {isFirstUserSetup
-            ? 'Este será el primer usuario y se le asignará el rol de SuperAdmin automáticamente.'
-            : 'Completa los datos para registrarte en el sistema.'}
+    <AuthLayout>
+      {isFirstUserSetup && (
+        <div className="auth-form__badge-wrap">
+          <span className="auth-form__badge" role="status">CONFIGURACIÓN INICIAL</span>
+        </div>
+      )}
+      <h1 className="auth-form__title">
+        {isFirstUserSetup ? 'Crear administrador' : 'Crear cuenta'}
+      </h1>
+      <p className="auth-form__subtitle">
+        {isFirstUserSetup
+          ? 'Este será el primer usuario y se le asignará el rol de SuperAdmin automáticamente.'
+          : 'Completa los datos para registrarte en el sistema.'}
+      </p>
+
+      {setupStep && (
+        <p className="auth-form__progress" role="status" aria-live="polite">
+          <span className="auth-form__progress-spinner" aria-hidden>⏳</span>
+          {setupStep}
         </p>
+      )}
 
-        {setupStep && (
-          <div style={s.setupProgress}>
-            <span style={{ display: 'inline-block', marginRight: 6, animation: 'spin 1s linear infinite' }}>⏳</span>
-            {setupStep}
-          </div>
-        )}
-
-        <form style={s.form} onSubmit={handleSubmit}>
-          <div>
-            <label style={s.label} htmlFor="email">Email</label>
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <div className="auth-form__field">
+          <label className="auth-form__label" htmlFor="register-email">Correo</label>
+          <input
+            id="register-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="auth-form__input"
+            required
+            autoComplete="email"
+            disabled={loading}
+            aria-invalid={!!error}
+          />
+        </div>
+        <div className="auth-form__field">
+          <label className="auth-form__label" htmlFor="register-displayName">Nombre</label>
+          <input
+            id="register-displayName"
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="auth-form__input"
+            autoComplete="name"
+            disabled={loading}
+            placeholder={isFirstUserSetup ? 'Nombre del administrador' : 'Opcional'}
+          />
+        </div>
+        <div className="auth-form__field">
+          <label className="auth-form__label" htmlFor="register-password">Contraseña</label>
+          <input
+            id="register-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="auth-form__input"
+            required
+            autoComplete="new-password"
+            disabled={loading}
+            minLength={6}
+            aria-invalid={!!error}
+          />
+        </div>
+        {isFirstUserSetup && (
+          <div className="auth-form__field">
+            <label className="auth-form__label" htmlFor="register-confirmPassword">Confirmar contraseña</label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={s.input}
-              required
-              autoComplete="email"
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <label style={s.label} htmlFor="displayName">Nombre</label>
-            <input
-              id="displayName"
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              style={s.input}
-              autoComplete="name"
-              disabled={loading}
-              placeholder={isFirstUserSetup ? 'Nombre del administrador' : 'Opcional'}
-            />
-          </div>
-          <div>
-            <label style={s.label} htmlFor="password">Contraseña</label>
-            <input
-              id="password"
+              id="register-confirmPassword"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={s.input}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="auth-form__input"
               required
               autoComplete="new-password"
               disabled={loading}
               minLength={6}
+              aria-invalid={!!error}
             />
           </div>
-          {error && <p style={s.error}>{error}</p>}
-          <button type="submit" style={{ ...s.button, opacity: loading ? 0.7 : 1 }} disabled={loading}>
-            {loading
-              ? (isFirstUserSetup ? 'Configurando sistema…' : 'Registrando…')
-              : (isFirstUserSetup ? 'Crear administrador y configurar' : 'Registrarse')}
-          </button>
-        </form>
-        {!isFirstUserSetup && (
-          <Link to="/login" style={s.link}>
-            Ya tengo cuenta
-          </Link>
         )}
-      </div>
-    </div>
+        {error && (
+          <p className="auth-form__error" role="alert">
+            {error}
+          </p>
+        )}
+        <button type="submit" className="auth-form__submit" disabled={loading}>
+          {loading
+            ? (isFirstUserSetup ? 'Configurando sistema…' : 'Registrando…')
+            : (isFirstUserSetup ? 'Crear y configurar' : 'Registrarse')}
+        </button>
+      </form>
+      {!isFirstUserSetup && (
+        <Link to="/login" className="auth-form__link">
+          Ya tengo cuenta
+        </Link>
+      )}
+    </AuthLayout>
   )
 }

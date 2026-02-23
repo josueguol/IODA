@@ -140,7 +140,6 @@ export const useContextStore = create<ContextState>((set, get) => ({
     })
     if (projectId) {
       get().loadEnvironments(projectId).catch(() => {})
-      get().loadSites(projectId).catch(() => {})
     }
   },
 

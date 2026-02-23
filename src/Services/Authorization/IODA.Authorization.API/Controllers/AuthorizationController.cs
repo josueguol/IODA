@@ -17,7 +17,7 @@ namespace IODA.Authorization.API.Controllers;
 [Authorize]
 public class AuthorizationController : ControllerBase
 {
-    public const string ServiceApiKeyHeaderName = "X-Service-Api-Key";
+    public const string SERVICE_API_KEY_HEADER_NAME = "X-Service-Api-Key";
 
     private readonly IMediator _mediator;
     private readonly IConfiguration _configuration;
@@ -31,7 +31,7 @@ public class AuthorizationController : ControllerBase
     private bool AllowEffectivePermissionsAccess()
     {
         var apiKey = _configuration["Authorization:ServiceApiKey"];
-        if (!string.IsNullOrWhiteSpace(apiKey) && Request.Headers.TryGetValue(ServiceApiKeyHeaderName, out var headerKey) && headerKey == apiKey)
+        if (!string.IsNullOrWhiteSpace(apiKey) && Request.Headers.TryGetValue(SERVICE_API_KEY_HEADER_NAME, out var headerKey) && headerKey == apiKey)
             return true;
         return User.Identity?.IsAuthenticated == true;
     }
@@ -120,6 +120,23 @@ public class AuthorizationController : ControllerBase
 
         var codes = await _mediator.Send(new GetEffectivePermissionsQuery(userId), cancellationToken);
         return Ok(codes);
+    }
+
+    /// <summary>
+    /// Obtener nombres de roles efectivos de un usuario (desde sus reglas de acceso).
+    /// Admite API key de servicio para llamadas desde Identity (JWT con roles para UI, ej. SuperAdmin = todos los permisos).
+    /// </summary>
+    [HttpGet("users/{userId:guid}/roles")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<string>>> GetUserRoles(Guid userId, CancellationToken cancellationToken)
+    {
+        if (!AllowEffectivePermissionsAccess())
+            return Unauthorized();
+
+        var roleNames = await _mediator.Send(new GetUserRoleNamesQuery(userId), cancellationToken);
+        return Ok(roleNames);
     }
 
     /// <summary>

@@ -1,0 +1,353 @@
+/* AppLayout según login.pen: barra superior + barra nav + área de contenido. Mobile-first. */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: Inter, system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Barra superior (.pen: 48px, logo izquierda, Settings/User derecha) */
+.app-layout__top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 1rem;
+  background: var(--cms-bar-top);
+  color: var(--cms-bar-top-text);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.app-layout__logo {
+  font-family: "AR One Sans", system-ui, sans-serif;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 900;
+  color: inherit;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.app-layout__logo:hover {
+  color: inherit;
+  opacity: 0.9;
+}
+
+.app-layout__top-right {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+/* Barra nav + breadcrumb (.pen: 48px, #35a0e8 — Home › Proyecto › Entorno › Sitio) */
+.app-layout__nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 48px;
+  padding: 0 1rem;
+  background: var(--cms-primary);
+  color: #fff;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.app-layout__nav-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.app-layout__nav-home svg {
+  color: inherit;
+}
+
+.app-layout__nav-home:hover {
+  color: inherit;
+  opacity: 0.9;
+}
+
+/* Breadcrumb dentro de la barra nav (mismo color blanco) */
+.app-layout__nav-bar .app-layout__breadcrumb-sep {
+  color: rgba(255, 255, 255, 0.85);
+  user-select: none;
+}
+
+.app-layout__nav-breadcrumb-value {
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 0.15s, opacity 0.15s;
+}
+
+.app-layout__nav-breadcrumb-value:hover {
+  border-bottom-color: rgba(255, 255, 255, 0.9);
+  opacity: 0.95;
+}
+
+.app-layout__nav-breadcrumb-value--link {
+  color: #fff;
+  border-bottom-color: rgba(255, 255, 255, 0.7);
+}
+
+.app-layout__nav-breadcrumb-value--link:hover {
+  border-bottom-color: #fff;
+}
+
+.app-layout__nav-breadcrumb-text {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.9375rem;
+}
+
+/* Barra de pestañas: debajo del breadcrumb, encima del main */
+.app-layout__tabs {
+  flex-shrink: 0;
+  background: var(--page-bg-elevated, #f1f5f9);
+  border-bottom: 1px solid var(--page-border, #e2e8f0);
+}
+
+.app-layout__tablist {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-height: 2.75rem;
+}
+
+.app-layout__tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--page-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.app-layout__tab:hover {
+  color: var(--page-text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.app-layout__tab--active {
+  color: var(--cms-primary);
+  border-bottom-color: var(--cms-primary);
+  background: var(--page-bg);
+}
+
+.app-layout__nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  flex-shrink: 0;
+}
+
+.app-layout__nav-link {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: none;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.app-layout__nav-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.app-layout__nav-link--active {
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+  color: #fff;
+}
+
+.app-layout__search-form {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0.75rem;
+  display: flex;
+  max-width: 20rem;
+}
+
+.app-layout__search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8125rem;
+  border: none;
+  border-radius: 6px 0 0 6px;
+  background: var(--cms-search-bg);
+  color: var(--cms-bar-top-text);
+}
+
+.app-layout__search-input::placeholder {
+  color: var(--cms-search-placeholder);
+}
+
+.app-layout__search-btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8125rem;
+  background: var(--cms-search-bg);
+  color: var(--cms-bar-top-text);
+  border: none;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.app-layout__search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.app-layout__dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.8125rem;
+  background: transparent;
+  color: inherit;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.app-layout__dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.app-layout__dropdown-wrapper {
+  position: relative;
+}
+
+.app-layout__dropdown-trigger--top {
+  color: var(--cms-bar-top-text);
+  background: transparent;
+}
+
+.app-layout__dropdown-trigger--top:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app-layout__dropdown-trigger--top:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Iconos Lucide: heredan color (currentColor) para contrastar con el fondo */
+.app-layout__dropdown-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-layout__dropdown-icon svg {
+  color: inherit;
+}
+
+.app-layout__dropdown-chevron {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.app-layout__dropdown-chevron svg {
+  color: inherit;
+}
+
+.app-layout__search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-layout__search-btn svg {
+  color: inherit;
+}
+
+.app-layout__dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  min-width: 180px;
+  background: var(--page-bg-elevated);
+  border: 1px solid var(--page-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  padding: 0.35rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-layout__dropdown-item {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8125rem;
+  color: var(--page-text);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  font-family: inherit;
+}
+
+.app-layout__dropdown-item:hover {
+  background: var(--page-bg-elevated);
+}
+
+.app-layout__dropdown-sep {
+  height: 1px;
+  background: var(--page-border);
+  margin: 0.25rem 0;
+}
+
+.app-layout__dropdown-item--info {
+  cursor: default;
+  border-bottom: 1px solid var(--page-border);
+  margin-bottom: 0.25rem;
+}
+
+.app-layout__dropdown-item--danger {
+  color: #dc3545;
+}
+
+/* Separador genérico (usado en nav-bar y en breadcrumb clásico si se usa en otro sitio) */
+.app-layout__breadcrumb-sep {
+  opacity: 0.45;
+}
+
+/* Área de contenido (.pen: espacio de escritorio) */
+.app-layout__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  color: var(--page-text);
+  background: var(--page-bg);
+}

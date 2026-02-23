@@ -96,6 +96,12 @@ builder.Services.AddAuthorization(options =>
     // 2.4: policies por permiso (JWT claim "permission" desde Identity)
     options.AddPolicy("content.edit", policy => policy.RequireClaim("permission", "content.edit"));
     options.AddPolicy("project.edit", policy => policy.RequireClaim("permission", "project.edit"));
+    // Acceso a proyecto y environments: quien puede crear proyecto también puede ver/crear environments
+    options.AddPolicy("project.access", policy => policy
+        .RequireAssertion(ctx =>
+            ctx.User.IsInRole("SuperAdmin") ||
+            ctx.User.HasClaim("permission", "project.edit") ||
+            ctx.User.HasClaim("permission", "project.create")));
     options.AddPolicy("schema.edit", policy => policy.RequireClaim("permission", "schema.edit"));
     options.AddPolicy("site.edit", policy => policy.RequireClaim("permission", "site.edit"));
 });

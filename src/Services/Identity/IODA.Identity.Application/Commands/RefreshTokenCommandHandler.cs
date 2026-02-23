@@ -14,19 +14,22 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
     private readonly IEffectivePermissionsClient _effectivePermissionsClient;
+    private readonly IUserRolesClient _userRolesClient;
 
     public RefreshTokenCommandHandler(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IJwtTokenGenerator jwtTokenGenerator,
         IRefreshTokenGenerator refreshTokenGenerator,
-        IEffectivePermissionsClient effectivePermissionsClient)
+        IEffectivePermissionsClient effectivePermissionsClient,
+        IUserRolesClient userRolesClient)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _jwtTokenGenerator = jwtTokenGenerator;
         _refreshTokenGenerator = refreshTokenGenerator;
         _effectivePermissionsClient = effectivePermissionsClient;
+        _userRolesClient = userRolesClient;
     }
 
     public async Task<LoginResultDto> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -43,7 +46,8 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
         await _refreshTokenRepository.UpdateAsync(storedToken, cancellationToken);
 
         var effectivePermissions = await _effectivePermissionsClient.GetEffectivePermissionsAsync(user.Id, cancellationToken);
-        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email, permissionCodes: effectivePermissions);
+        var roleNames = await _userRolesClient.GetRoleNamesAsync(user.Id, cancellationToken);
+        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email, roles: roleNames, permissionCodes: effectivePermissions);
         var expiresInSeconds = _jwtTokenGenerator.GetAccessTokenExpirationMinutes() * 60;
 
         var (refreshTokenValue, refreshTokenValidity) = _refreshTokenGenerator.Generate();

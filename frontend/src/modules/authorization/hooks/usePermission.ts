@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuthStore } from '../../auth/store/auth-store'
 import { authorizationApi } from '../api/authorization-api'
 import type { PermissionContext } from '../types'
-import { parsePermissionsFromAccessToken } from '../utils/jwt-permissions'
+import { parsePermissionsFromAccessToken, parseRolesFromAccessToken } from '../utils/jwt-permissions'
 import { permissionCache } from '../../../shared/permission-cache'
+import { SUPERADMIN_ROLE_NAME } from '../constants'
 
 /** TTL del cache en ms (misma sesión). */
 const CACHE_TTL_MS = 60_000
@@ -76,6 +77,20 @@ export function usePermission(
       setLoading(false)
       setError(null)
       return
+    }
+
+    // SuperAdmin tiene todos los permisos en la UI (fuente de verdad sigue siendo el backend en cada API).
+    const jwtRoles = parseRolesFromAccessToken(accessToken ?? null)
+    if (jwtRoles.some((r) => r === SUPERADMIN_ROLE_NAME)) {
+      if (mounted.current) {
+        setAllowed(true)
+        setLoading(false)
+        setError(null)
+      }
+      permissionCache.set(key, { allowed: true, at: Date.now() })
+      return () => {
+        mounted.current = false
+      }
     }
 
     if (!withContext) {

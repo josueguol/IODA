@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=AR+One+Sans:wght@400;700&family=Inter:wght@400;700&display=swap');
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -21,6 +23,29 @@
   --badge-text: rgba(255, 255, 255, 0.92);
   --card-bg: #2d2d2d;
   --card-selected-bg: rgba(13, 110, 253, 0.25);
+
+  /* CMS / login.pen: panel, primary, barra superior/nav */
+  --cms-primary: #35a0e8;
+  --cms-panel: #2b316d;
+  --cms-bar-top: #2d3748;
+  --cms-bar-top-text: rgba(255, 255, 255, 0.92);
+  --cms-search-bg: rgba(255, 255, 255, 0.15);
+  --cms-search-placeholder: rgba(255, 255, 255, 0.65);
+  --cms-input-bg: #fcfcfc;
+  --cms-step-bg: #2d2d2d;
+  --cms-step-border: #444;
+  /* Paso 1 vacío (.pen): tarjeta + texto */
+  --onboarding-empty-card-bg: #4a4a4a;
+  --onboarding-empty-card-border: #6c6c6c;
+  --onboarding-empty-text: rgba(255, 255, 255, 0.6);
+  /* Tarjetas de proyecto: azul, fondo */
+  --onboarding-project-card-bg: #1e2a35;
+  /* Tarjeta "Crear proyecto": gris, no deshabilitado */
+  --onboarding-add-card-bg: #3d4a52;
+  --onboarding-add-card-border: #5c6c76;
+  --onboarding-add-card-text: rgba(255, 255, 255, 0.85);
+  --onboarding-add-card-border-hover: #35a0e8;
+  --onboarding-add-card-bg-hover: #2d3d47;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -84,6 +109,24 @@ button:focus-visible {
     --badge-text: #212529;
     --card-bg: #ffffff;
     --card-selected-bg: #e7f1ff;
+    --cms-primary: #35a0e8;
+    --cms-panel: #2b316d;
+    --cms-bar-top: #ecf4f9;
+    --cms-bar-top-text: #000;
+    --cms-search-bg: rgba(0, 0, 0, 0.06);
+    --cms-search-placeholder: rgba(0, 0, 0, 0.5);
+    --cms-input-bg: #fcfcfc;
+    --cms-step-bg: #f8f9fa;
+    --cms-step-border: #dee2e6;
+    --onboarding-empty-card-bg: #CCCCCC;
+    --onboarding-empty-card-border: #9c9c9c;
+    --onboarding-empty-text: #9c9c9c;
+    --onboarding-project-card-bg: #ffffff;
+    --onboarding-add-card-bg: #e9ecef;
+    --onboarding-add-card-border: #adb5bd;
+    --onboarding-add-card-text: #495057;
+    --onboarding-add-card-border-hover: #35a0e8;
+    --onboarding-add-card-bg-hover: #dee2e6;
   }
   a:hover {
     color: #747bff;
