@@ -1,0 +1,6 @@
+export { OnboardingCard, getInitials } from './OnboardingCard'
+export type { OnboardingCardProps } from './OnboardingCard'
+export { OnboardingEmptyCard } from './OnboardingEmptyCard'
+export type { OnboardingEmptyCardProps } from './OnboardingEmptyCard'
+export { AddCard } from './AddCard'
+export type { AddCardProps } from './AddCard'

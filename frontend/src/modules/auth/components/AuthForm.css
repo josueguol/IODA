@@ -1,8 +1,8 @@
-/* Estilos compartidos de formulario auth: mobile-first, flexbox */
+/* Estilos compartidos de formulario auth: mobile-first, flexbox. Textos por tema (día: oscuros, noche: claros). */
 .auth-form__title {
   margin: 0 0 1.25rem;
-  color: #fff;
-  font-size: clamp(1.75rem, 5vw, 2rem);
+  color: var(--page-text);
+  font-size: clamp(1.75rem, 5vw, 1rem);
   font-weight: 600;
   line-height: 1.15;
 }
@@ -22,7 +22,7 @@
 
 .auth-form__label {
   display: block;
-  color: #fff;
+  color: var(--page-text);
   font-size: 1rem;
   font-weight: 400;
 }
@@ -31,10 +31,10 @@
   width: 100%;
   min-height: 2.35rem;
   padding: 0 0.75rem;
-  border: none;
+  border: 1px solid var(--input-border);
   border-radius: 10px;
-  background: #fcfcfc;
-  color: #1a1a1a;
+  background: var(--input-bg);
+  color: var(--input-text);
   font-size: 0.9375rem;
   box-sizing: border-box;
 }
@@ -88,13 +88,14 @@
   display: block;
   margin-top: 1.25rem;
   text-align: center;
-  color: #35a0e8;
+  color: var(--cms-primary);
   text-decoration: none;
   font-size: 1rem;
 }
 
 .auth-form__link:hover {
   text-decoration: underline;
+  opacity: 0.9;
 }
 
 .auth-form__actions {
@@ -106,7 +107,7 @@
 
 .auth-form__progress {
   margin: 0 0 1rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--page-text-muted);
   font-size: 0.875rem;
 }
 
@@ -135,7 +136,7 @@
 
 .auth-form__subtitle {
   margin: 0 0 1.25rem;
-  color: #a7a7ab;
+  color: var(--page-text-muted);
   font-size: 0.75rem;
   line-height: 1.35;
   max-width: 22rem;
@@ -147,7 +148,7 @@
 
 .auth-form__helper {
   margin: 0 0 1rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--page-text-muted);
   font-size: 0.875rem;
   line-height: 1.4;
 }

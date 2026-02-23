@@ -71,7 +71,7 @@ Temas:
       - Convenciones de nombres claras
       - Estructura de carpetas coherente
       - Principios SOLID aplicados al frontend
-      - DR
+      - DRY
 4. Handlebars:
    - Solo presentación.
    - Sin lógica de negocio.

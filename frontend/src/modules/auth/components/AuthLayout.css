@@ -1,10 +1,11 @@
-/* Mobile-first: una columna, panel a ancho completo */
+/* Mobile-first: una columna, panel a ancho completo. Colores por tema (día: oscuros, noche: claros). */
 .auth-layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  color: #fff;
+  color: var(--page-text);
+  background-color: var(--page-bg);
   font-family: Inter, system-ui, sans-serif;
   box-sizing: border-box;
 }
@@ -19,6 +20,8 @@
   padding: 1.5rem 1.25rem 2rem;
   box-sizing: border-box;
   align-items: center;
+  background-color: var(--page-bg);
+  color: var(--page-text);
 }
 
 .auth-layout__brand {
@@ -28,6 +31,7 @@
   line-height: 1;
   letter-spacing: 0.02em;
   margin: 1.5rem 0 2rem;
+  color: var(--page-text);
 }
 
 .auth-layout__content {
@@ -54,12 +58,11 @@
     width: min(28vw, 428px);
     min-width: 320px;
     min-height: 100vh;
-    padding: 4.5rem 2.5rem;
+    padding: 2.5rem 2.5rem;
     align-items: center;
   }
 
   .auth-layout__brand {
-    margin-bottom: 5rem;
     font-size: 3rem;
   }
 

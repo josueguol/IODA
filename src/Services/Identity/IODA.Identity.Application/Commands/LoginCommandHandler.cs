@@ -16,6 +16,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResultDto>
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
     private readonly IAuthEventPublisher _authEventPublisher;
     private readonly IEffectivePermissionsClient _effectivePermissionsClient;
+    private readonly IUserRolesClient _userRolesClient;
 
     public LoginCommandHandler(
         IUserRepository userRepository,
@@ -24,7 +25,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResultDto>
         IJwtTokenGenerator jwtTokenGenerator,
         IRefreshTokenGenerator refreshTokenGenerator,
         IAuthEventPublisher authEventPublisher,
-        IEffectivePermissionsClient effectivePermissionsClient)
+        IEffectivePermissionsClient effectivePermissionsClient,
+        IUserRolesClient userRolesClient)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
@@ -33,6 +35,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResultDto>
         _refreshTokenGenerator = refreshTokenGenerator;
         _authEventPublisher = authEventPublisher;
         _effectivePermissionsClient = effectivePermissionsClient;
+        _userRolesClient = userRolesClient;
     }
 
     public async Task<LoginResultDto> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -52,7 +55,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResultDto>
         await _userRepository.UpdateAsync(user, cancellationToken);
 
         var effectivePermissions = await _effectivePermissionsClient.GetEffectivePermissionsAsync(user.Id, cancellationToken);
-        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email, permissionCodes: effectivePermissions);
+        var roleNames = await _userRolesClient.GetRoleNamesAsync(user.Id, cancellationToken);
+        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email, roles: roleNames, permissionCodes: effectivePermissions);
         var expiresInSeconds = _jwtTokenGenerator.GetAccessTokenExpirationMinutes() * 60;
 
         var (refreshTokenValue, refreshTokenValidity) = _refreshTokenGenerator.Generate();

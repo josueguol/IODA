@@ -855,6 +855,691 @@
           "fontWeight": "normal"
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "sU3ew",
+      "x": 9101,
+      "y": -146,
+      "name": "Step 2 - Environment Created",
+      "clip": true,
+      "width": 1920,
+      "height": 1080,
+      "fill": "#FFFFFF",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "C0vca",
+          "x": 0,
+          "y": 0,
+          "fill": "#ecf4f9",
+          "width": 1920,
+          "height": 48
+        },
+        {
+          "type": "text",
+          "id": "1kcmy",
+          "x": 38,
+          "y": 4,
+          "fill": "#000000ff",
+          "content": "ioda",
+          "fontFamily": "AR One Sans",
+          "fontSize": 32,
+          "fontWeight": "900"
+        },
+        {
+          "type": "text",
+          "id": "2A7cN",
+          "x": 1777,
+          "y": 14,
+          "fill": "#000000",
+          "content": "User Name",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "icon_font",
+          "id": "bQVHi",
+          "x": 1862,
+          "y": 12,
+          "name": "arrow_down",
+          "width": 24,
+          "height": 24,
+          "iconFontName": "chevron-down",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "icon_font",
+          "id": "qDEDU",
+          "x": 1753,
+          "y": 12,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "square-user-round",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "text",
+          "id": "3uLLY",
+          "x": 1643,
+          "y": 14,
+          "fill": "#000000",
+          "content": "Settings",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "icon_font",
+          "id": "ZfQPj",
+          "x": 1705,
+          "y": 12,
+          "name": "arrow_down",
+          "width": 24,
+          "height": 24,
+          "iconFontName": "chevron-down",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "icon_font",
+          "id": "Gm22s",
+          "x": 1619,
+          "y": 12,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "settings",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "rectangle",
+          "id": "d6h8s",
+          "x": 0,
+          "y": 48,
+          "fill": "#35a0e8",
+          "width": 1920,
+          "height": 48
+        },
+        {
+          "type": "icon_font",
+          "id": "1gaqM",
+          "x": 38,
+          "y": 60,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "house",
+          "iconFontFamily": "lucide",
+          "fill": "#ffffffff"
+        },
+        {
+          "type": "text",
+          "id": "ADYbX",
+          "x": 67,
+          "y": 62,
+          "fill": "#ffffffff",
+          "content": "›",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "800"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 25,
+          "id": "ng3Kh",
+          "x": 293,
+          "y": 150,
+          "fill": "#CCCCCC",
+          "width": 192,
+          "height": 192,
+          "stroke": {
+            "align": "inside",
+            "thickness": 3,
+            "fill": "#9c9c9cff"
+          }
+        },
+        {
+          "type": "icon_font",
+          "id": "qZURZ",
+          "x": 357,
+          "y": 214,
+          "width": 64,
+          "height": 64,
+          "iconFontName": "plus",
+          "iconFontFamily": "lucide",
+          "fill": "#959393ff"
+        },
+        {
+          "type": "text",
+          "id": "vFRKE",
+          "x": 80,
+          "y": 62,
+          "fill": "#ffffffff",
+          "content": "Rex Salem",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 25,
+          "id": "cCSO8",
+          "x": 38,
+          "y": 150,
+          "fill": "#ffffffff",
+          "width": 192,
+          "height": 192,
+          "stroke": {
+            "align": "inside",
+            "thickness": 3,
+            "fill": "#35a0e8"
+          }
+        },
+        {
+          "type": "text",
+          "id": "1w9pp",
+          "x": 110,
+          "y": 207,
+          "fill": "#35a0e8",
+          "content": "D",
+          "fontFamily": "Inter",
+          "fontSize": 64,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "ltK7p",
+          "x": 94,
+          "y": 342,
+          "fill": "#35a0e8",
+          "content": "Desarrollo",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "mrCYL",
+      "x": 11432,
+      "y": -146,
+      "name": "Step 3 - Site Creation",
+      "clip": true,
+      "width": 1920,
+      "height": 1080,
+      "fill": "#FFFFFF",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "ibopx",
+          "x": 0,
+          "y": 0,
+          "fill": "#ecf4f9",
+          "width": 1920,
+          "height": 48
+        },
+        {
+          "type": "text",
+          "id": "dkFfN",
+          "x": 38,
+          "y": 4,
+          "fill": "#000000ff",
+          "content": "ioda",
+          "fontFamily": "AR One Sans",
+          "fontSize": 32,
+          "fontWeight": "900"
+        },
+        {
+          "type": "text",
+          "id": "JkoGU",
+          "x": 1777,
+          "y": 14,
+          "fill": "#000000",
+          "content": "User Name",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "icon_font",
+          "id": "5E0XJ",
+          "x": 1862,
+          "y": 12,
+          "name": "arrow_down",
+          "width": 24,
+          "height": 24,
+          "iconFontName": "chevron-down",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "icon_font",
+          "id": "Fldxm",
+          "x": 1753,
+          "y": 12,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "square-user-round",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "text",
+          "id": "QqxhZ",
+          "x": 1643,
+          "y": 14,
+          "fill": "#000000",
+          "content": "Settings",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "icon_font",
+          "id": "miozd",
+          "x": 1705,
+          "y": 12,
+          "name": "arrow_down",
+          "width": 24,
+          "height": 24,
+          "iconFontName": "chevron-down",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "icon_font",
+          "id": "9LeIR",
+          "x": 1619,
+          "y": 12,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "settings",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "rectangle",
+          "id": "XIgsG",
+          "x": 0,
+          "y": 48,
+          "fill": "#35a0e8",
+          "width": 1920,
+          "height": 48
+        },
+        {
+          "type": "icon_font",
+          "id": "7OfhZ",
+          "x": 38,
+          "y": 60,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "house",
+          "iconFontFamily": "lucide",
+          "fill": "#ffffffff"
+        },
+        {
+          "type": "text",
+          "id": "vq3TP",
+          "x": 67,
+          "y": 62,
+          "fill": "#ffffffff",
+          "content": "›",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "800"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 25,
+          "id": "vDOEf",
+          "x": 38,
+          "y": 139,
+          "fill": "#CCCCCC",
+          "width": 192,
+          "height": 192,
+          "stroke": {
+            "align": "inside",
+            "thickness": 3,
+            "fill": "#9c9c9cff"
+          }
+        },
+        {
+          "type": "icon_font",
+          "id": "SYmQH",
+          "x": 102,
+          "y": 203,
+          "width": 64,
+          "height": 64,
+          "iconFontName": "plus",
+          "iconFontFamily": "lucide",
+          "fill": "#959393ff"
+        },
+        {
+          "type": "text",
+          "id": "ALNRV",
+          "x": 798,
+          "y": 520,
+          "fill": "#9c9c9c",
+          "content": "No hay sitios todavía.",
+          "fontFamily": "Inter",
+          "fontSize": 32,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "icon_font",
+          "id": "viDeT",
+          "x": 230,
+          "y": 203,
+          "width": 64,
+          "height": 64,
+          "iconFontName": "arrow-left",
+          "iconFontFamily": "lucide",
+          "fill": "#9c9c9c"
+        },
+        {
+          "type": "text",
+          "id": "IkQUE",
+          "x": 294,
+          "y": 215,
+          "fill": "#9c9c9c",
+          "content": "Crea un sitio.",
+          "fontFamily": "Inter",
+          "fontSize": 32,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "KDSdJ",
+          "x": 80,
+          "y": 62,
+          "fill": "#ffffffff",
+          "content": "Rex Salem",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "NDp2T",
+          "x": 166,
+          "y": 62,
+          "fill": "#ffffffff",
+          "content": "›",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "800"
+        },
+        {
+          "type": "text",
+          "id": "WrtAt",
+          "x": 183,
+          "y": 62,
+          "fill": "#ffffffff",
+          "content": "Desarrollo",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "07YPv",
+      "x": 3276,
+      "y": -1683,
+      "name": "Step 1 - Project Creation - Form",
+      "clip": true,
+      "width": 1920,
+      "height": 1080,
+      "fill": "#FFFFFF",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "wxauk",
+          "x": 0,
+          "y": 0,
+          "fill": "#ecf4f9",
+          "width": 1920,
+          "height": 48
+        },
+        {
+          "type": "text",
+          "id": "b1AP5",
+          "x": 38,
+          "y": 4,
+          "fill": "#000000ff",
+          "content": "ioda",
+          "fontFamily": "AR One Sans",
+          "fontSize": 32,
+          "fontWeight": "900"
+        },
+        {
+          "type": "text",
+          "id": "lUNMK",
+          "x": 1777,
+          "y": 14,
+          "fill": "#000000",
+          "content": "User Name",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "icon_font",
+          "id": "8Arcl",
+          "x": 1862,
+          "y": 12,
+          "name": "arrow_down",
+          "width": 24,
+          "height": 24,
+          "iconFontName": "chevron-down",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "icon_font",
+          "id": "YT75J",
+          "x": 1753,
+          "y": 12,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "square-user-round",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "text",
+          "id": "b2UBa",
+          "x": 1643,
+          "y": 14,
+          "fill": "#000000",
+          "content": "Settings",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "icon_font",
+          "id": "6VoC1",
+          "x": 1705,
+          "y": 12,
+          "name": "arrow_down",
+          "width": 24,
+          "height": 24,
+          "iconFontName": "chevron-down",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "icon_font",
+          "id": "3OCm2",
+          "x": 1619,
+          "y": 12,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "settings",
+          "iconFontFamily": "lucide",
+          "fill": "#000000"
+        },
+        {
+          "type": "rectangle",
+          "id": "edmwf",
+          "x": 0,
+          "y": 48,
+          "fill": "#35a0e8",
+          "width": 1920,
+          "height": 48
+        },
+        {
+          "type": "icon_font",
+          "id": "FH66e",
+          "x": 38,
+          "y": 60,
+          "width": 24,
+          "height": 24,
+          "iconFontName": "house",
+          "iconFontFamily": "lucide",
+          "fill": "#ffffffff"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 25,
+          "id": "GxIJB",
+          "x": 38,
+          "y": 139,
+          "fill": "#CCCCCC",
+          "width": 192,
+          "height": 192,
+          "stroke": {
+            "align": "inside",
+            "thickness": 3,
+            "fill": "#9c9c9cff"
+          }
+        },
+        {
+          "type": "icon_font",
+          "id": "3KDXd",
+          "x": 102,
+          "y": 203,
+          "width": 64,
+          "height": 64,
+          "iconFontName": "plus",
+          "iconFontFamily": "lucide",
+          "fill": "#959393ff"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 25,
+          "id": "jDNnI",
+          "x": 587,
+          "y": 340,
+          "fill": "#ecf4f9",
+          "width": 486,
+          "height": 464
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 10,
+          "id": "pNSuO",
+          "x": 706,
+          "y": 628,
+          "fill": "#35a0e8ff",
+          "width": 248,
+          "height": 54
+        },
+        {
+          "type": "text",
+          "id": "B2ikE",
+          "x": 808,
+          "y": 645,
+          "fill": "#ffffffff",
+          "content": "Crear",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "700"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 10,
+          "id": "zD5ix",
+          "x": 706,
+          "y": 556,
+          "fill": "#ffffffff",
+          "width": 248,
+          "height": 37
+        },
+        {
+          "type": "text",
+          "id": "w7U3j",
+          "x": 706,
+          "y": 528,
+          "fill": "#000000ff",
+          "content": "Descripción (opcional)",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 5,
+          "id": "Q3YIJ",
+          "x": 706,
+          "y": 467,
+          "fill": "#ffffffff",
+          "width": 248,
+          "height": 37
+        },
+        {
+          "type": "text",
+          "id": "XdXeG",
+          "x": 706,
+          "y": 440,
+          "fill": "#000000ff",
+          "content": "Nombre",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "sXDZg",
+          "x": 687,
+          "y": 386,
+          "fill": "#000000",
+          "content": "Datos del proyecto",
+          "fontFamily": "Inter",
+          "fontSize": 32,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 10,
+          "id": "s1Kaa",
+          "x": 706,
+          "y": 704,
+          "fill": "#ffffffff",
+          "width": 248,
+          "height": 54
+        },
+        {
+          "type": "text",
+          "id": "8ifEu",
+          "x": 794,
+          "y": 721,
+          "fill": "#000000ff",
+          "content": "Cancelar",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "700"
+        }
+      ]
     }
   ]
 }
