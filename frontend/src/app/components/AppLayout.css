@@ -112,6 +112,45 @@
   font-size: 0.9375rem;
 }
 
+/* Barra de pestañas: debajo del breadcrumb, encima del main */
+.app-layout__tabs {
+  flex-shrink: 0;
+  background: var(--page-bg-elevated, #f1f5f9);
+  border-bottom: 1px solid var(--page-border, #e2e8f0);
+}
+
+.app-layout__tablist {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-height: 2.75rem;
+}
+
+.app-layout__tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--page-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.app-layout__tab:hover {
+  color: var(--page-text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.app-layout__tab--active {
+  color: var(--cms-primary);
+  border-bottom-color: var(--cms-primary);
+  background: var(--page-bg);
+}
+
 .app-layout__nav-links {
   display: flex;
   align-items: center;
@@ -155,19 +194,19 @@
   font-size: 0.8125rem;
   border: none;
   border-radius: 6px 0 0 6px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: var(--cms-search-bg);
+  color: var(--cms-bar-top-text);
 }
 
 .app-layout__search-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--cms-search-placeholder);
 }
 
 .app-layout__search-btn {
   padding: 0.35rem 0.6rem;
   font-size: 0.8125rem;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: var(--cms-search-bg);
+  color: var(--cms-bar-top-text);
   border: none;
   border-radius: 0 6px 6px 0;
   cursor: pointer;

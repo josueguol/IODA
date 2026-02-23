@@ -123,53 +123,29 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Link to="/" className="app-layout__logo" aria-label="Inicio">
           ioda
         </Link>
-        <nav className="app-layout__nav-links" aria-label="Navegación principal">
-          <Link
-            to="/"
-            className={`app-layout__nav-link ${isActive('/', true) ? 'app-layout__nav-link--active' : ''}`}
-          >
-            Dashboard
-          </Link>
-          {hasFullContext && (
-            <>
-              <Link
-                to="/content"
-                className={`app-layout__nav-link ${isActive('/content', false) ? 'app-layout__nav-link--active' : ''}`}
-              >
-                Contenido
-              </Link>
-              <Can permission="content.publish">
-                <Link
-                  to="/publish"
-                  className={`app-layout__nav-link ${isActive('/publish', true) ? 'app-layout__nav-link--active' : ''}`}
-                >
-                  Publicar
-                </Link>
-              </Can>
-            </>
-          )}
-        </nav>
-        <form onSubmit={handleSearch} className="app-layout__search-form">
-          <input
-            type="text"
-            className="app-layout__search-input"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={hasFullContext ? 'Buscar contenido…' : 'Selecciona un contexto para buscar'}
-            disabled={!hasFullContext}
-            title={hasFullContext ? 'Buscar contenido publicado' : 'Necesitas proyecto, entorno y sitio para buscar'}
-            aria-label="Buscar"
-          />
-          <button
-            type="submit"
-            className="app-layout__search-btn"
-            disabled={!hasFullContext}
-            title="Buscar"
-            aria-label="Buscar"
-          >
-            <Search size={ICON_SIZE} strokeWidth={2} />
-          </button>
-        </form>
+        {hasFullContext && (
+          <form onSubmit={handleSearch} className="app-layout__search-form">
+            <input
+              type="text"
+              className="app-layout__search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={hasFullContext ? 'Buscar contenido…' : 'Selecciona un contexto para buscar'}
+              disabled={!hasFullContext}
+              title={hasFullContext ? 'Buscar contenido publicado' : 'Necesitas proyecto, entorno y sitio para buscar'}
+              aria-label="Buscar"
+            />
+            <button
+              type="submit"
+              className="app-layout__search-btn"
+              disabled={!hasFullContext}
+              title="Buscar"
+              aria-label="Buscar"
+            >
+              <Search size={ICON_SIZE} strokeWidth={2} />
+            </button>
+          </form>
+        )}
         <div className="app-layout__top-right">
           <Dropdown
             label="Settings"
@@ -261,6 +237,42 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </>
             )}
           </>
+        )}
+      </div>
+
+      <div className="app-layout__tabs">
+        {hasFullContext && (
+          <nav className="app-layout__tablist" role="tablist" aria-label="Pestañas principales">
+            <Link
+              to="/"
+              role="tab"
+              aria-selected={isActive('/', true)}
+              aria-current={isActive('/', true) ? 'page' : undefined}
+              className={`app-layout__tab ${isActive('/', true) ? 'app-layout__tab--active' : ''}`}
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/content"
+              role="tab"
+              aria-selected={isActive('/content', false)}
+              aria-current={isActive('/content', false) ? 'page' : undefined}
+              className={`app-layout__tab ${isActive('/content', false) ? 'app-layout__tab--active' : ''}`}
+            >
+              Contenido
+            </Link>
+            <Can permission="content.publish">
+              <Link
+                to="/publish"
+                role="tab"
+                aria-selected={isActive('/publish', true)}
+                aria-current={isActive('/publish', true) ? 'page' : undefined}
+                className={`app-layout__tab ${isActive('/publish', true) ? 'app-layout__tab--active' : ''}`}
+              >
+                Publicar
+              </Link>
+            </Can>
+          </nav>
         )}
       </div>
 
