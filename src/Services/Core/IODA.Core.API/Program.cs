@@ -11,6 +11,7 @@ using IODA.Shared.Api.Middleware;
 using IODA.Shared.BuildingBlocks.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -31,7 +32,7 @@ static (HttpStatusCode StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails Detai
                     ["errors"] = schemaEx.Errors.GroupBy(e => e.Field).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray())
                 }
             }),
-        ContentNotFoundException or SiteNotFoundException or SchemaNotFoundException or ProjectNotFoundException or EnvironmentNotFoundException => (
+        ContentNotFoundException or BlockNotFoundException or SiteNotFoundException or SchemaNotFoundException or ProjectNotFoundException or EnvironmentNotFoundException => (
             HttpStatusCode.NotFound,
             new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 404, Title = "Not Found", Detail = ex.Message }),
         DomainException domainEx => (
@@ -117,6 +118,15 @@ if (!builder.Environment.IsDevelopment())
 }
 
 var app = builder.Build();
+
+var applyMigrationsOnStartup = app.Configuration.GetValue<bool?>("Database:ApplyMigrationsOnStartup")
+    ?? app.Environment.IsDevelopment();
+if (applyMigrationsOnStartup)
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.UseMiddleware<IODA.Shared.Api.Middleware.ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();

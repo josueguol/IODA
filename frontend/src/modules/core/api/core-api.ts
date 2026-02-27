@@ -28,7 +28,7 @@ const coreClient = createAuthAwareHttpClient({
       useAuthStore.getState().logout()
       window.location.href = buildLoginRedirect(config.routerType, reason)
     }
-    // 403: no desloguear; el error se propaga y la UI muestra mensaje de falta de permiso
+    // 403: no hacer logout; el error se propaga y la UI muestra mensaje de falta de permiso
   },
 })
 
@@ -75,7 +75,7 @@ export const coreApi = {
   createSite: (
     projectId: string,
     body: {
-      environmentId?: string | null
+      environmentId: string
       name: string
       domain: string
       subdomain?: string | null
@@ -157,6 +157,29 @@ export const coreApi = {
   getContent: (projectId: string, contentId: string) =>
     coreClient.get<Content>(`api/projects/${projectId}/content/${contentId}`),
 
+  /** Añade un bloque al contenido. POST .../content/{contentId}/blocks */
+  addContentBlock: (
+    projectId: string,
+    contentId: string,
+    body: { blockType: string; order: number; payload?: Record<string, unknown> }
+  ) => coreClient.post<string>(`api/projects/${projectId}/content/${contentId}/blocks`, body),
+
+  /** Actualiza un bloque (payload y/o orden). PUT .../content/{contentId}/blocks/{blockId} */
+  updateContentBlock: (
+    projectId: string,
+    contentId: string,
+    blockId: string,
+    body: { payload?: Record<string, unknown>; order?: number }
+  ) => coreClient.put<void>(`api/projects/${projectId}/content/${contentId}/blocks/${blockId}`, body),
+
+  /** Elimina un bloque. DELETE .../content/{contentId}/blocks/{blockId} */
+  removeContentBlock: (projectId: string, contentId: string, blockId: string) =>
+    coreClient.delete(`api/projects/${projectId}/content/${contentId}/blocks/${blockId}`),
+
+  /** Reordena bloques. POST .../content/{contentId}/blocks/reorder */
+  reorderContentBlocks: (projectId: string, contentId: string, body: { blockIds: string[] }) =>
+    coreClient.post<void>(`api/projects/${projectId}/content/${contentId}/blocks/reorder`, body),
+
   /** Crea contenido. POST /api/projects/{projectId}/content (CreatedBy desde JWT). */
   createContent: (
     projectId: string,
@@ -171,6 +194,8 @@ export const coreApi = {
       tagIds?: string[] | null
       hierarchyIds?: string[] | null
       siteIds?: string[] | null
+      /** Orden entre hermanos; si no se envía, se asigna el siguiente disponible. */
+      order?: number | null
     }
   ) => coreClient.post<string>(`api/projects/${projectId}/content`, body),
 
@@ -182,6 +207,8 @@ export const coreApi = {
       title: string
       fields: Record<string, unknown>
       parentContentId?: string | null
+      /** Orden entre hermanos. */
+      order?: number | null
       tagIds?: string[] | null
       hierarchyIds?: string[] | null
       siteIds?: string[] | null

@@ -187,6 +187,11 @@ export function RegisterPage() {
           await setupSuperAdmin(result.userId)
         } catch (err) {
           console.warn('SuperAdmin setup partially failed:', err)
+          try {
+            sessionStorage.setItem('ioda_first_user_refresh_failed', '1')
+          } catch {
+            // ignore
+          }
           // Still navigate to home since user is logged in
         }
 

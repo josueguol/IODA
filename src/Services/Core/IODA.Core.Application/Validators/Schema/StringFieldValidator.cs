@@ -29,7 +29,7 @@ public sealed class StringFieldValidator : IFieldValidator
 
         if (str == null && fieldDef.IsRequired)
         {
-            errors.Add(new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must be a string."));
+            errors.Add(new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must be a string."));
             return errors;
         }
 
@@ -41,16 +41,16 @@ public sealed class StringFieldValidator : IFieldValidator
             return errors;
 
         if (rules.TryGetValue("minLength", out var minLenObj) && SchemaValidationHelpers.TryGetInt(minLenObj, out var minLen) && str.Length < minLen)
-            errors.Add(new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must be at least {minLen} characters."));
+            errors.Add(new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must be at least {minLen} characters."));
 
         if (rules.TryGetValue("maxLength", out var maxLenObj) && SchemaValidationHelpers.TryGetInt(maxLenObj, out var maxLen) && str.Length > maxLen)
-            errors.Add(new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must not exceed {maxLen} characters."));
+            errors.Add(new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must not exceed {maxLen} characters."));
 
         if (rules.TryGetValue("pattern", out var patternObj) && patternObj != null)
         {
             var pattern = patternObj is string p ? p : patternObj.ToString();
             if (!string.IsNullOrEmpty(pattern) && !Regex.IsMatch(str, pattern))
-                errors.Add(new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' does not match the required format."));
+                errors.Add(new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' does not match the required format."));
         }
 
         return errors;

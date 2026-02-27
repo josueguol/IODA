@@ -58,7 +58,7 @@ export function buildZodSchema(fields: FieldDefinition[]): z.ZodObject<Record<st
   const shape: Record<string, z.ZodTypeAny> = {}
   const sorted = [...fields].sort((a, b) => a.displayOrder - b.displayOrder)
   for (const field of sorted) {
-    shape[field.fieldName] = validationToZod(
+    shape[field.slug] = validationToZod(
       field.validationRules ?? null,
       field.isRequired,
       field.fieldType

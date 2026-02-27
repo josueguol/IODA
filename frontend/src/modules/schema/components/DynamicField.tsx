@@ -22,7 +22,7 @@ function getInputType(fieldType: string): string {
   return 'text'
 }
 
-const fieldLabel = (field: FieldDefinition): string => field.label ?? field.fieldName
+const fieldLabel = (field: FieldDefinition): string => field.label ?? field.slug
 
 const defaultForType = (field: FieldDefinition): string | number | boolean | string[] => {
   const t = field.fieldType.toLowerCase()
@@ -39,12 +39,12 @@ const defaultForType = (field: FieldDefinition): string | number | boolean | str
 export function DynamicField({ field, projectId }: { field: FieldDefinition; projectId?: string }) {
   const { control, formState: { errors } } = useFormContext()
   const typeLower = field.fieldType.toLowerCase()
-  const error = errors[field.fieldName]
+  const error = errors[field.slug]
 
   return (
     <div style={styles.field}>
       <Controller
-        name={field.fieldName}
+        name={field.slug}
         control={control}
         defaultValue={defaultForType(field)}
         render={({ field: f }) => (
@@ -102,12 +102,12 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
               </>
             ) : typeLower === 'richtext' || typeLower === 'text' || typeLower === 'json' ? (
               <>
-                <label style={styles.label} htmlFor={field.fieldName}>
+                <label style={styles.label} htmlFor={field.slug}>
                   {fieldLabel(field)}
                   {field.isRequired && ' *'}
                 </label>
                 <textarea
-                  id={field.fieldName}
+                  id={field.slug}
                   style={styles.textarea}
                   value={f.value ?? ''}
                   onChange={(e) => f.onChange(e.target.value)}
@@ -118,12 +118,12 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
               </>
             ) : (
               <>
-                <label style={styles.label} htmlFor={field.fieldName}>
+                <label style={styles.label} htmlFor={field.slug}>
                   {fieldLabel(field)}
                   {field.isRequired && ' *'}
                 </label>
                 <input
-                  id={field.fieldName}
+                  id={field.slug}
                   type={getInputType(field.fieldType)}
                   style={styles.input}
                   value={f.value ?? ''}

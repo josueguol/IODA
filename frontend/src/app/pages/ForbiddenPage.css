@@ -1,0 +1,19 @@
+/* ForbiddenPage */
+.forbidden-page {
+  padding: 2rem;
+  font-family: system-ui, sans-serif;
+  max-width: 480px;
+  margin: 4rem auto;
+  text-align: center;
+  color: var(--page-text);
+}
+
+.forbidden-page__title {
+  color: #856404;
+  margin-bottom: 1rem;
+}
+
+.forbidden-page__link {
+  color: #0d6efd;
+  text-decoration: none;
+}

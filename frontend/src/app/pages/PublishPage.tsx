@@ -4,23 +4,7 @@ import { publishingApi, normalizeStatus } from '../../modules/publishing'
 import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { useContextStore } from '../../modules/core/store/context-store'
 import type { PublicationRequest } from '../../modules/publishing'
-
-const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 900, color: 'var(--page-text)' },
-  title: { marginTop: 0, marginBottom: '1rem', color: 'var(--page-text)' },
-  filters: { display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'flex-end' },
-  select: { padding: '0.5rem', fontSize: '0.875rem', minWidth: 160, borderRadius: 4, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', color: 'var(--page-text)' },
-  th: { textAlign: 'left', padding: '0.5rem', borderBottom: '2px solid var(--page-border)', color: 'var(--page-text)' },
-  td: { padding: '0.5rem', borderBottom: '1px solid var(--page-border)', color: 'var(--page-text)' },
-  link: { color: '#0d6efd', textDecoration: 'none' },
-  button: { padding: '0.35rem 0.65rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: 4, border: 'none', marginRight: '0.35rem' },
-  approveBtn: { background: '#198754', color: 'white' },
-  rejectBtn: { background: '#dc3545', color: 'white' },
-  error: { color: '#dc3545', fontSize: '0.875rem', marginBottom: '0.5rem' },
-  hint: { color: 'var(--page-text-muted)', fontSize: '0.875rem' },
-  validationErrors: { fontSize: '0.8rem', color: '#856404', background: '#fff3cd', padding: '0.35rem', borderRadius: 4, marginTop: '0.25rem' },
-}
+import './PublishPage.css'
 
 export function PublishPage() {
   const user = useAuthStore((s) => s.user)
@@ -96,19 +80,14 @@ export function PublishPage() {
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Solicitudes de publicación</h1>
-      <p style={styles.hint}>
-        Lista de solicitudes de publicación. Puedes aprobar o rechazar las que estén en estado Pending (requiere permiso content.publish).
-      </p>
-
-      <div style={styles.filters}>
+    <div className="publish-page">
+      <div className="publish-page__filters">
         <div>
           <label htmlFor="status-filter">Estado </label>
           <br />
           <select
             id="status-filter"
-            style={styles.select}
+            className="publish-page__select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -124,7 +103,7 @@ export function PublishPage() {
           <input
             id="content-id-filter"
             type="text"
-            style={styles.select}
+            className="publish-page__select"
             value={contentIdFilter}
             onChange={(e) => setContentIdFilter(e.target.value)}
             placeholder="UUID del contenido"
@@ -133,28 +112,28 @@ export function PublishPage() {
       </div>
 
       {message && (
-        <p style={{ color: message.type === 'error' ? '#dc3545' : '#198754', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+        <p className={`publish-page__message ${message.type === 'error' ? 'publish-page__message--error' : 'publish-page__message--success'}`}>
           {message.text}
         </p>
       )}
-      {error && <p style={styles.error}>{error}</p>}
-      {loading && <p style={styles.hint}>Cargando…</p>}
+      {error && <p className="publish-page__error">{error}</p>}
+      {loading && <p className="publish-page__hint">Cargando…</p>}
 
       {!loading && (
-        <table style={styles.table}>
+        <table className="publish-page__table">
           <thead>
             <tr>
-              <th style={styles.th}>Content ID</th>
-              <th style={styles.th}>Estado</th>
-              <th style={styles.th}>Solicitado</th>
-              <th style={styles.th}>Resuelto</th>
-              <th style={styles.th}>Acciones</th>
+              <th className="publish-page__th">Content ID</th>
+              <th className="publish-page__th">Estado</th>
+              <th className="publish-page__th">Solicitado</th>
+              <th className="publish-page__th">Resuelto</th>
+              <th className="publish-page__th">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {requests.length === 0 ? (
               <tr>
-                <td colSpan={5} style={styles.td}>
+                <td colSpan={5} className="publish-page__td">
                   No hay solicitudes. Desde la edición de un contenido (Draft) puedes &quot;Solicitar publicación&quot;.
                 </td>
               </tr>
@@ -163,33 +142,33 @@ export function PublishPage() {
                 const status = normalizeStatus(req.status)
                 return (
                   <tr key={req.id}>
-                    <td style={styles.td}>
+                    <td className="publish-page__td">
                       <Link
                         to={currentProjectId ? `/content/${req.contentId}/edit` : '#'}
-                        style={styles.link}
+                        className="publish-page__link"
                       >
                         {req.contentId.slice(0, 8)}…
                       </Link>
                     </td>
-                    <td style={styles.td}>{status}</td>
-                    <td style={styles.td}>
+                    <td className="publish-page__td">{status}</td>
+                    <td className="publish-page__td">
                       {req.requestedAt ? new Date(req.requestedAt).toLocaleString() : '—'}
                     </td>
-                    <td style={styles.td}>
+                    <td className="publish-page__td">
                       {req.resolvedAt ? new Date(req.resolvedAt).toLocaleString() : '—'}
                       {req.rejectionReason && (
-                        <div style={{ fontSize: '0.8rem', color: '#666' }}>Motivo: {req.rejectionReason}</div>
+                        <div className="publish-page__rejection-hint">Motivo: {req.rejectionReason}</div>
                       )}
                       {req.validationErrors && (
-                        <div style={styles.validationErrors}>{req.validationErrors}</div>
+                        <div className="publish-page__validation-errors">{req.validationErrors}</div>
                       )}
                     </td>
-                    <td style={styles.td}>
+                    <td className="publish-page__td">
                       {status === 'Pending' && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center' }}>
+                        <div className="publish-page__actions-cell">
                           <button
                             type="button"
-                            style={{ ...styles.button, ...styles.approveBtn }}
+                            className="publish-page__button publish-page__button--approve"
                             onClick={() => handleApprove(req.id)}
                             disabled={!!actionLoading}
                           >
@@ -200,11 +179,11 @@ export function PublishPage() {
                             placeholder="Motivo rechazo (opcional)"
                             value={rejectReason[req.id] ?? ''}
                             onChange={(e) => setRejectReason((prev) => ({ ...prev, [req.id]: e.target.value }))}
-                            style={{ width: 140, padding: '0.25rem', fontSize: '0.8rem' }}
+                            className="publish-page__reject-input"
                           />
                           <button
                             type="button"
-                            style={{ ...styles.button, ...styles.rejectBtn }}
+                            className="publish-page__button publish-page__button--reject"
                             onClick={() => handleReject(req.id)}
                             disabled={!!actionLoading}
                           >
@@ -221,8 +200,8 @@ export function PublishPage() {
         </table>
       )}
 
-      <p style={{ marginTop: '1rem' }}>
-        <Link to="/content" style={styles.link}>
+      <p className="publish-page__back-wrap">
+        <Link to="/content" className="publish-page__link">
           Volver al listado de contenido
         </Link>
       </p>

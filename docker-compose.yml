@@ -21,7 +21,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ioda_core;Username=postgres;Password=postgres
       - RabbitMQ__Host=rabbitmq
-      - RabbitMQ__VirtualHost=ioda_cms
+      - RabbitMQ__VirtualHost=/
       - RabbitMQ__Username=dev
       - RabbitMQ__Password=dev
       - Jwt__SecretKey=your-super-secret-key-min-32-chars-change-in-production
@@ -127,7 +127,7 @@ services:
       - Elasticsearch__IndexName=ioda-published-content
       - RabbitMQ__Enabled=true
       - RabbitMQ__Host=rabbitmq
-      - RabbitMQ__VirtualHost=ioda_cms
+      - RabbitMQ__VirtualHost=/
       - RabbitMQ__Username=dev
       - RabbitMQ__Password=dev
     depends_on: []

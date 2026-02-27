@@ -1,0 +1,106 @@
+/* TagsPage */
+.tags-page {
+  max-width: 720px;
+  color: var(--page-text);
+}
+
+.tags-page__title {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.tags-page__hint {
+  color: var(--page-text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.tags-page__toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.tags-page__btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--page-text);
+  cursor: pointer;
+}
+
+.tags-page__btn--primary {
+  background: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+
+.tags-page__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tags-page__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--page-border);
+}
+
+.tags-page__name {
+  font-weight: 600;
+}
+
+.tags-page__slug {
+  font-size: 0.8125rem;
+  color: var(--page-text-muted);
+}
+
+.tags-page__form {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--page-border);
+  border-radius: 8px;
+  background: var(--page-bg-elevated);
+}
+
+.tags-page__form-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.tags-page__input {
+  width: 100%;
+  max-width: 320px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  border: 1px solid var(--input-border);
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.tags-page__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.tags-page__error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.tags-page__form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}

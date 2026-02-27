@@ -49,7 +49,7 @@ public static class DependencyInjection
     private static void AddMassTransit(IServiceCollection services, IConfiguration configuration)
     {
         var rabbitHost = configuration["RabbitMQ:Host"] ?? "localhost";
-        var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "ioda_cms";
+        var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
         var username = configuration["RabbitMQ:Username"] ?? "guest";
         var password = configuration["RabbitMQ:Password"] ?? "guest";
 

@@ -21,7 +21,8 @@ public static class SchemaMappings
             schema.UpdatedAt,
             schema.CreatedBy,
             schema.Fields.Select(f => f.ToDto()).ToList(),
-            inheritedFields);
+            inheritedFields,
+            schema.AllowedBlockTypes.Select(r => new AllowedBlockTypeRuleDto(r.BlockType, r.MinOccurrences, r.MaxOccurrences)).ToList());
     }
 
     public static ContentSchemaListItemDto ToListItemDto(this ContentSchema schema)
@@ -33,14 +34,15 @@ public static class SchemaMappings
             schema.SchemaType,
             schema.ParentSchemaId,
             schema.SchemaVersion,
-            schema.IsActive);
+            schema.IsActive,
+            schema.AllowedBlockTypes.Select(r => new AllowedBlockTypeRuleDto(r.BlockType, r.MinOccurrences, r.MaxOccurrences)).ToList());
     }
 
     public static FieldDefinitionDto ToDto(this FieldDefinition field)
     {
         return new FieldDefinitionDto(
             field.Id,
-            field.FieldName,
+            field.Slug, // FieldName is obsolete; use Slug for backward compatibility
             field.Label,
             field.Slug,
             field.FieldType,

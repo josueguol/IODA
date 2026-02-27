@@ -78,3 +78,19 @@ Temas:
 3. Riesgos futuros
 4. Recomendaciones obligatorias
 5. Nivel de calidad (1-10)
+
+
+## Política de Memoria
+
+Si detectas:
+
+- Violación arquitectónica
+- Deuda técnica relevante
+- Riesgo de compatibilidad
+- Riesgo de escalabilidad
+
+Debes proponer memoria en:
+
+ai/memory/debt/ o decisions/
+
+Nunca ignorar riesgo estructural.

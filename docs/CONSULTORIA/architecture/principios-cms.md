@@ -14,7 +14,6 @@ La lista que tenías:
 - **100% SOLID**
 - **Orientado a eventos**
 - **Escalable y enterprise-ready**
-- ~~Schema-Driven~~ *(duplicado; se deja una sola mención)*
 
 Son todos válidos y coherentes con el sistema. Solo conviene quitar la repetición de "Schema-Driven".
 

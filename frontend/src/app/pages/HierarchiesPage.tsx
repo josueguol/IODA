@@ -2,52 +2,7 @@ import { useEffect, useState } from 'react'
 import { coreApi } from '../../modules/core/api/core-api'
 import { useContextStore } from '../../modules/core/store/context-store'
 import type { Hierarchy } from '../../modules/core/types'
-
-const styles: Record<string, React.CSSProperties> = {
-  page: { maxWidth: 720, color: 'var(--page-text)' },
-  title: { margin: '0 0 1rem', fontSize: '1.5rem', fontWeight: 700 },
-  hint: { color: 'var(--page-text-muted)', fontSize: '0.875rem', marginBottom: '1rem' },
-  toolbar: { display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' },
-  btn: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    borderRadius: 6,
-    border: '1px solid var(--input-border)',
-    background: 'var(--input-bg)',
-    color: 'var(--page-text)',
-    cursor: 'pointer',
-  },
-  btnPrimary: { background: '#0d6efd', color: '#fff', borderColor: '#0d6efd' },
-  btnDanger: { background: '#dc3545', color: '#fff', borderColor: '#dc3545' },
-  list: { listStyle: 'none', padding: 0, margin: 0 },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.5rem 0.75rem',
-    borderBottom: '1px solid var(--page-border)',
-  },
-  name: { fontWeight: 600 },
-  slug: { fontSize: '0.8125rem', color: 'var(--page-text-muted)' },
-  form: {
-    marginBottom: '1.5rem',
-    padding: '1rem',
-    border: '1px solid var(--page-border)',
-    borderRadius: 8,
-    background: 'var(--page-bg-elevated)',
-  },
-  input: {
-    width: '100%',
-    maxWidth: 320,
-    padding: '0.5rem',
-    fontSize: '0.875rem',
-    borderRadius: 4,
-    border: '1px solid var(--input-border)',
-    marginBottom: '0.5rem',
-  },
-  label: { fontSize: '0.8125rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' },
-  error: { color: '#dc3545', fontSize: '0.875rem', marginBottom: '0.5rem' },
-}
+import './HierarchiesPage.css'
 
 function buildTree(items: Hierarchy[]): { item: Hierarchy; depth: number }[] {
   const result: { item: Hierarchy; depth: number }[] = []
@@ -171,37 +126,37 @@ export function HierarchiesPage() {
 
   if (!currentProjectId) {
     return (
-      <div style={styles.page}>
-        <h1 style={styles.title}>Jerarquías</h1>
-        <p style={styles.hint}>Selecciona un proyecto en la barra superior.</p>
+      <div className="hierarchies-page">
+        <h1 className="hierarchies-page__title">Jerarquías</h1>
+        <p className="hierarchies-page__hint">Selecciona un proyecto en la barra superior.</p>
       </div>
     )
   }
 
   return (
-    <div style={styles.page}>
-      <h1 style={styles.title}>Jerarquías</h1>
-      <p style={styles.hint}>
+    <div className="hierarchies-page">
+      <h1 className="hierarchies-page__title">Jerarquías</h1>
+      <p className="hierarchies-page__hint">
         Categorías para agrupar contenido. Puedes crear niveles padre e hijos (ej. Sección → Subsección).
       </p>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {error && <p className="hierarchies-page__error">{error}</p>}
 
-      <div style={styles.toolbar}>
-        <button type="button" style={{ ...styles.btn, ...styles.btnPrimary }} onClick={openCreate}>
+      <div className="hierarchies-page__toolbar">
+        <button type="button" className="hierarchies-page__btn hierarchies-page__btn--primary" onClick={openCreate}>
           + Nueva jerarquía
         </button>
       </div>
 
       {formOpen && (
-        <div style={styles.form}>
-          <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem' }}>{editingId ? 'Editar' : 'Nueva'} jerarquía</h2>
+        <div className="hierarchies-page__form">
+          <h2 className="hierarchies-page__form-title">{editingId ? 'Editar' : 'Nueva'} jerarquía</h2>
           <form onSubmit={handleSubmit}>
             <div>
-              <label style={styles.label} htmlFor="h-name">Nombre *</label>
+              <label className="hierarchies-page__label" htmlFor="h-name">Nombre *</label>
               <input
                 id="h-name"
-                style={styles.input}
+                className="hierarchies-page__input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ej. Noticias"
@@ -209,40 +164,40 @@ export function HierarchiesPage() {
               />
             </div>
             <div>
-              <label style={styles.label} htmlFor="h-slug">Slug (URL)</label>
+              <label className="hierarchies-page__label" htmlFor="h-slug">Slug (URL)</label>
               <input
                 id="h-slug"
-                style={styles.input}
+                className="hierarchies-page__input"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="noticias (opcional, se deriva del nombre)"
               />
             </div>
             <div>
-              <label style={styles.label} htmlFor="h-desc">Descripción</label>
+              <label className="hierarchies-page__label" htmlFor="h-desc">Descripción</label>
               <input
                 id="h-desc"
-                style={styles.input}
+                className="hierarchies-page__input"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Opcional"
               />
             </div>
             <div>
-              <label style={styles.label} htmlFor="h-image">Imagen (URL)</label>
+              <label className="hierarchies-page__label" htmlFor="h-image">Imagen (URL)</label>
               <input
                 id="h-image"
-                style={styles.input}
+                className="hierarchies-page__input"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 placeholder="Opcional"
               />
             </div>
             <div>
-              <label style={styles.label} htmlFor="h-parent">Padre</label>
+              <label className="hierarchies-page__label" htmlFor="h-parent">Padre</label>
               <select
                 id="h-parent"
-                style={styles.input}
+                className="hierarchies-page__input"
                 value={parentHierarchyId ?? ''}
                 onChange={(e) => setParentHierarchyId(e.target.value === '' ? null : e.target.value)}
               >
@@ -256,12 +211,12 @@ export function HierarchiesPage() {
                   ))}
               </select>
             </div>
-            {submitError && <p style={styles.error}>{submitError}</p>}
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-              <button type="submit" style={{ ...styles.btn, ...styles.btnPrimary }}>
+            {submitError && <p className="hierarchies-page__error">{submitError}</p>}
+            <div className="hierarchies-page__form-actions">
+              <button type="submit" className="hierarchies-page__btn hierarchies-page__btn--primary">
                 {editingId ? 'Guardar' : 'Crear'}
               </button>
-              <button type="button" style={styles.btn} onClick={closeForm}>
+              <button type="button" className="hierarchies-page__btn" onClick={closeForm}>
                 Cancelar
               </button>
             </div>
@@ -269,24 +224,24 @@ export function HierarchiesPage() {
         </div>
       )}
 
-      {loading && <p style={styles.hint}>Cargando…</p>}
+      {loading && <p className="hierarchies-page__hint">Cargando…</p>}
       {!loading && list.length === 0 && !formOpen && (
-        <p style={styles.hint}>No hay jerarquías. Crea una para agrupar contenido por categorías.</p>
+        <p className="hierarchies-page__hint">No hay jerarquías. Crea una para agrupar contenido por categorías.</p>
       )}
       {!loading && (list.length > 0 || formOpen) && (
-        <ul style={styles.list}>
+        <ul className="hierarchies-page__list">
           {tree.map(({ item, depth }) => (
-            <li key={item.id} style={{ ...styles.row, paddingLeft: `${0.5 + depth * 1.5}rem` }}>
-              <span style={{ flex: 1 }}>
-                <span style={styles.name}>{item.name}</span>{' '}
-                <span style={styles.slug}>/{item.slug}</span>
+            <li key={item.id} className="hierarchies-page__row" style={{ paddingLeft: `${0.5 + depth * 1.5}rem` }}>
+              <span className="hierarchies-page__row-content">
+                <span className="hierarchies-page__name">{item.name}</span>{' '}
+                <span className="hierarchies-page__slug">/{item.slug}</span>
               </span>
-              <button type="button" style={styles.btn} onClick={() => openEdit(item)}>
+              <button type="button" className="hierarchies-page__btn" onClick={() => openEdit(item)}>
                 Editar
               </button>
               <button
                 type="button"
-                style={{ ...styles.btn, ...styles.btnDanger }}
+                className="hierarchies-page__btn hierarchies-page__btn--danger"
                 onClick={() => handleDelete(item.id)}
               >
                 Eliminar

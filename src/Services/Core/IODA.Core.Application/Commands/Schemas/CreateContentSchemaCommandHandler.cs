@@ -49,6 +49,10 @@ public class CreateContentSchemaCommandHandler : IRequestHandler<CreateContentSc
                 f.DisplayOrder != 0 ? f.DisplayOrder : index))
             .ToList();
 
+        var allowedRules = request.AllowedBlockTypes?
+            .Select(r => new IODA.Core.Domain.Entities.AllowedBlockTypeRule(r.BlockType, r.MinOccurrences, r.MaxOccurrences))
+            .ToList();
+
         var schema = ContentSchema.Create(
             request.ProjectId,
             request.SchemaName,
@@ -56,7 +60,8 @@ public class CreateContentSchemaCommandHandler : IRequestHandler<CreateContentSc
             request.Description,
             fieldDefinitions,
             request.CreatedBy,
-            request.ParentSchemaId);
+            request.ParentSchemaId,
+            allowedRules);
 
         await _unitOfWork.Schemas.AddAsync(schema, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

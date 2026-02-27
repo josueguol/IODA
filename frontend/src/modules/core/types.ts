@@ -65,6 +65,7 @@ export type ValidationRules = Record<string, unknown>
 
 export interface FieldDefinition {
   id: string
+  /** @deprecated Use slug as the technical key */
   fieldName: string
   /** Etiqueta visible en la UI (ej. "Descripción corta"). */
   label: string
@@ -76,6 +77,13 @@ export interface FieldDefinition {
   helpText: string | null
   validationRules: ValidationRules | null
   displayOrder: number
+}
+
+/** Regla de tipo de bloque permitido en contenidos con este schema (min/max opcionales). */
+export interface AllowedBlockTypeRule {
+  blockType: string
+  minOccurrences?: number | null
+  maxOccurrences?: number | null
 }
 
 export interface ContentSchema {
@@ -94,6 +102,8 @@ export interface ContentSchema {
   fields: FieldDefinition[]
   /** Campos heredados del schema padre (resueltos por el backend). */
   inheritedFields: FieldDefinition[] | null
+  /** Tipos de bloque permitidos en contenidos con este schema. Vacío = no se permiten bloques. */
+  allowedBlockTypes: AllowedBlockTypeRule[]
 }
 
 export interface ContentSchemaListItem {
@@ -104,6 +114,7 @@ export interface ContentSchemaListItem {
   parentSchemaId: string | null
   schemaVersion: number
   isActive: boolean
+  allowedBlockTypes: AllowedBlockTypeRule[]
 }
 
 /** Campo para crear schema. POST /api/projects/{projectId}/schemas */
@@ -133,6 +144,17 @@ export interface CreateSchemaRequest {
   fields: CreateSchemaFieldDto[]
   createdBy: string
   parentSchemaId?: string | null
+  /** Tipos de bloque permitidos (opcional). Vacío o ausente = no se permiten bloques. */
+  allowedBlockTypes?: AllowedBlockTypeRule[] | null
+}
+
+/** Bloque de composición (ContentBlockDto). */
+export interface ContentBlock {
+  id: string
+  contentId: string
+  blockType: string
+  order: number
+  payload: Record<string, unknown>
 }
 
 /** Contenido completo (ContentDto). */
@@ -143,6 +165,8 @@ export interface Content {
   environmentId: string
   siteId: string | null
   parentContentId: string | null
+  /** Orden entre hermanos (hijos del mismo padre). 0-based. */
+  order: number
   schemaId: string
   title: string
   slug: string
@@ -159,6 +183,7 @@ export interface Content {
   tagIds: string[]
   hierarchyIds: string[]
   siteIds: string[]
+  blocks: ContentBlock[]
 }
 
 /** Jerarquía/categoría del proyecto (HierarchyDto). */
@@ -182,6 +207,8 @@ export interface ContentListItem {
   contentType: string
   siteId: string | null
   parentContentId: string | null
+  /** Orden entre hermanos (hijos del mismo padre). 0-based. */
+  order: number
   createdAt: string
   publishedAt: string | null
 }

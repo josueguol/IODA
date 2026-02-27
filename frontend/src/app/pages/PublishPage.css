@@ -1,0 +1,128 @@
+/* PublishPage */
+.publish-page {
+  max-width: 900px;
+  color: var(--page-text);
+}
+
+.publish-page__title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--page-text);
+}
+
+.publish-page__filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  align-items: flex-end;
+}
+
+.publish-page__select {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  min-width: 160px;
+  border-radius: 4px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--input-text);
+}
+
+.publish-page__message {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.publish-page__message--error {
+  color: #dc3545;
+}
+
+.publish-page__message--success {
+  color: #198754;
+}
+
+.publish-page__error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.publish-page__hint {
+  color: var(--page-text-muted);
+  font-size: 0.875rem;
+}
+
+.publish-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: var(--page-text);
+}
+
+.publish-page__th {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 2px solid var(--page-border);
+  color: var(--page-text);
+}
+
+.publish-page__td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--page-border);
+  color: var(--page-text);
+}
+
+.publish-page__link {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.publish-page__button {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border: none;
+  margin-right: 0.35rem;
+}
+
+.publish-page__button--approve {
+  background: #198754;
+  color: white;
+}
+
+.publish-page__button--reject {
+  background: #dc3545;
+  color: white;
+}
+
+.publish-page__rejection-hint {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.publish-page__validation-errors {
+  font-size: 0.8rem;
+  color: #856404;
+  background: #fff3cd;
+  padding: 0.35rem;
+  border-radius: 4px;
+  margin-top: 0.25rem;
+}
+
+.publish-page__actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.publish-page__reject-input {
+  width: 140px;
+  padding: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.publish-page__back-wrap {
+  margin-top: 1rem;
+}

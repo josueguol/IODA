@@ -68,6 +68,11 @@ public class ContentSchemaConfiguration : IEntityTypeConfiguration<ContentSchema
             .HasColumnName("created_by")
             .IsRequired();
 
+        builder.Property<List<AllowedBlockTypeRule>>("_allowedBlockTypes")
+            .HasColumnName("allowed_block_types")
+            .HasConversion(AllowedBlockTypesConverter.Instance)
+            .HasColumnType("jsonb");
+
         builder.HasOne(s => s.Project)
             .WithMany()
             .HasForeignKey(s => s.ProjectId)

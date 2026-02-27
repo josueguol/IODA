@@ -14,4 +14,5 @@ public record CreateContentCommand(
     IReadOnlyList<Guid>? TagIds,
     IReadOnlyList<Guid>? HierarchyIds,
     IReadOnlyList<Guid>? SiteIds,
-    Guid CreatedBy) : IRequest<Guid>;
+    Guid CreatedBy,
+    int? Order = null) : IRequest<Guid>;

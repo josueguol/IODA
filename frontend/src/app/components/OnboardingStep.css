@@ -5,8 +5,9 @@
   box-sizing: border-box;
 }
 
-/* Área de trabajo: contenido fluye sin overflow; el main hace scroll si hace falta */
+/* Área de trabajo: el formulario flota centrado y hace scroll interno si no cabe */
 .onboarding-step--work-area {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -31,11 +32,15 @@
 }
 
 .onboarding-step__title {
-  margin: 0 0 0.75rem;
+  width: 100%;
+  margin: 0 0 1rem;
+  padding-bottom: 1rem;
   font-size: clamp(1rem, 4vw, 1.25rem);
   font-weight: 600;
   color: var(--page-text);
   line-height: 1.25;
+  border-bottom: 1px solid var(--page-border);
+  box-sizing: border-box;
 }
 
 .onboarding-step__hint {
@@ -128,7 +133,7 @@
   grid-template-columns: repeat(auto-fill, 160px);
   grid-auto-rows: 160px;
   gap: 16px;
-  justify-content: start;
+  justify-content: center;
   align-content: start;
 }
 
@@ -370,14 +375,21 @@ button.onboarding-step__card--selected {
   color: #1a1a1a;
 }
 
-/* Solo formulario de crear proyecto: centrado sin afectar entorno/sitio */
+/* Formulario flotante centrado en el área de trabajo; scroll solo dentro del form-wrap si no cabe */
 .onboarding-step__form-wrap--centered {
-  position: relative;
-  margin-left: auto;
-  margin-right: auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
   max-width: 28rem;
-  width: 100%;
+  width: calc(100% - 5rem);
+  max-height: calc(100% - 5rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
+
 
 /* Tache para cancelar creación (esquina superior derecha); colores que contrastan con #ecf4f9 */
 .onboarding-step__form-close {
@@ -489,9 +501,4 @@ button.onboarding-step__submit--secondary {
 
 button.onboarding-step__submit--secondary:hover {
   border-color: rgba(0, 0, 0, 0.25);
-}
-
-/* Paso 3: formulario sitio tiene más campos; mismo ancho máximo por campo */
-.onboarding-step__form--wide input.onboarding-step__input {
-  max-width: 22rem;
 }

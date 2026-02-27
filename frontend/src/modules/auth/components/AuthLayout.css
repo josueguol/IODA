@@ -36,7 +36,6 @@
 
 .auth-layout__content {
   width: 100%;
-  max-width: 22rem;
 }
 
 .auth-layout__content> h1, p {

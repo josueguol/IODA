@@ -63,19 +63,14 @@ public class PublishingController : ControllerBase
     /// <summary>Listar solicitudes de publicación (por contentId, status o todas). Status: Pending | Approved | Rejected.</summary>
     [HttpGet("requests")]
     [ProducesResponseType(typeof(IReadOnlyList<PublicationRequestDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IReadOnlyList<PublicationRequestDto>>> GetPublicationRequests(
         [FromQuery] Guid? contentId = null,
         [FromQuery] string? status = null,
         CancellationToken cancellationToken = default)
     {
         PublicationRequestStatus? statusEnum = null;
-        if (!string.IsNullOrWhiteSpace(status))
-        {
-            if (!Enum.TryParse<PublicationRequestStatus>(status, ignoreCase: true, out var parsed))
-                return BadRequest(new ProblemDetails { Status = 400, Title = "Bad Request", Detail = "Invalid status. Allowed values: Pending, Approved, Rejected." });
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<PublicationRequestStatus>(status, ignoreCase: true, out var parsed))
             statusEnum = parsed;
-        }
         var result = await _mediator.Send(new GetPublicationRequestsQuery(contentId, statusEnum), cancellationToken);
         return Ok(result);
     }

@@ -21,7 +21,7 @@ public sealed class EnumFieldValidator : IFieldValidator
         var strValue = value is string st ? st : value.ToString();
         var allowed = SchemaValidationHelpers.GetAllowedValuesList(allowedObj);
         if (allowed.Count > 0 && !allowed.Contains(strValue ?? ""))
-            return new[] { new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must be one of: {string.Join(", ", allowed)}.") };
+            return new[] { new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must be one of: {string.Join(", ", allowed)}.") };
 
         return Array.Empty<SchemaValidationError>();
     }

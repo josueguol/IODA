@@ -58,6 +58,10 @@ export function useCreateSite({
       setError('Selecciona un proyecto primero.')
       return
     }
+    if (!currentEnvironmentId) {
+      setError('Selecciona un entorno primero.')
+      return
+    }
     if (!user?.userId) {
       setError('No se pudo identificar tu usuario. Cierra sesión y vuelve a entrar.')
       return
@@ -73,7 +77,7 @@ export function useCreateSite({
     setSaving(true)
     try {
       const id = await coreApi.createSite(currentProjectId, {
-        environmentId: currentEnvironmentId || null,
+        environmentId: currentEnvironmentId,
         name: name.trim(),
         domain: domain.trim(),
         subdomain: subdomain.trim() || null,

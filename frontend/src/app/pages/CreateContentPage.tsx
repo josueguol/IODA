@@ -8,16 +8,7 @@ import { ParentContentSelector } from '../../modules/core/components/ParentConte
 import { TagsSelector } from '../../modules/core/components/TagsSelector'
 import { HierarchySelector } from '../../modules/core/components/HierarchySelector'
 import { SiteSelector } from '../../modules/core/components/SiteSelector'
-
-const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 640, color: 'var(--page-text)' },
-  title: { marginTop: 0, marginBottom: '1rem', color: 'var(--page-text)', fontSize: '1.5rem' },
-  selector: { marginBottom: '1.5rem' },
-  select: { padding: '0.5rem', fontSize: '0.875rem', minWidth: 220, borderRadius: 4, border: '1px solid var(--input-border)', color: 'var(--input-text)', background: 'var(--input-bg)' },
-  hint: { color: 'var(--page-text-muted)', fontSize: '0.875rem', marginTop: '0.5rem' },
-  input: { width: '100%', maxWidth: 400, padding: '0.5rem', fontSize: '0.875rem', borderRadius: 4, border: '1px solid var(--input-border)', color: 'var(--input-text)', background: 'var(--input-bg)', marginBottom: '1rem' },
-  error: { color: '#dc3545', marginBottom: '0.5rem' },
-}
+import './CreateContentPage.css'
 
 export function CreateContentPage() {
   const navigate = useNavigate()
@@ -26,6 +17,7 @@ export function CreateContentPage() {
   const [selectedSchemaId, setSelectedSchemaId] = useState<string>('')
   const [contentTitle, setContentTitle] = useState('')
   const [parentContentId, setParentContentId] = useState<string | null>(null)
+  const [order, setOrder] = useState<string>('')
   const [tagIds, setTagIds] = useState<string[]>([])
   const [hierarchyIds, setHierarchyIds] = useState<string[]>([])
   const [siteIds, setSiteIds] = useState<string[]>([])
@@ -48,6 +40,7 @@ export function CreateContentPage() {
     setSubmitError(null)
     try {
       const fields = values as Record<string, unknown>
+      const orderNum = order === '' ? undefined : parseInt(order, 10)
       await coreApi.createContent(currentProjectId, {
         environmentId: currentEnvironmentId,
         siteId: currentSiteId ?? undefined,
@@ -56,6 +49,7 @@ export function CreateContentPage() {
         title: contentTitle.trim(),
         contentType,
         fields,
+        order: orderNum !== undefined && !Number.isNaN(orderNum) ? orderNum : undefined,
         tagIds: tagIds.length > 0 ? tagIds : undefined,
         hierarchyIds: hierarchyIds.length > 0 ? hierarchyIds : undefined,
         siteIds: siteIds.length > 0 ? siteIds : undefined,
@@ -68,32 +62,32 @@ export function CreateContentPage() {
 
   if (!currentProjectId) {
     return (
-      <div style={styles.container}>
-        <h1 style={styles.title}>Crear contenido</h1>
-        <p style={styles.hint}>Selecciona un proyecto en la barra superior.</p>
+      <div className="create-content-page">
+        <h1 className="create-content-page__title">Crear contenido</h1>
+        <p className="create-content-page__hint">Selecciona un proyecto en la barra superior.</p>
       </div>
     )
   }
 
   if (!currentEnvironmentId) {
     return (
-      <div style={styles.container}>
-        <h1 style={styles.title}>Crear contenido</h1>
-        <p style={styles.hint}>Selecciona un entorno en la barra superior para crear contenido.</p>
+      <div className="create-content-page">
+        <h1 className="create-content-page__title">Crear contenido</h1>
+        <p className="create-content-page__hint">Selecciona un entorno en la barra superior para crear contenido.</p>
       </div>
     )
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Crear contenido</h1>
+    <div className="create-content-page">
+      <h1 className="create-content-page__title">Crear contenido</h1>
 
-      <div style={styles.selector}>
+      <div className="create-content-page__selector">
         <label htmlFor="schema-select">Schema</label>
         <br />
         <select
           id="schema-select"
-          style={styles.select}
+          className="create-content-page__select"
           value={selectedSchemaId}
           onChange={(e) => setSelectedSchemaId(e.target.value)}
           disabled={listLoading}
@@ -105,7 +99,7 @@ export function CreateContentPage() {
             </option>
           ))}
         </select>
-        {listError && <p style={styles.error}>{listError}</p>}
+        {listError && <p className="create-content-page__error">{listError}</p>}
       </div>
 
       {selectedSchemaId && currentProjectId && (
@@ -116,7 +110,7 @@ export function CreateContentPage() {
             <input
               id="content-title"
               type="text"
-              style={styles.input}
+              className="create-content-page__input"
               value={contentTitle}
               onChange={(e) => setContentTitle(e.target.value)}
               placeholder="Ej. Mi primer artículo"
@@ -128,6 +122,20 @@ export function CreateContentPage() {
             value={parentContentId}
             onChange={setParentContentId}
           />
+          <div className="create-content-page__selector">
+            <label htmlFor="content-order">Orden (opcional)</label>
+            <br />
+            <input
+              id="content-order"
+              type="number"
+              min={0}
+              className="create-content-page__input"
+              value={order}
+              onChange={(e) => setOrder(e.target.value)}
+              placeholder="Siguiente disponible si se deja vacío"
+            />
+            <p className="create-content-page__hint">Posición entre hermanos (hijos del mismo padre). 0-based.</p>
+          </div>
           <TagsSelector projectId={currentProjectId} value={tagIds} onChange={setTagIds} />
           <HierarchySelector projectId={currentProjectId} value={hierarchyIds} onChange={setHierarchyIds} />
           <SiteSelector
@@ -137,7 +145,7 @@ export function CreateContentPage() {
             onChange={setSiteIds}
           />
 
-          {submitError && <p style={styles.error}>{submitError}</p>}
+          {submitError && <p className="create-content-page__error">{submitError}</p>}
 
           <DynamicForm
             projectId={currentProjectId}

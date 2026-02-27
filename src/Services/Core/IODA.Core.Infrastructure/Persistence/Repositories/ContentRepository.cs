@@ -18,6 +18,7 @@ public class ContentRepository : IContentRepository
     {
         return await _context.Contents
             .Include(c => c.Versions)
+            .Include(c => c.Blocks)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
@@ -172,8 +173,19 @@ public class ContentRepository : IContentRepository
         return await _context.Contents
             .Include(c => c.Versions)
             .Where(c => c.ParentContentId == parentContentId)
-            .OrderBy(c => c.Title)
+            .OrderBy(c => c.Order)
+            .ThenBy(c => c.Id)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetNextOrderForParentAsync(Guid? parentContentId, CancellationToken cancellationToken = default)
+    {
+        var maxOrder = await _context.Contents
+            .AsNoTracking()
+            .Where(c => c.ParentContentId == parentContentId)
+            .Select(c => (int?)c.Order)
+            .MaxAsync(cancellationToken);
+        return (maxOrder ?? -1) + 1;
     }
 
     public async Task<Content?> GetPublishedBySiteAndSlugAsync(Guid siteId, string slug, CancellationToken cancellationToken = default)
@@ -194,5 +206,18 @@ public class ContentRepository : IContentRepository
         return await _context.Contents
             .Include(c => c.Versions)
             .FirstOrDefaultAsync(c => c.Id == contentId, cancellationToken);
+    }
+
+    public async Task<Content?> GetByBlockIdAsync(Guid blockId, CancellationToken cancellationToken = default)
+    {
+        var block = await _context.ContentBlocks
+            .AsNoTracking()
+            .FirstOrDefaultAsync(b => b.Id == blockId, cancellationToken);
+        if (block == null)
+            return null;
+        return await _context.Contents
+            .Include(c => c.Versions)
+            .Include(c => c.Blocks)
+            .FirstOrDefaultAsync(c => c.Id == block.ContentId, cancellationToken);
     }
 }

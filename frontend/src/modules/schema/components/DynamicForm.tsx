@@ -58,20 +58,20 @@ export function DynamicForm({
       const t = f.fieldType?.toLowerCase()
       if (f.defaultValue !== undefined && f.defaultValue !== null) {
         if (t === 'list') {
-          out[f.fieldName] = Array.isArray(f.defaultValue)
+          out[f.slug] = Array.isArray(f.defaultValue)
             ? (f.defaultValue as string[])
             : typeof f.defaultValue === 'string'
               ? [f.defaultValue]
               : []
         } else {
-          out[f.fieldName] = f.defaultValue as string | number | boolean
+          out[f.slug] = f.defaultValue as string | number | boolean
         }
       } else if (t === 'boolean') {
-        out[f.fieldName] = false
+        out[f.slug] = false
       } else if (t === 'list') {
-        out[f.fieldName] = []
+        out[f.slug] = []
       } else {
-        out[f.fieldName] = ''
+        out[f.slug] = ''
       }
     }
     return out

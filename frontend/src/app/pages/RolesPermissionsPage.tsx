@@ -380,7 +380,7 @@ function RulesTab() {
 
   const handleCreate = async () => {
     setFormError(null)
-    if (!ruleUserId.trim()) { setFormError('Escribe el ID del usuario.'); return }
+    if (!ruleUserId.trim()) { setFormError('Selecciona un usuario.'); return }
     if (!ruleRoleId) { setFormError('Selecciona un rol.'); return }
     setSaving(true)
     try {

@@ -28,11 +28,11 @@ public class SchemaValidationService : ISchemaValidationService
 
         foreach (var fieldDef in fieldsByName)
         {
-            var value = fields.TryGetValue(fieldDef.FieldName, out var v) ? v : null;
+            var value = fields.TryGetValue(fieldDef.Slug, out var v) ? v : null;
 
             if (fieldDef.IsRequired && (value == null || IsEmptyValue(value)))
             {
-                errors.Add(new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' is required."));
+                errors.Add(new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' is required."));
                 continue;
             }
 

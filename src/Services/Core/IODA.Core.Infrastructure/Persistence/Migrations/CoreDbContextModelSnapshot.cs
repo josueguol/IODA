@@ -54,6 +54,10 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("fields");
 
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
                     b.Property<Guid?>("ParentContentId")
                         .HasColumnType("uuid")
                         .HasColumnName("parent_content_id");
@@ -114,8 +118,6 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EnvironmentId");
 
-                    b.HasIndex("ParentContentId");
-
                     b.HasIndex("PublicId")
                         .IsUnique()
                         .HasDatabaseName("ix_contents_public_id");
@@ -123,6 +125,9 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                     b.HasIndex("SchemaId");
 
                     b.HasIndex("SiteId");
+
+                    b.HasIndex("ParentContentId", "Order")
+                        .HasDatabaseName("ix_contents_parent_order");
 
                     b.HasIndex("ProjectId", "SiteId")
                         .HasDatabaseName("ix_contents_project_site");
@@ -135,6 +140,38 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_contents_project_env_status");
 
                     b.ToTable("contents", (string)null);
+                });
+
+            modelBuilder.Entity("IODA.Core.Domain.Entities.ContentBlock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BlockType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("block_type");
+
+                    b.Property<Guid>("ContentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("content_id");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("payload");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentId", "Order")
+                        .HasDatabaseName("ix_content_blocks_content_id_order");
+
+                    b.ToTable("content_blocks", (string)null);
                 });
 
             modelBuilder.Entity("IODA.Core.Domain.Entities.ContentHierarchy", b =>
@@ -210,6 +247,11 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
+
+                    b.Property<string>("_allowedBlockTypes")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("allowed_block_types");
 
                     b.HasKey("Id");
 
@@ -763,6 +805,15 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
                     b.Navigation("Site");
                 });
 
+            modelBuilder.Entity("IODA.Core.Domain.Entities.ContentBlock", b =>
+                {
+                    b.HasOne("IODA.Core.Domain.Entities.Content", null)
+                        .WithMany("Blocks")
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("IODA.Core.Domain.Entities.ContentHierarchy", b =>
                 {
                     b.HasOne("IODA.Core.Domain.Entities.Content", "Content")
@@ -939,6 +990,8 @@ namespace IODA.Core.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("IODA.Core.Domain.Entities.Content", b =>
                 {
+                    b.Navigation("Blocks");
+
                     b.Navigation("Versions");
                 });
 

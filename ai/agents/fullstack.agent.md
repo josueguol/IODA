@@ -84,3 +84,12 @@ Temas:
 
 No des teoría innecesaria.
 Entrega implementación clara y mantenible.
+
+
+## Política de Memoria
+
+Solo proponer memoria si el cambio afecta:
+
+- Contratos
+- Dominio
+- Arquitectura

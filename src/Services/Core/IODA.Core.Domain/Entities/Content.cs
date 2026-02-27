@@ -11,6 +11,7 @@ namespace IODA.Core.Domain.Entities;
 public class Content : AggregateRoot<Guid>
 {
     private readonly List<ContentVersion> _versions = [];
+    private readonly List<ContentBlock> _blocks = [];
 
     public Identifier PublicId { get; private set; } = null!;
     public Guid ProjectId { get; private set; }
@@ -18,6 +19,8 @@ public class Content : AggregateRoot<Guid>
     public Guid? SiteId { get; private set; }
     /// <summary>Contenido padre para jerarquía (Req 3). Null = raíz.</summary>
     public Guid? ParentContentId { get; private set; }
+    /// <summary>Orden entre hermanos (hijos del mismo padre). 0-based.</summary>
+    public int Order { get; private set; }
     public Guid SchemaId { get; private set; }
     public string Title { get; private set; } = null!;
     public Slug Slug { get; private set; } = null!;
@@ -46,6 +49,7 @@ public class Content : AggregateRoot<Guid>
     /// <summary>Navegación al contenido padre (solo para EF).</summary>
     public Content? Parent { get; private set; }
     public IReadOnlyCollection<ContentVersion> Versions => _versions.AsReadOnly();
+    public IReadOnlyCollection<ContentBlock> Blocks => _blocks.AsReadOnly();
 
     // EF Core constructor
     private Content() { }
@@ -57,6 +61,7 @@ public class Content : AggregateRoot<Guid>
         Guid environmentId,
         Guid? siteId,
         Guid? parentContentId,
+        int order,
         Guid schemaId,
         string title,
         Slug slug,
@@ -70,6 +75,7 @@ public class Content : AggregateRoot<Guid>
         EnvironmentId = environmentId;
         SiteId = siteId;
         ParentContentId = parentContentId;
+        Order = order;
         SchemaId = schemaId;
         Title = title;
         Slug = slug;
@@ -105,6 +111,7 @@ public class Content : AggregateRoot<Guid>
         Guid environmentId,
         Guid? siteId,
         Guid? parentContentId,
+        int order,
         Guid schemaId,
         string title,
         string contentType,
@@ -132,12 +139,46 @@ public class Content : AggregateRoot<Guid>
             environmentId,
             siteId,
             parentContentId,
+            order,
             schemaId,
             title,
             slug,
             contentType,
             fields,
             createdBy);
+    }
+
+    /// <summary>Asigna el orden entre hermanos (hijos del mismo padre).</summary>
+    public void SetOrder(int order)
+    {
+        Order = order;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>Añade un bloque al contenido.</summary>
+    public void AddBlock(ContentBlock block)
+    {
+        if (block.ContentId != Id)
+            throw new ArgumentException("Block must belong to this content.", nameof(block));
+        _blocks.Add(block);
+    }
+
+    /// <summary>Elimina un bloque por id.</summary>
+    public void RemoveBlock(Guid blockId)
+    {
+        var block = _blocks.FirstOrDefault(b => b.Id == blockId);
+        if (block is not null)
+            _blocks.Remove(block);
+    }
+
+    /// <summary>Reordena bloques según la lista de ids (índice = Order).</summary>
+    public void ReorderBlocks(IReadOnlyList<Guid> blockIdsInOrder)
+    {
+        for (var i = 0; i < blockIdsInOrder.Count; i++)
+        {
+            var block = _blocks.FirstOrDefault(b => b.Id == blockIdsInOrder[i]);
+            block?.SetOrder(i);
+        }
     }
 
     /// <summary>Asigna o cambia el contenido padre (jerarquía). Validación anti-ciclos en aplicación.</summary>

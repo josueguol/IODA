@@ -20,7 +20,7 @@ public sealed class NumberFieldValidator : IFieldValidator
 
         if (!TryGetDecimal(value, out var num))
         {
-            errors.Add(new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must be a number."));
+            errors.Add(new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must be a number."));
             return errors;
         }
 
@@ -29,10 +29,10 @@ public sealed class NumberFieldValidator : IFieldValidator
             return errors;
 
         if (rules.TryGetValue("min", out var minObj) && SchemaValidationHelpers.TryGetDecimal(minObj, out var min) && num < min)
-            errors.Add(new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must be at least {min}."));
+            errors.Add(new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must be at least {min}."));
 
         if (rules.TryGetValue("max", out var maxObj) && SchemaValidationHelpers.TryGetDecimal(maxObj, out var max) && num > max)
-            errors.Add(new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must not exceed {max}."));
+            errors.Add(new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must not exceed {max}."));
 
         return errors;
     }

@@ -47,7 +47,8 @@ public class ContentController : ControllerBase
             request.TagIds,
             request.HierarchyIds,
             request.SiteIds,
-            userId.Value);
+            userId.Value,
+            request.Order);
         var id = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { projectId, contentId = id }, id);
     }
@@ -108,6 +109,7 @@ public class ContentController : ControllerBase
             request.Fields,
             userId.Value,
             request.ParentContentId,
+            request.Order,
             request.TagIds,
             request.HierarchyIds,
             request.SiteIds);
@@ -217,6 +219,67 @@ public class ContentController : ControllerBase
             cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>Añade un bloque al contenido.</summary>
+    [HttpPost("content/{contentId:guid}/blocks")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Guid>> AddBlock(
+        Guid projectId,
+        Guid contentId,
+        [FromBody] AddContentBlockRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddContentBlockCommand(contentId, request.BlockType, request.Order, request.Payload);
+        var blockId = await _mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { projectId, contentId }, blockId);
+    }
+
+    /// <summary>Actualiza un bloque (payload y/o orden).</summary>
+    [HttpPut("content/{contentId:guid}/blocks/{blockId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> UpdateBlock(
+        Guid projectId,
+        Guid contentId,
+        Guid blockId,
+        [FromBody] UpdateContentBlockRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new UpdateContentBlockCommand(blockId, request.Payload, request.Order);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>Elimina un bloque.</summary>
+    [HttpDelete("content/{contentId:guid}/blocks/{blockId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteBlock(
+        Guid projectId,
+        Guid contentId,
+        Guid blockId,
+        CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new RemoveContentBlockCommand(blockId), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>Reordena los bloques del contenido según la lista de ids.</summary>
+    [HttpPost("content/{contentId:guid}/blocks/reorder")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> ReorderBlocks(
+        Guid projectId,
+        Guid contentId,
+        [FromBody] ReorderContentBlocksRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ReorderContentBlocksCommand(contentId, request.BlockIds);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
 }
 
 public record CreateContentRequest(
@@ -229,14 +292,20 @@ public record CreateContentRequest(
     Dictionary<string, object> Fields,
     IReadOnlyList<Guid>? TagIds,
     IReadOnlyList<Guid>? HierarchyIds,
-    IReadOnlyList<Guid>? SiteIds);
+    IReadOnlyList<Guid>? SiteIds,
+    int? Order = null);
 
 public record UpdateContentRequest(
     string Title,
     Dictionary<string, object> Fields,
     Guid? ParentContentId,
-    IReadOnlyList<Guid>? TagIds,
-    IReadOnlyList<Guid>? HierarchyIds,
-    IReadOnlyList<Guid>? SiteIds);
+    int? Order = null,
+    IReadOnlyList<Guid>? TagIds = null,
+    IReadOnlyList<Guid>? HierarchyIds = null,
+    IReadOnlyList<Guid>? SiteIds = null);
 
 public record UnpublishContentRequest(string Reason);
+
+public record AddContentBlockRequest(string BlockType, int Order, Dictionary<string, object>? Payload = null);
+public record UpdateContentBlockRequest(Dictionary<string, object>? Payload = null, int? Order = null);
+public record ReorderContentBlocksRequest(IReadOnlyList<Guid> BlockIds);

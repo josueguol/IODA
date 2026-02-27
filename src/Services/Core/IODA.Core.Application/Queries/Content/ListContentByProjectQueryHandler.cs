@@ -38,7 +38,8 @@ public class ListContentByProjectQueryHandler : IRequestHandler<ListContentByPro
 
         var totalCount = query.Count();
         var items = query
-            .OrderByDescending(c => c.CreatedAt)
+            .OrderBy(c => c.Order)
+            .ThenBy(c => c.Id)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .Select(c => c.ToListItemDto())
