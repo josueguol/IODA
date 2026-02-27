@@ -51,8 +51,11 @@ export const publishingApi = {
     status?: PublicationRequestStatus
   }) => {
     const search = new URLSearchParams()
-    if (params?.contentId) search.set('contentId', params.contentId)
-    if (params?.status) search.set('status', params.status)
+    const contentId = params?.contentId?.trim()
+    if (contentId) search.set('contentId', contentId)
+    const status = params?.status
+    const validStatuses = ['Pending', 'Approved', 'Rejected'] as const
+    if (status && validStatuses.includes(status)) search.set('status', status)
     const q = search.toString()
     return publishingClient.get<PublicationRequest[]>(
       `api/publishing/requests${q ? `?${q}` : ''}`

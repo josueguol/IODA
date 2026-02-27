@@ -30,6 +30,10 @@ public class SchemasController : ControllerBase
         [FromBody] CreateSchemaRequest request,
         CancellationToken cancellationToken)
     {
+        var allowedBlockTypes = request.AllowedBlockTypes?
+            .Select(r => new AllowedBlockTypeRuleDto(r.BlockType, r.MinOccurrences, r.MaxOccurrences))
+            .ToList();
+
         var command = new CreateContentSchemaCommand(
             projectId,
             request.SchemaName,
@@ -37,7 +41,8 @@ public class SchemasController : ControllerBase
             request.Description,
             request.Fields,
             request.CreatedBy,
-            request.ParentSchemaId);
+            request.ParentSchemaId,
+            allowedBlockTypes);
         var id = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { projectId, schemaId = id }, id);
     }
@@ -85,10 +90,13 @@ public class SchemasController : ControllerBase
 
 public record DefaultFieldSuggestionDto(string Label, string Slug, string FieldType);
 
+public record AllowedBlockTypeRuleRequest(string BlockType, int? MinOccurrences = null, int? MaxOccurrences = null);
+
 public record CreateSchemaRequest(
     string SchemaName,
     string SchemaType,
     string? Description,
     List<CreateSchemaFieldDto> Fields,
     Guid CreatedBy,
-    Guid? ParentSchemaId = null);
+    Guid? ParentSchemaId = null,
+    List<AllowedBlockTypeRuleRequest>? AllowedBlockTypes = null);

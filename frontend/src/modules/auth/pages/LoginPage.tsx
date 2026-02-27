@@ -28,6 +28,7 @@ export function LoginPage() {
   const isRehydrating = useAuthStore((s) => s.isRehydrating)
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null)
   const permissionsChanged = searchParams.get('reason') === 'permissions_changed'
+  const shouldRedirectToRegister = Boolean(setupStatus && !setupStatus.hasUsers)
 
   useEffect(() => {
     if (!isRehydrating && isAuthenticated) {
@@ -42,6 +43,12 @@ export function LoginPage() {
     })
     return () => { cancelled = true }
   }, [isRehydrating, isAuthenticated, navigate])
+
+  useEffect(() => {
+    if (!isRehydrating && !isAuthenticated && shouldRedirectToRegister) {
+      navigate('/register', { replace: true })
+    }
+  }, [isRehydrating, isAuthenticated, shouldRedirectToRegister, navigate])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -68,10 +75,7 @@ export function LoginPage() {
 
   if (isAuthenticated) return null
 
-  if (setupStatus && !setupStatus.hasUsers) {
-    navigate('/register', { replace: true })
-    return null
-  }
+  if (shouldRedirectToRegister) return null
 
   const showRegisterLink = setupStatus === null || !setupStatus.hasUsers || setupStatus.selfRegistrationEnabled
 

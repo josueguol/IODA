@@ -1,3 +1,4 @@
+using IODA.Core.Application.DTOs;
 using MediatR;
 
 namespace IODA.Core.Application.Commands.Schemas;
@@ -9,4 +10,5 @@ public record CreateContentSchemaCommand(
     string? Description,
     List<CreateSchemaFieldDto> Fields,
     Guid CreatedBy,
-    Guid? ParentSchemaId = null) : IRequest<Guid>;
+    Guid? ParentSchemaId = null,
+    IReadOnlyList<AllowedBlockTypeRuleDto>? AllowedBlockTypes = null) : IRequest<Guid>;

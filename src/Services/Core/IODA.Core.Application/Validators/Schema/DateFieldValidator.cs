@@ -24,6 +24,6 @@ public sealed class DateFieldValidator : IFieldValidator
         if (value is JsonElement je && je.ValueKind == JsonValueKind.String && DateTime.TryParse(je.GetString(), out _))
             return Array.Empty<SchemaValidationError>();
 
-        return new[] { new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must be a valid date or datetime.") };
+        return new[] { new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must be a valid date or datetime.") };
     }
 }

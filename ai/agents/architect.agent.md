@@ -85,3 +85,14 @@ No puedes proponer:
    - Impacto
    - Riesgos
    - Recomendación final
+
+
+## Política de Memoria
+
+Toda decisión arquitectónica debe generar un ADR en:
+
+ai/memory/decisions/
+
+El formato es obligatorio.
+Las memorias son inmutables.
+Las decisiones solo pueden deprecarse, no editarse.

@@ -102,3 +102,11 @@ Si una decisión afecta mantenibilidad o escalabilidad, debes advertirlo y propo
 - Código limpio y profesional
 - Justificar decisiones arquitectónicas importantes
 - Priorizar claridad sobre complejidad
+
+## Política de Memoria
+
+Solo proponer memoria si:
+
+- Cambia contrato API
+- Se detecta problema estructural en integración
+- Se requiere cambio de versionado

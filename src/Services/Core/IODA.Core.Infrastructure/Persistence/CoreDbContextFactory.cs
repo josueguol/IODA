@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace IODA.Core.Infrastructure.Persistence;
 
 /// <summary>
 /// Design-time factory for EF Core migrations.
-/// Used when running 'dotnet ef migrations add'.
+/// Used when running 'dotnet ef migrations add' and 'dotnet ef database update'.
 /// Connection string can be overridden via environment variable ConnectionStrings__DefaultConnection.
 /// </summary>
 public class CoreDbContextFactory : IDesignTimeDbContextFactory<CoreDbContext>
@@ -16,6 +17,7 @@ public class CoreDbContextFactory : IDesignTimeDbContextFactory<CoreDbContext>
             ?? "Host=localhost;Port=5432;Database=ioda_core;Username=ioda;Password=ioda_dev_password";
 
         var optionsBuilder = new DbContextOptionsBuilder<CoreDbContext>();
+        optionsBuilder.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
         optionsBuilder.UseNpgsql(connectionString, npgsql =>
         {
             npgsql.MigrationsAssembly(typeof(CoreDbContext).Assembly.FullName);

@@ -9,6 +9,7 @@ public record UpdateContentCommand(
     Dictionary<string, object> Fields,
     Guid UpdatedBy,
     Guid? ParentContentId = null,
+    int? Order = null,
     IReadOnlyList<Guid>? TagIds = null,
     IReadOnlyList<Guid>? HierarchyIds = null,
     IReadOnlyList<Guid>? SiteIds = null) : IRequest<ContentDto>;

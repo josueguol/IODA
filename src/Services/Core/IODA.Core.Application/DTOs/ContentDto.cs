@@ -7,6 +7,7 @@ public record ContentDto(
     Guid EnvironmentId,
     Guid? SiteId,
     Guid? ParentContentId,
+    int Order,
     Guid SchemaId,
     string Title,
     string Slug,
@@ -22,7 +23,8 @@ public record ContentDto(
     Guid? PublishedBy,
     IReadOnlyList<Guid> TagIds,
     IReadOnlyList<Guid> HierarchyIds,
-    IReadOnlyList<Guid> SiteIds);
+    IReadOnlyList<Guid> SiteIds,
+    IReadOnlyList<ContentBlockDto> Blocks);
 
 public record ContentListItemDto(
     Guid Id,
@@ -33,5 +35,6 @@ public record ContentListItemDto(
     string ContentType,
     Guid? SiteId,
     Guid? ParentContentId,
+    int Order,
     DateTime CreatedAt,
     DateTime? PublishedAt);

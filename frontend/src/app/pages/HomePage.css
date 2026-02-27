@@ -53,12 +53,6 @@
   margin-top: 1.5rem;
 }
 
-.home__dashboard-title {
-  margin: 0 0 0.75rem;
-  font-size: 1.25rem;
-  color: var(--page-text);
-}
-
 .home__context {
   padding: 1.25rem;
   background: var(--cms-step-bg, var(--page-bg-elevated));

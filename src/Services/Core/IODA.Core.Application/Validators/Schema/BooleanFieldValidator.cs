@@ -22,6 +22,6 @@ public sealed class BooleanFieldValidator : IFieldValidator
         if (value is JsonElement je && (je.ValueKind == JsonValueKind.True || je.ValueKind == JsonValueKind.False))
             return Array.Empty<SchemaValidationError>();
 
-        return new[] { new SchemaValidationError(fieldDef.FieldName, $"Field '{fieldDef.FieldName}' must be a boolean.") };
+        return new[] { new SchemaValidationError(fieldDef.Slug, $"Field '{fieldDef.Slug}' must be a boolean.") };
     }
 }

@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddSingleton<IFieldValidator, DefaultFieldValidator>();
 
         services.AddTransient<ISchemaValidationService, SchemaValidationService>();
+        services.AddScoped<IBlockAllowedBySchemaValidator, BlockAllowedBySchemaValidator>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));

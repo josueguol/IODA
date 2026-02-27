@@ -63,9 +63,6 @@ export function HomePage() {
     }
   }, [currentProjectId, currentEnvironmentId, loadSites])
 
-  const currentProject = projects.find((p) => p.id === currentProjectId)
-  const currentEnvironment = environments.find((e) => e.id === currentEnvironmentId)
-  const currentSite = sites.find((s) => s.id === currentSiteId)
   const hasNoProjects = !projectsLoading && projects.length === 0
   const hasFullContext = Boolean(currentProjectId && currentEnvironmentId && currentSiteId)
   const contextState: 'EMPTY' | 'PROJECT_SELECTED' | 'PROJECT_ENV_SELECTED' | 'FULL_CONTEXT' =
@@ -182,14 +179,7 @@ export function HomePage() {
       )}
 
       {hasFullContext && (
-        <HomeDashboard
-          currentProject={currentProject}
-          currentEnvironment={currentEnvironment}
-          currentSite={currentSite}
-          onChangeProject={() => setProject(null)}
-          onChangeEnvironment={() => setEnvironment(null)}
-          onChangeSite={() => setSite(null)}
-        />
+        <HomeDashboard />
       )}
     </>
   )

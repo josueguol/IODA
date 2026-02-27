@@ -1,7 +1,13 @@
+using System;
 using IODA.Core.Domain.ValueObjects;
 using IODA.Shared.BuildingBlocks.Domain;
 
 namespace IODA.Core.Domain.Entities;
+
+/// <summary>
+/// Rule for a block type allowed in content using this schema. Optional min/max occurrences.
+/// </summary>
+public record AllowedBlockTypeRule(string BlockType, int? MinOccurrences = null, int? MaxOccurrences = null);
 
 /// <summary>
 /// Defines the schema/structure for a content type
@@ -10,6 +16,7 @@ namespace IODA.Core.Domain.Entities;
 public class ContentSchema : AggregateRoot<Guid>
 {
     private readonly List<FieldDefinition> _fields = [];
+    private readonly List<AllowedBlockTypeRule> _allowedBlockTypes = [];
 
     public Identifier PublicId { get; private set; } = null!;
     public Guid ProjectId { get; private set; }
@@ -25,6 +32,10 @@ public class ContentSchema : AggregateRoot<Guid>
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public Guid CreatedBy { get; private set; }
+    /// <summary>
+    /// Block types allowed for content using this schema; optional min/max per type. Empty = no blocks allowed.
+    /// </summary>
+    public IReadOnlyList<AllowedBlockTypeRule> AllowedBlockTypes => _allowedBlockTypes.AsReadOnly();
 
     // Navigation
     public Project Project { get; private set; } = null!;
@@ -43,7 +54,8 @@ public class ContentSchema : AggregateRoot<Guid>
         string? description,
         Guid? parentSchemaId,
         List<FieldDefinition> fields,
-        Guid createdBy)
+        Guid createdBy,
+        IReadOnlyList<AllowedBlockTypeRule>? allowedBlockTypes)
     {
         Id = id;
         PublicId = publicId;
@@ -57,6 +69,7 @@ public class ContentSchema : AggregateRoot<Guid>
         CreatedAt = DateTime.UtcNow;
         CreatedBy = createdBy;
         _fields = fields;
+        _allowedBlockTypes = (allowedBlockTypes ?? []).ToList();
 
         // Assign schema id to all fields (when created from handler, they use Guid.Empty)
         foreach (var field in _fields)
@@ -74,7 +87,8 @@ public class ContentSchema : AggregateRoot<Guid>
         string? description,
         List<FieldDefinition> fields,
         Guid createdBy,
-        Guid? parentSchemaId = null)
+        Guid? parentSchemaId = null,
+        IReadOnlyList<AllowedBlockTypeRule>? allowedBlockTypes = null)
     {
         if (string.IsNullOrWhiteSpace(schemaName))
         {
@@ -103,7 +117,8 @@ public class ContentSchema : AggregateRoot<Guid>
             description,
             parentSchemaId,
             fields,
-            createdBy);
+            createdBy,
+            allowedBlockTypes);
     }
 
     public void AddField(FieldDefinition field)
@@ -177,6 +192,7 @@ public class FieldDefinition : Entity<Guid>
 {
     public Guid SchemaId { get; private set; }
     /// <summary>Technical key for APIs and content storage; kebab-case, unique per schema. Same as Slug for new fields.</summary>
+    [Obsolete("Use Slug as the technical key")]
     public string FieldName { get; private set; } = null!;
     /// <summary>Human-readable label for UI (e.g. "Descripción corta").</summary>
     public string Label { get; private set; } = null!;
@@ -209,7 +225,9 @@ public class FieldDefinition : Entity<Guid>
     {
         Id = id;
         SchemaId = schemaId;
+#pragma warning disable CS0618 // FieldName is obsolete but needed for backward compatibility
         FieldName = fieldName;
+#pragma warning restore CS0618
         Label = label;
         Slug = slug;
         FieldType = fieldType;

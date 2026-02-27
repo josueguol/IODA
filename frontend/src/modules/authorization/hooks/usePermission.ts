@@ -30,6 +30,12 @@ function hasContext(context: PermissionContext | null | undefined): boolean {
   )
 }
 
+const BOOTSTRAP_PERMISSIONS = new Set(['project.create', 'environment.create', 'site.create'])
+
+function isNetworkFetchError(err: unknown): boolean {
+  return err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('Load failed'))
+}
+
 export interface UsePermissionResult {
   allowed: boolean
   loading: boolean
@@ -128,8 +134,21 @@ export function usePermission(
       })
       .catch((err) => {
         if (mounted.current) {
+          // Primer usuario recién creado: si Authorization está temporalmente caído,
+          // permitir acciones de bootstrap en UI para no bloquear onboarding.
+          const bootstrapFlag =
+            typeof sessionStorage !== 'undefined' &&
+            sessionStorage.getItem('ioda_first_user_refresh_failed') === '1'
+          if (!withContext && bootstrapFlag && BOOTSTRAP_PERMISSIONS.has(permissionCode) && isNetworkFetchError(err)) {
+            setAllowed(true)
+            setError('Authorization API no disponible temporalmente; aplicando permiso de bootstrap en UI.')
+            permissionCache.set(key, { allowed: true, at: Date.now() })
+            return
+          }
+
           setAllowed(false)
           setError(err?.message ?? 'Error al comprobar permiso')
+          permissionCache.set(key, { allowed: false, at: Date.now() })
         }
       })
       .finally(() => {

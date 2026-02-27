@@ -37,16 +37,16 @@ public class GetSchemaByIdQueryHandler : IRequestHandler<GetSchemaByIdQuery, Con
 
                 // Add parent fields that don't conflict with already collected fields
                 var existingFieldNames = inheritedFields
-                    .Select(f => f.FieldName)
-                    .Concat(schema.Fields.Select(f => f.FieldName))
+                    .Select(f => f.Slug)
+                    .Concat(schema.Fields.Select(f => f.Slug))
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var field in parent.Fields.OrderBy(f => f.DisplayOrder))
                 {
-                    if (!existingFieldNames.Contains(field.FieldName))
+                    if (!existingFieldNames.Contains(field.Slug))
                     {
                         inheritedFields.Add(field.ToDto());
-                        existingFieldNames.Add(field.FieldName);
+                        existingFieldNames.Add(field.Slug);
                     }
                 }
 

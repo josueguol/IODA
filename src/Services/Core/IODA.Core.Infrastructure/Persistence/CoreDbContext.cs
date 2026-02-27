@@ -15,6 +15,7 @@ public class CoreDbContext : DbContext
     public DbSet<EnvironmentEntity> Environments => Set<EnvironmentEntity>();
     public DbSet<Content> Contents => Set<Content>();
     public DbSet<ContentVersion> ContentVersions => Set<ContentVersion>();
+    public DbSet<ContentBlock> ContentBlocks => Set<ContentBlock>();
     public DbSet<ContentSchema> ContentSchemas => Set<ContentSchema>();
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
     public DbSet<MediaItem> MediaItems => Set<MediaItem>();
@@ -27,6 +28,7 @@ public class CoreDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Ignore<AllowedBlockTypeRule>();
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CoreDbContext).Assembly);
     }
 }

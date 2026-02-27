@@ -1,0 +1,107 @@
+.content-blocks-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--page-bg-elevated, #fff);
+  border-radius: 8px;
+  border: 1px solid var(--page-border, #ddd);
+}
+
+.content-blocks-section__title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--page-text);
+}
+
+.content-blocks-section__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.content-blocks-section__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--input-bg, #f8f9fa);
+  border-radius: 6px;
+  border: 1px solid var(--input-border, #dee2e6);
+}
+
+.content-blocks-section__item-type {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--page-text);
+  min-width: 5rem;
+}
+
+.content-blocks-section__item-order {
+  font-size: 0.75rem;
+  color: var(--page-text-muted);
+}
+
+.content-blocks-section__item-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.content-blocks-section__btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--page-text);
+  cursor: pointer;
+}
+
+.content-blocks-section__btn--primary {
+  background: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+
+.content-blocks-section__btn--danger {
+  background: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+}
+
+.content-blocks-section__add {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--page-border);
+}
+
+.content-blocks-section__add-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.content-blocks-section__add select,
+.content-blocks-section__add input {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--page-text);
+}
+
+.content-blocks-section__error {
+  font-size: 0.875rem;
+  color: #dc3545;
+  margin-top: 0.5rem;
+}
+
+.content-blocks-section__empty {
+  font-size: 0.875rem;
+  color: var(--page-text-muted);
+  margin: 0;
+}

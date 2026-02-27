@@ -1,68 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Can } from '../../../modules/authorization/components/Can'
-import type { Project, Environment, Site } from '../../../modules/core/types'
 
-export interface HomeDashboardProps {
-  currentProject: Project | undefined
-  currentEnvironment: Environment | undefined
-  currentSite: Site | undefined
-  onChangeProject: () => void
-  onChangeEnvironment: () => void
-  onChangeSite: () => void
-}
-
-export function HomeDashboard({
-  currentProject,
-  currentEnvironment,
-  currentSite,
-  onChangeProject,
-  onChangeEnvironment,
-  onChangeSite,
-}: HomeDashboardProps) {
+export function HomeDashboard() {
   return (
     <section className="home__dashboard">
-      <h2 className="home__dashboard-title">Dashboard</h2>
-
-      <div className="home__context">
-        <h3 className="home__context-title">Contexto actual</h3>
-        <div className="home__context-row">
-          <span className="home__context-label">Proyecto</span>
-          <span className="home__context-value">{currentProject?.name ?? '—'}</span>
-          <button
-            type="button"
-            className="home__context-change"
-            onClick={onChangeProject}
-            title="Cambiar proyecto (vuelve al Paso 1)"
-          >
-            Cambiar
-          </button>
-        </div>
-        <div className="home__context-row">
-          <span className="home__context-label">Entorno</span>
-          <span className="home__context-value">{currentEnvironment?.name ?? '—'}</span>
-          <button
-            type="button"
-            className="home__context-change"
-            onClick={onChangeEnvironment}
-            title="Cambiar entorno (vuelve al Paso 2)"
-          >
-            Cambiar
-          </button>
-        </div>
-        <div className="home__context-row">
-          <span className="home__context-label">Sitio</span>
-          <span className="home__context-value">{currentSite?.name ?? '—'}</span>
-          <button
-            type="button"
-            className="home__context-change"
-            onClick={onChangeSite}
-            title="Cambiar sitio (vuelve al Paso 3)"
-          >
-            Cambiar
-          </button>
-        </div>
-      </div>
-
       <p className="home__section-title">Contenido</p>
       <div className="home__widget-grid">
         <Link to="/content" className="home__widget">

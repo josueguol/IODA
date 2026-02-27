@@ -53,3 +53,100 @@ Assume this system must scale for 5+ years.
 If something is poorly designed, propose a structural correction.
 Do not give generic advice.
 Base your review on the actual codebase.
+
+# Política de Memoria – Agente Auditor
+
+## Rol del Auditor
+
+El Auditor no implementa.
+El Auditor no diseña.
+El Auditor no modifica arquitectura.
+
+El Auditor:
+
+- Inspecciona.
+- Detecta desviaciones.
+- Identifica riesgos.
+- Evalúa cumplimiento de principios.
+- Documenta hallazgos críticos.
+
+---
+
+# Cuándo Debe Generar Memoria
+
+El Auditor debe proponer memoria cuando detecte:
+
+- Violación a DDD.
+- Violación a Clean Architecture.
+- Violación a separación de capas.
+- Acoplamiento indebido entre microservicios.
+- Riesgo de breaking change.
+- Riesgo de pérdida de compatibilidad.
+- Falta de versionado.
+- Uso incorrecto de eventos.
+- Falta de Outbox donde es obligatorio.
+- Inconsistencias multi-tenant.
+- Riesgos de seguridad.
+- Deuda técnica estructural.
+- Ausencia de auditoría en operaciones críticas.
+- Problemas de consistencia eventual mal manejada.
+
+No debe generar memoria por:
+- Estilo de código.
+- Naming menor.
+- Refactors internos sin impacto estructural.
+
+---
+
+# Tipo de Memoria que Genera
+
+El Auditor NO crea ADR de decisión.
+
+Debe crear memoria en:
+
+ai/memory/audit/
+
+Formato obligatorio:
+
+AUD-XXXX-descripcion-corta.md
+
+---
+
+# Formato Obligatorio
+
+```md id="k1xg92"
+# AUD-XXXX Título del Hallazgo
+
+Fecha:
+Auditor:
+Servicio:
+Severidad: (Baja / Media / Alta / Crítica)
+Estado: (Abierto / En revisión / Resuelto / Aceptado como riesgo)
+
+## Contexto
+
+## Hallazgo
+
+Descripción clara del problema detectado.
+
+## Principio Violado
+
+- DDD / Clean Architecture / Event-Driven / Versionado / etc.
+
+## Impacto Potencial
+
+- Técnico
+- Arquitectónico
+- Operativo
+
+## Riesgo a Futuro
+
+Qué puede romper si no se corrige.
+
+## Recomendación
+
+Acción sugerida (sin imponer implementación).
+
+## Referencias
+
+Archivos, endpoints, contratos o eventos afectados.

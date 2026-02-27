@@ -6,6 +6,11 @@
 
 /** Tipo de claim de permiso en el JWT (alineado con backend Identity). */
 export const JWT_PERMISSION_CLAIM_TYPE = 'permission'
+const JWT_PERMISSION_CLAIM_TYPES = [
+  JWT_PERMISSION_CLAIM_TYPE,
+  'permissions',
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/permission',
+]
 
 /**
  * Decodifica el payload del JWT sin verificar firma (solo para lectura en cliente).
@@ -38,11 +43,13 @@ export function parsePermissionsFromAccessToken(accessToken: string | null): str
   if (!accessToken?.trim()) return []
   const payload = decodeJwtPayload(accessToken)
   if (!payload || typeof payload !== 'object') return []
-  const raw = payload[JWT_PERMISSION_CLAIM_TYPE]
-  if (raw == null) return []
-  if (typeof raw === 'string') return raw ? [raw] : []
-  if (Array.isArray(raw)) {
-    return raw.filter((c): c is string => typeof c === 'string' && c.length > 0)
+  for (const claimType of JWT_PERMISSION_CLAIM_TYPES) {
+    const raw = payload[claimType]
+    if (raw == null) continue
+    if (typeof raw === 'string') return raw ? [raw] : []
+    if (Array.isArray(raw)) {
+      return raw.filter((c): c is string => typeof c === 'string' && c.length > 0)
+    }
   }
   return []
 }
@@ -50,6 +57,7 @@ export function parsePermissionsFromAccessToken(accessToken: string | null): str
 /** Claim type de rol en JWT (Identity usa ClaimTypes.Role; en payload suele serializarse como "role"). */
 const JWT_ROLE_CLAIM_TYPES = [
   'role',
+  'roles',
   'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
 ]
 

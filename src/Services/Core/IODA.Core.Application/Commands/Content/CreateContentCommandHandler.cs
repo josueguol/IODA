@@ -55,12 +55,14 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
                 throw new ArgumentException("Parent content must belong to the same project and environment.", nameof(request.ParentContentId));
         }
 
+        var order = request.Order ?? await _unitOfWork.Contents.GetNextOrderForParentAsync(request.ParentContentId, cancellationToken);
         var fields = request.Fields ?? new Dictionary<string, object>();
         var content = Domain.Entities.Content.Create(
             request.ProjectId,
             request.EnvironmentId,
             request.SiteId,
             request.ParentContentId,
+            order,
             request.SchemaId,
             request.Title,
             request.ContentType,

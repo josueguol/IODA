@@ -5,37 +5,7 @@ import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { Can } from '../../modules/authorization/components/Can'
 import { LoadingSpinner, ErrorBanner } from '../../shared/components'
 import type { Site } from '../../modules/core/types'
-
-const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 900, color: 'var(--page-text)' },
-  title: { marginTop: 0, marginBottom: '1rem', color: 'var(--page-text)', fontSize: '1.5rem' },
-  actions: { display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'center' },
-  button: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    cursor: 'pointer',
-    borderRadius: 6,
-    border: '1px solid var(--input-border)',
-    background: 'var(--input-bg)',
-    textDecoration: 'none',
-    color: 'var(--page-text)',
-  },
-  buttonPrimary: { background: '#0d6efd', color: 'white', border: 'none' },
-  buttonDanger: { background: '#dc3545', color: 'white', border: 'none' },
-  buttonSmall: { padding: '0.35rem 0.6rem', fontSize: '0.8125rem' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', color: 'var(--page-text)' },
-  th: { textAlign: 'left', padding: '0.5rem', borderBottom: '2px solid var(--page-border)', color: 'var(--page-text)' },
-  td: { padding: '0.5rem', borderBottom: '1px solid var(--page-border)', color: 'var(--page-text)' },
-  hint: { color: 'var(--page-text-muted)', fontSize: '0.875rem' },
-  form: { maxWidth: 480, marginBottom: '1.5rem', padding: '1rem', background: 'var(--page-bg-elevated)', borderRadius: 8, border: '1px solid var(--page-border)', color: 'var(--page-text)' },
-  formRow: { marginBottom: '0.75rem' },
-  label: { display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--page-text)' },
-  input: { width: '100%', maxWidth: 360, padding: '0.5rem', fontSize: '0.875rem', borderRadius: 4, border: '1px solid var(--input-border)', color: 'var(--input-text)', background: 'var(--input-bg)' },
-  select: { padding: '0.5rem', fontSize: '0.875rem', minWidth: 200, borderRadius: 4, border: '1px solid var(--input-border)', color: 'var(--input-text)', background: 'var(--input-bg)' },
-  badge: { display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: 4, fontSize: '0.75rem', fontWeight: 500 },
-  badgeActive: { background: '#d1e7dd', color: '#0f5132' },
-  badgeInactive: { background: '#f8d7da', color: '#842029' },
-}
+import './SitesPage.css'
 
 export function SitesPage() {
   const { currentProjectId, environments, loadSites } = useContextStore()
@@ -85,12 +55,12 @@ export function SitesPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!currentProjectId || !newName.trim() || !newDomain.trim() || !user?.userId) return
+    if (!currentProjectId || !newName.trim() || !newDomain.trim() || !newEnvironmentId || !user?.userId) return
     setCreateError(null)
     setActionLoading('create')
     try {
       await coreApi.createSite(currentProjectId, {
-        environmentId: newEnvironmentId || null,
+        environmentId: newEnvironmentId,
         name: newName.trim(),
         domain: newDomain.trim(),
         subdomain: newSubdomain.trim() || null,
@@ -199,21 +169,21 @@ export function SitesPage() {
 
   if (!currentProjectId) {
     return (
-      <div style={styles.container}>
-        <h1 style={styles.title}>Sitios</h1>
-        <p style={styles.hint}>Selecciona un proyecto en la barra superior.</p>
+      <div className="sites-page">
+        <h1 className="sites-page__title">Sitios</h1>
+        <p className="sites-page__hint">Selecciona un proyecto en la barra superior.</p>
       </div>
     )
   }
 
   return (
-    <div style={styles.container}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <h1 style={styles.title}>Gestión de sitios</h1>
+    <div className="sites-page">
+      <div className="sites-page__header">
+        <h1 className="sites-page__title">Gestión de sitios</h1>
         <Can permission="site.create" fallback={null}>
           <button
             type="button"
-            style={{ ...styles.button, ...styles.buttonPrimary }}
+            className="sites-page__button sites-page__button--primary"
             onClick={() => { setShowCreate((x) => !x); setCreateError(null); }}
           >
             {showCreate ? 'Cancelar' : 'Crear sitio'}
@@ -222,75 +192,75 @@ export function SitesPage() {
       </div>
 
       {showCreate && (
-        <form style={styles.form} onSubmit={handleCreate}>
-          <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Nuevo sitio</h3>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Nombre *</label>
+        <form className="sites-page__form" onSubmit={handleCreate}>
+          <h3 className="sites-page__form-title">Nuevo sitio</h3>
+          <div className="sites-page__form-row">
+            <label className="sites-page__label">Nombre *</label>
             <input
               type="text"
-              style={styles.input}
+              className="sites-page__input"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Ej. Sitio principal"
               required
             />
           </div>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Dominio *</label>
+          <div className="sites-page__form-row">
+            <label className="sites-page__label">Dominio *</label>
             <input
               type="text"
-              style={styles.input}
+              className="sites-page__input"
               value={newDomain}
               onChange={(e) => setNewDomain(e.target.value)}
               placeholder="example.com"
               required
             />
           </div>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Subdominio (opcional)</label>
+          <div className="sites-page__form-row">
+            <label className="sites-page__label">Subdominio (opcional)</label>
             <input
               type="text"
-              style={styles.input}
+              className="sites-page__input"
               value={newSubdomain}
               onChange={(e) => setNewSubdomain(e.target.value)}
               placeholder="www o blog"
             />
           </div>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Subruta (opcional)</label>
+          <div className="sites-page__form-row">
+            <label className="sites-page__label">Subruta (opcional)</label>
             <input
               type="text"
-              style={styles.input}
+              className="sites-page__input"
               value={newSubpath}
               onChange={(e) => setNewSubpath(e.target.value)}
               placeholder="/blog"
             />
           </div>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Tema (opcional)</label>
+          <div className="sites-page__form-row">
+            <label className="sites-page__label">Tema (opcional)</label>
             <input
               type="text"
-              style={styles.input}
+              className="sites-page__input"
               value={newThemeId}
               onChange={(e) => setNewThemeId(e.target.value)}
               placeholder="theme-default"
             />
           </div>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Plantilla URL (opcional)</label>
+          <div className="sites-page__form-row">
+            <label className="sites-page__label">Plantilla URL (opcional)</label>
             <input
               type="text"
-              style={styles.input}
+              className="sites-page__input"
               value={newUrlTemplate}
               onChange={(e) => setNewUrlTemplate(e.target.value)}
               placeholder="/{slug}"
             />
-            <p style={{ ...styles.hint, marginTop: '0.25rem' }}>Ej: /{'{slug}'} para rutas por slug. Usado por el endpoint de entrega por path.</p>
+            <p className="sites-page__hint sites-page__hint--mt">Ej: /{'{slug}'} para rutas por slug. Usado por el endpoint de entrega por path.</p>
           </div>
-          <div style={styles.formRow}>
-            <label style={styles.label}>Entorno (opcional)</label>
+          <div className="sites-page__form-row">
+            <label className="sites-page__label">Entorno (opcional)</label>
             <select
-              style={styles.select}
+              className="sites-page__select"
               value={newEnvironmentId}
               onChange={(e) => setNewEnvironmentId(e.target.value)}
             >
@@ -301,7 +271,7 @@ export function SitesPage() {
             </select>
           </div>
           {createError && <ErrorBanner message={createError} />}
-          <button type="submit" style={{ ...styles.button, ...styles.buttonPrimary }} disabled={!!actionLoading}>
+          <button type="submit" className="sites-page__button sites-page__button--primary" disabled={!!actionLoading}>
             {actionLoading === 'create' ? 'Creando…' : 'Crear'}
           </button>
         </form>
@@ -312,23 +282,23 @@ export function SitesPage() {
 
       {!loading && (
         <>
-          <table style={styles.table}>
+          <table className="sites-page__table">
             <thead>
               <tr>
-                <th style={styles.th}>Nombre</th>
-                <th style={styles.th}>Dominio</th>
-                <th style={styles.th}>Subdominio</th>
-                <th style={styles.th}>Subruta</th>
-                <th style={styles.th}>Tema</th>
-                <th style={styles.th}>Plantilla URL</th>
-                <th style={styles.th}>Estado</th>
-                <th style={styles.th}>Acciones</th>
+                <th className="sites-page__th">Nombre</th>
+                <th className="sites-page__th">Dominio</th>
+                <th className="sites-page__th">Subdominio</th>
+                <th className="sites-page__th">Subruta</th>
+                <th className="sites-page__th">Tema</th>
+                <th className="sites-page__th">Plantilla URL</th>
+                <th className="sites-page__th">Estado</th>
+                <th className="sites-page__th">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={styles.td}>
+                  <td colSpan={8} className="sites-page__td">
                     No hay sitios. Crea uno con el botón «Crear sitio».
                   </td>
                 </tr>
@@ -337,11 +307,11 @@ export function SitesPage() {
                   <tr key={site.id}>
                     {editingId === site.id ? (
                       <>
-                        <td colSpan={8} style={styles.td}>
-                          <form onSubmit={handleUpdate} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                        <td colSpan={8} className="sites-page__td">
+                          <form onSubmit={handleUpdate} className="sites-page__edit-form">
                             <input
                               type="text"
-                              style={{ ...styles.input, maxWidth: 140 }}
+                              className="sites-page__input sites-page__input--sm"
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
                               placeholder="Nombre"
@@ -349,7 +319,7 @@ export function SitesPage() {
                             />
                             <input
                               type="text"
-                              style={{ ...styles.input, maxWidth: 160 }}
+                              className="sites-page__input sites-page__input--md"
                               value={editDomain}
                               onChange={(e) => setEditDomain(e.target.value)}
                               placeholder="Dominio"
@@ -357,37 +327,37 @@ export function SitesPage() {
                             />
                             <input
                               type="text"
-                              style={{ ...styles.input, maxWidth: 100 }}
+                              className="sites-page__input sites-page__input--xs"
                               value={editSubdomain}
                               onChange={(e) => setEditSubdomain(e.target.value)}
                               placeholder="Subdominio"
                             />
                             <input
                               type="text"
-                              style={{ ...styles.input, maxWidth: 100 }}
+                              className="sites-page__input sites-page__input--xs"
                               value={editSubpath}
                               onChange={(e) => setEditSubpath(e.target.value)}
                               placeholder="Subruta"
                             />
                             <input
                               type="text"
-                              style={{ ...styles.input, maxWidth: 120 }}
+                              className="sites-page__input sites-page__input--theme"
                               value={editThemeId}
                               onChange={(e) => setEditThemeId(e.target.value)}
                               placeholder="Tema"
                             />
                             <input
                               type="text"
-                              style={{ ...styles.input, maxWidth: 140 }}
+                              className="sites-page__input sites-page__input--url"
                               value={editUrlTemplate}
                               onChange={(e) => setEditUrlTemplate(e.target.value)}
                               placeholder="/{slug}"
                             />
-                            {updateError && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>{updateError}</span>}
-                            <button type="submit" style={{ ...styles.button, ...styles.buttonPrimary, ...styles.buttonSmall }} disabled={!!actionLoading}>
+                            {updateError && <span className="sites-page__update-error">{updateError}</span>}
+                            <button type="submit" className="sites-page__button sites-page__button--primary sites-page__button--small" disabled={!!actionLoading}>
                               Guardar
                             </button>
-                            <button type="button" style={{ ...styles.button, ...styles.buttonSmall }} onClick={() => setEditingId(null)}>
+                            <button type="button" className="sites-page__button sites-page__button--small" onClick={() => setEditingId(null)}>
                               Cancelar
                             </button>
                           </form>
@@ -395,21 +365,22 @@ export function SitesPage() {
                       </>
                     ) : (
                       <>
-                        <td style={styles.td}>{site.name}</td>
-                        <td style={styles.td}>{site.domain}</td>
-                        <td style={styles.td}>{site.subdomain ?? '—'}</td>
-                        <td style={styles.td}>{site.subpath ?? '—'}</td>
-                        <td style={styles.td}>{site.themeId ?? '—'}</td>
-                        <td style={styles.td}>{site.urlTemplate ?? '—'}</td>
-                        <td style={styles.td}>
-                          <span style={{ ...styles.badge, ...(site.isActive ? styles.badgeActive : styles.badgeInactive) }}>
+                        <td className="sites-page__td">{site.name}</td>
+                        <td className="sites-page__td">{site.domain}</td>
+                        <td className="sites-page__td">{site.subdomain ?? '—'}</td>
+                        <td className="sites-page__td">{site.subpath ?? '—'}</td>
+                        <td className="sites-page__td">{site.themeId ?? '—'}</td>
+                        <td className="sites-page__td">{site.urlTemplate ?? '—'}</td>
+                        <td className="sites-page__td">
+                          <span className={`sites-page__badge ${site.isActive ? 'sites-page__badge--active' : 'sites-page__badge--inactive'}`}>
                             {site.isActive ? 'Activo' : 'Inactivo'}
                           </span>
                         </td>
-                        <td style={styles.td}>
+                        <td className="sites-page__td">
                           <button
                             type="button"
-                            style={{ ...styles.button, ...styles.buttonSmall, marginRight: '0.35rem' }}
+                            className="sites-page__button sites-page__button--small"
+                            style={{ marginRight: '0.35rem' }}
                             onClick={() => startEdit(site)}
                             disabled={!!actionLoading}
                           >
@@ -418,7 +389,8 @@ export function SitesPage() {
                           {site.isActive ? (
                             <button
                               type="button"
-                              style={{ ...styles.button, ...styles.buttonSmall, marginRight: '0.35rem' }}
+                              className="sites-page__button sites-page__button--small"
+                              style={{ marginRight: '0.35rem' }}
                               onClick={() => handleDeactivate(site.id)}
                               disabled={!!actionLoading}
                             >
@@ -427,7 +399,8 @@ export function SitesPage() {
                           ) : (
                             <button
                               type="button"
-                              style={{ ...styles.button, ...styles.buttonSmall, marginRight: '0.35rem' }}
+                              className="sites-page__button sites-page__button--small"
+                              style={{ marginRight: '0.35rem' }}
                               onClick={() => handleActivate(site.id)}
                               disabled={!!actionLoading}
                             >
@@ -436,7 +409,7 @@ export function SitesPage() {
                           )}
                           <button
                             type="button"
-                            style={{ ...styles.button, ...styles.buttonSmall, ...styles.buttonDanger }}
+                            className="sites-page__button sites-page__button--small sites-page__button--danger"
                             onClick={() => handleDelete(site.id)}
                             disabled={!!actionLoading}
                           >

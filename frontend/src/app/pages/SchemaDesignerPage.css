@@ -1,0 +1,221 @@
+/* SchemaDesignerPage: crear tipos de contenido (schemas). Variables de tema. */
+.schema-designer-page {
+  max-width: 800px;
+  color: var(--page-text);
+}
+
+.schema-designer-page__title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--page-text);
+  font-size: 1.5rem;
+}
+
+.schema-designer-page__hint {
+  font-size: 0.8125rem;
+  color: var(--page-text-muted);
+  margin-top: 0.25rem;
+}
+
+.schema-designer-page__success {
+  color: #0f5132;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.schema-designer-page__section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--page-bg-elevated);
+  border-radius: 8px;
+  border: 1px solid var(--page-border);
+  color: var(--page-text);
+}
+
+.schema-designer-page__section-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--page-text);
+}
+
+.schema-designer-page__form-row {
+  margin-bottom: 0.75rem;
+}
+
+.schema-designer-page__label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--page-text);
+}
+
+.schema-designer-page__input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  background: var(--input-bg);
+  box-sizing: border-box;
+}
+
+.schema-designer-page__input--narrow {
+  min-width: 140px;
+  max-width: 220px;
+}
+
+.schema-designer-page__input--slug {
+  min-width: 140px;
+  max-width: 220px;
+  font-family: monospace;
+  font-size: 0.8125rem;
+}
+
+.schema-designer-page__select {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  min-width: 160px;
+  border-radius: 4px;
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  background: var(--input-bg);
+}
+
+.schema-designer-page__btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--page-text);
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.schema-designer-page__btn--primary {
+  background: var(--cms-primary);
+  color: #fff;
+  border: none;
+}
+
+.schema-designer-page__btn--danger {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+.schema-designer-page__btn--small {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8125rem;
+}
+
+.schema-designer-page__field-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.schema-designer-page__field-block {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.schema-designer-page__field-inputs-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.schema-designer-page__field-actions-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.schema-designer-page__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.schema-designer-page__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.schema-designer-page__preview {
+  padding: 1rem;
+  background: var(--input-bg);
+  border-radius: 6px;
+  border: 1px solid var(--page-border);
+  margin-top: 0.5rem;
+  color: var(--page-text);
+}
+
+.schema-designer-page__label-inherited {
+  font-size: 0.7rem;
+  color: var(--page-text-muted);
+  margin-left: 0.5rem;
+}
+
+/* Campos heredados (lista read-only) */
+.schema-designer-page__inherited-wrap {
+  opacity: 0.7;
+}
+
+.schema-designer-page__inherited-field {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  background: var(--page-bg);
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+}
+
+.schema-designer-page__inherited-label {
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.schema-designer-page__inherited-type {
+  color: var(--page-text-muted);
+  font-size: 0.8125rem;
+}
+
+.schema-designer-page__inherited-required {
+  color: #dc3545;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.schema-designer-page__inherited-help {
+  color: var(--page-text-muted);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.schema-designer-page__preview-row--inherited {
+  opacity: 0.7;
+}
+
+.schema-designer-page__submit-wrap {
+  margin-top: 1.5rem;
+}

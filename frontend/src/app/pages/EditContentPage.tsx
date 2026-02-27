@@ -14,16 +14,8 @@ import { ParentContentSelector } from '../../modules/core/components/ParentConte
 import { TagsSelector } from '../../modules/core/components/TagsSelector'
 import { HierarchySelector } from '../../modules/core/components/HierarchySelector'
 import { SiteSelector } from '../../modules/core/components/SiteSelector'
-
-const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 640, color: 'var(--page-text)' },
-  title: { marginTop: 0, marginBottom: '1rem', color: 'var(--page-text)' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' },
-  status: { fontSize: '0.875rem', color: 'var(--page-text-muted)' },
-  button: { padding: '0.5rem 1rem', fontSize: '0.875rem', cursor: 'pointer', borderRadius: 4, border: 'none' },
-  deleteBtn: { background: '#dc3545', color: 'white' },
-  error: { color: '#dc3545', marginBottom: '0.5rem' },
-}
+import { ContentBlocksSection } from '../components/ContentBlocksSection'
+import './EditContentPage.css'
 
 export function EditContentPage() {
   const { contentId } = useParams<{ contentId: string }>()
@@ -38,6 +30,7 @@ export function EditContentPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editParentContentId, setEditParentContentId] = useState<string | null>(null)
+  const [editOrder, setEditOrder] = useState<string>('')
   const [editTagIds, setEditTagIds] = useState<string[]>([])
   const [editHierarchyIds, setEditHierarchyIds] = useState<string[]>([])
   const [editSiteIds, setEditSiteIds] = useState<string[]>([])
@@ -52,6 +45,18 @@ export function EditContentPage() {
 
   const { currentEnvironmentId } = useContextStore()
 
+  const refreshContent = () => {
+    if (!currentProjectId || !contentId) return
+    coreApi
+      .getContent(currentProjectId, contentId)
+      .then((data) => {
+        if (data) {
+          setContent({ ...data, blocks: data.blocks ?? [] })
+        }
+      })
+      .catch(() => {})
+  }
+
   useEffect(() => {
     if (!currentProjectId || !contentId) {
       setLoading(false)
@@ -61,9 +66,10 @@ export function EditContentPage() {
     coreApi
       .getContent(currentProjectId, contentId)
       .then((data) => {
-        setContent(data ?? null)
+        setContent(data ? { ...data, blocks: data.blocks ?? [] } : null)
         setEditTitle(data?.title ?? '')
         setEditParentContentId(data?.parentContentId ?? null)
+        setEditOrder(data?.order != null ? String(data.order) : '')
         setEditTagIds(data?.tagIds ?? [])
         setEditHierarchyIds(data?.hierarchyIds ?? [])
         setEditSiteIds(data?.siteIds ?? [])
@@ -87,10 +93,12 @@ export function EditContentPage() {
     if (!currentProjectId || !contentId || !content) return
     setSubmitError(null)
     try {
+      const orderNum = editOrder === '' ? undefined : parseInt(editOrder, 10)
       await coreApi.updateContent(currentProjectId, contentId, {
         title: editTitle.trim() || content.title,
         fields: values as Record<string, unknown>,
         parentContentId: editParentContentId ?? undefined,
+        order: orderNum !== undefined && !Number.isNaN(orderNum) ? orderNum : undefined,
         tagIds: editTagIds,
         hierarchyIds: editHierarchyIds,
         siteIds: editSiteIds,
@@ -100,6 +108,7 @@ export function EditContentPage() {
         setContent(updated)
         setEditTitle(updated.title)
         setEditParentContentId(updated.parentContentId ?? null)
+        setEditOrder(updated.order != null ? String(updated.order) : '')
         setEditTagIds(updated.tagIds ?? [])
         setEditHierarchyIds(updated.hierarchyIds ?? [])
         setEditSiteIds(updated.siteIds ?? [])
@@ -173,6 +182,7 @@ export function EditContentPage() {
         setContent(updated)
         setEditTitle(updated.title)
         setEditParentContentId(updated.parentContentId ?? null)
+        setEditOrder(updated.order != null ? String(updated.order) : '')
         setEditTagIds(updated.tagIds ?? [])
         setEditHierarchyIds(updated.hierarchyIds ?? [])
         setEditSiteIds(updated.siteIds ?? [])
@@ -215,13 +225,13 @@ export function EditContentPage() {
   }
 
   if (loading) {
-    return <p style={styles.error}>Cargando…</p>
+    return <p className="edit-content-page__error">Cargando…</p>
   }
   if (error || !content) {
     return (
-      <div style={styles.container}>
-        <p style={styles.error}>{error ?? 'Contenido no encontrado'}</p>
-        <button type="button" style={styles.button} onClick={() => navigate('/content')}>
+      <div className="edit-content-page">
+        <p className="edit-content-page__error">{error ?? 'Contenido no encontrado'}</p>
+        <button type="button" className="edit-content-page__button" onClick={() => navigate('/content')}>
           Volver al listado
         </button>
       </div>
@@ -229,25 +239,25 @@ export function EditContentPage() {
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
+    <div className="edit-content-page">
+      <div className="edit-content-page__header">
         <div>
-          <label htmlFor="edit-title" style={{ fontSize: '0.75rem', color: '#666' }}>Título</label>
+          <label htmlFor="edit-title" className="edit-content-page__title-label">Título</label>
           <input
             id="edit-title"
             type="text"
+            className="edit-content-page__title-input"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
-            style={{ width: '100%', maxWidth: 400, padding: '0.5rem', fontSize: '1rem', fontWeight: 600, border: '1px solid #ccc', borderRadius: 4 }}
           />
         </div>
-        <span style={styles.status}>
+        <span className="edit-content-page__status">
           Estado: {content.status} · v{content.currentVersion}
         </span>
       </div>
 
       {/* Metadata y auditoría (Fase 2): no se envían en create/update; se muestran solo lectura */}
-      <div style={{ marginBottom: '1rem', fontSize: '0.8125rem', color: 'var(--page-text-muted)' }}>
+      <div className="edit-content-page__meta">
         Creado: {new Date(content.createdAt).toLocaleString()}
         {content.updatedAt != null && (
           <> · Actualizado: {new Date(content.updatedAt).toLocaleString()}</>
@@ -260,7 +270,7 @@ export function EditContentPage() {
         )}
       </div>
 
-      {submitError && <p style={styles.error}>{submitError}</p>}
+      {submitError && <p className="edit-content-page__error">{submitError}</p>}
 
       {currentProjectId && contentId && (
         <>
@@ -270,6 +280,17 @@ export function EditContentPage() {
             onChange={setEditParentContentId}
             excludeContentId={contentId}
           />
+          <div className="edit-content-page__order-wrap">
+            <label htmlFor="edit-order" className="edit-content-page__order-label">Orden (entre hermanos)</label>
+            <input
+              id="edit-order"
+              type="number"
+              min={0}
+              className="edit-content-page__order-input"
+              value={editOrder}
+              onChange={(e) => setEditOrder(e.target.value)}
+            />
+          </div>
           <TagsSelector projectId={currentProjectId} value={editTagIds} onChange={setEditTagIds} />
           <HierarchySelector projectId={currentProjectId} value={editHierarchyIds} onChange={setEditHierarchyIds} />
           <SiteSelector
@@ -278,29 +299,36 @@ export function EditContentPage() {
             value={editSiteIds}
             onChange={setEditSiteIds}
           />
+          <ContentBlocksSection
+            projectId={currentProjectId}
+            contentId={contentId}
+            content={{ ...content, blocks: content.blocks ?? [] }}
+            schema={schema}
+            onContentUpdated={refreshContent}
+          />
         </>
       )}
 
       {/* Sección publicación: solo Draft, con entorno y permiso */}
       {content.status === 'Draft' && currentEnvironmentId && (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--page-bg-elevated)', borderRadius: 6, color: 'var(--page-text)' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem' }}>Publicación</h3>
+        <div className="edit-content-page__section edit-content-page__section--publish">
+          <h3 className="edit-content-page__section-title">Publicación</h3>
           {requestPublicationMessage && (
-            <p style={{ color: requestPublicationMessage.type === 'error' ? '#dc3545' : '#0d6efd', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+            <p className={`edit-content-page__message--${requestPublicationMessage.type === 'error' ? 'error' : 'success'}`}>
               {requestPublicationMessage.text}
             </p>
           )}
           <Can permission="content.publish">
             <button
               type="button"
-              style={{ ...styles.button, background: '#0d6efd', color: 'white' }}
+              className="edit-content-page__button edit-content-page__btn-primary"
               onClick={handleRequestPublication}
               disabled={requestingPublication}
             >
               {requestingPublication ? 'Enviando…' : 'Solicitar publicación'}
             </button>
-            <span style={{ marginLeft: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
-              <Link to="/publish" style={{ color: '#0d6efd', textDecoration: 'none' }}>Ver solicitudes</Link>
+            <span className="edit-content-page__link">
+              <Link to="/publish">Ver solicitudes</Link>
             </span>
           </Can>
         </div>
@@ -308,19 +336,19 @@ export function EditContentPage() {
 
       {/* Sección reindexación: solo Published */}
       {content.status === 'Published' && content.publishedAt && (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fff3cd', borderRadius: 6, border: '1px solid #ffc107' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem' }}>Indexación</h3>
-          <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>
+        <div className="edit-content-page__section edit-content-page__section--reindex">
+          <h3 className="edit-content-page__section-title">Indexación</h3>
+          <p>
             Si el contenido no aparece en la búsqueda o necesitas actualizar el índice, puedes reindexarlo manualmente.
           </p>
           {reindexMessage && (
-            <p style={{ color: reindexMessage.type === 'error' ? '#dc3545' : '#0d6efd', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+            <p className={reindexMessage.type === 'error' ? 'edit-content-page__message--error' : 'edit-content-page__message--success'}>
               {reindexMessage.text}
             </p>
           )}
           <button
             type="button"
-            style={{ ...styles.button, background: '#ffc107', color: '#000' }}
+            className="edit-content-page__button edit-content-page__btn-reindex"
             onClick={handleReindex}
             disabled={reindexing}
           >
@@ -339,17 +367,17 @@ export function EditContentPage() {
         />
       )}
 
-      {!schema && content.schemaId && <p style={styles.error}>No se pudo cargar el schema del contenido.</p>}
+      {!schema && content.schemaId && <p className="edit-content-page__error">No se pudo cargar el schema del contenido.</p>}
 
       {/* Historial de versiones */}
-      <div style={{ marginTop: '2rem', padding: '1rem', background: 'var(--page-bg-elevated)', borderRadius: 6, border: '1px solid var(--page-border, #ddd)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--page-text)' }}>
+      <div className="edit-content-page__versions">
+        <div className="edit-content-page__versions-header">
+          <h3 className="edit-content-page__versions-title">
             Historial de versiones (v{content.currentVersion})
           </h3>
           <button
             type="button"
-            style={{ ...styles.button, background: 'var(--input-bg, #f8f9fa)', color: 'var(--page-text)', border: '1px solid var(--input-border, #ccc)' }}
+            className="edit-content-page__button edit-content-page__versions-toggle"
             onClick={handleToggleHistory}
           >
             {showHistory ? 'Ocultar historial' : 'Ver historial'}
@@ -357,60 +385,50 @@ export function EditContentPage() {
         </div>
 
         {showHistory && (
-          <div style={{ marginTop: '1rem' }}>
-            {versionsLoading && <p style={{ fontSize: '0.875rem', color: 'var(--page-text-muted)' }}>Cargando versiones…</p>}
+          <div className="edit-content-page__versions-list">
+            {versionsLoading && <p className="edit-content-page__versions-loading">Cargando versiones…</p>}
             {!versionsLoading && versions.length === 0 && (
-              <p style={{ fontSize: '0.875rem', color: 'var(--page-text-muted)' }}>No hay versiones registradas.</p>
+              <p className="edit-content-page__versions-empty">No hay versiones registradas.</p>
             )}
             {!versionsLoading && versions.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div className="edit-content-page__versions-stack">
                 {versions.map((v) => {
                   const isCurrent = v.versionNumber === content.currentVersion
                   const isExpanded = expandedVersion === v.versionNumber
+                  const statusClass = v.status === 'Published' ? 'edit-content-page__version-status--published' : v.status === 'Draft' ? 'edit-content-page__version-status--draft' : 'edit-content-page__version-status--pending'
                   return (
                     <div
                       key={v.id}
-                      style={{
-                        padding: '0.75rem',
-                        borderRadius: 4,
-                        border: isCurrent ? '2px solid #0d6efd' : '1px solid var(--page-border, #ddd)',
-                        background: isCurrent ? 'rgba(13,110,253,0.05)' : 'var(--input-bg, #fff)',
-                      }}
+                      className={`edit-content-page__version-card ${isCurrent ? 'edit-content-page__version-card--current' : ''}`}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div className="edit-content-page__version-row">
                         <div>
-                          <strong style={{ fontSize: '0.875rem', color: 'var(--page-text)' }}>
+                          <strong className="edit-content-page__version-name">
                             v{v.versionNumber}
-                            {isCurrent && <span style={{ marginLeft: '0.5rem', color: '#0d6efd', fontWeight: 400, fontSize: '0.75rem' }}>(actual)</span>}
+                            {isCurrent && <span className="edit-content-page__version-badge--current">(actual)</span>}
                           </strong>
-                          <span style={{ marginLeft: '0.75rem', fontSize: '0.8125rem', color: 'var(--page-text-muted)' }}>
+                          <span className="edit-content-page__version-title">
                             {v.title}
                           </span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{
-                            fontSize: '0.75rem',
-                            padding: '0.15rem 0.5rem',
-                            borderRadius: 10,
-                            background: v.status === 'Published' ? '#198754' : v.status === 'Draft' ? '#6c757d' : '#ffc107',
-                            color: v.status === 'Published' ? '#fff' : v.status === 'Draft' ? '#fff' : '#000',
-                          }}>
+                        <div className="edit-content-page__version-meta">
+                          <span className={`edit-content-page__version-status ${statusClass}`}>
                             {v.status}
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--page-text-muted)' }}>
+                          <span className="edit-content-page__version-date">
                             {new Date(v.createdAt).toLocaleString()}
                           </span>
                         </div>
                       </div>
                       {v.comment && (
-                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--page-text-muted)', fontStyle: 'italic' }}>
+                        <p className="edit-content-page__version-comment">
                           {v.comment}
                         </p>
                       )}
-                      <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
+                      <div className="edit-content-page__version-actions">
                         <button
                           type="button"
-                          style={{ ...styles.button, padding: '0.25rem 0.5rem', fontSize: '0.75rem', background: 'var(--input-bg, #f8f9fa)', border: '1px solid var(--input-border, #ccc)', color: 'var(--page-text)' }}
+                          className="edit-content-page__version-btn"
                           onClick={() => setExpandedVersion(isExpanded ? null : v.versionNumber)}
                         >
                           {isExpanded ? 'Ocultar campos' : 'Ver campos'}
@@ -418,7 +436,7 @@ export function EditContentPage() {
                         {!isCurrent && (
                           <button
                             type="button"
-                            style={{ ...styles.button, padding: '0.25rem 0.5rem', fontSize: '0.75rem', background: '#0d6efd', color: 'white' }}
+                            className="edit-content-page__version-btn edit-content-page__version-btn--restore"
                             onClick={() => handleRestoreVersion(v)}
                           >
                             Restaurar esta versión
@@ -426,19 +444,19 @@ export function EditContentPage() {
                         )}
                       </div>
                       {isExpanded && (
-                        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--page-bg, #f5f5f5)', borderRadius: 4, fontSize: '0.8125rem', maxHeight: 300, overflow: 'auto' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <div className="edit-content-page__version-fields">
+                          <table className="edit-content-page__version-table">
                             <thead>
                               <tr>
-                                <th style={{ textAlign: 'left', padding: '0.25rem 0.5rem', borderBottom: '1px solid var(--page-border, #ddd)', color: 'var(--page-text)' }}>Campo</th>
-                                <th style={{ textAlign: 'left', padding: '0.25rem 0.5rem', borderBottom: '1px solid var(--page-border, #ddd)', color: 'var(--page-text)' }}>Valor</th>
+                                <th className="edit-content-page__version-th">Campo</th>
+                                <th className="edit-content-page__version-th">Valor</th>
                               </tr>
                             </thead>
                             <tbody>
                               {Object.entries(v.fields).map(([key, val]) => (
                                 <tr key={key}>
-                                  <td style={{ padding: '0.25rem 0.5rem', borderBottom: '1px solid var(--page-border, #eee)', fontWeight: 600, color: 'var(--page-text)' }}>{key}</td>
-                                  <td style={{ padding: '0.25rem 0.5rem', borderBottom: '1px solid var(--page-border, #eee)', color: 'var(--page-text)', wordBreak: 'break-word' }}>
+                                  <td className="edit-content-page__version-td edit-content-page__version-td--key">{key}</td>
+                                  <td className="edit-content-page__version-td edit-content-page__version-td--val">
                                     {typeof val === 'object' ? JSON.stringify(val) : String(val ?? '')}
                                   </td>
                                 </tr>
@@ -456,11 +474,11 @@ export function EditContentPage() {
         )}
       </div>
 
-      <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+      <div className="edit-content-page__danger-zone">
         {!deleteConfirm ? (
           <button
             type="button"
-            style={{ ...styles.button, ...styles.deleteBtn }}
+            className="edit-content-page__button edit-content-page__button--delete"
             onClick={() => setDeleteConfirm(true)}
           >
             Eliminar contenido
@@ -470,12 +488,12 @@ export function EditContentPage() {
             <p>¿Eliminar este contenido? Esta acción no se puede deshacer.</p>
             <button
               type="button"
-              style={{ ...styles.button, ...styles.deleteBtn, marginRight: '0.5rem' }}
+              className="edit-content-page__button edit-content-page__button--delete"
               onClick={handleDelete}
             >
               Sí, eliminar
             </button>
-            <button type="button" style={styles.button} onClick={() => setDeleteConfirm(false)}>
+            <button type="button" className="edit-content-page__button" onClick={() => setDeleteConfirm(false)}>
               Cancelar
             </button>
           </div>

@@ -56,6 +56,11 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
             content.SetParent(request.ParentContentId);
         }
 
+        if (request.Order.HasValue)
+        {
+            content.SetOrder(request.Order.Value);
+        }
+
         if (request.TagIds != null)
         {
             if (request.TagIds.Count > 0)

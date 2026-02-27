@@ -2,51 +2,7 @@ import { useEffect, useState } from 'react'
 import { coreApi } from '../../modules/core/api/core-api'
 import { useContextStore } from '../../modules/core/store/context-store'
 import type { Tag } from '../../modules/core/types'
-
-const styles: Record<string, React.CSSProperties> = {
-  page: { maxWidth: 720, color: 'var(--page-text)' },
-  title: { margin: '0 0 1rem', fontSize: '1.5rem', fontWeight: 700 },
-  hint: { color: 'var(--page-text-muted)', fontSize: '0.875rem', marginBottom: '1rem' },
-  toolbar: { display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' },
-  btn: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    borderRadius: 6,
-    border: '1px solid var(--input-border)',
-    background: 'var(--input-bg)',
-    color: 'var(--page-text)',
-    cursor: 'pointer',
-  },
-  btnPrimary: { background: '#0d6efd', color: '#fff', borderColor: '#0d6efd' },
-  list: { listStyle: 'none', padding: 0, margin: 0 },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.5rem 0.75rem',
-    borderBottom: '1px solid var(--page-border)',
-  },
-  name: { fontWeight: 600 },
-  slug: { fontSize: '0.8125rem', color: 'var(--page-text-muted)' },
-  form: {
-    marginBottom: '1.5rem',
-    padding: '1rem',
-    border: '1px solid var(--page-border)',
-    borderRadius: 8,
-    background: 'var(--page-bg-elevated)',
-  },
-  input: {
-    width: '100%',
-    maxWidth: 320,
-    padding: '0.5rem',
-    fontSize: '0.875rem',
-    borderRadius: 4,
-    border: '1px solid var(--input-border)',
-    marginBottom: '0.5rem',
-  },
-  label: { fontSize: '0.8125rem', fontWeight: 600, display: 'block', marginBottom: '0.25rem' },
-  error: { color: '#dc3545', fontSize: '0.875rem', marginBottom: '0.5rem' },
-}
+import './TagsPage.css'
 
 export function TagsPage() {
   const { currentProjectId } = useContextStore()
@@ -105,39 +61,39 @@ export function TagsPage() {
 
   if (!currentProjectId) {
     return (
-      <div style={styles.page}>
-        <h1 style={styles.title}>Etiquetas</h1>
-        <p style={styles.hint}>Selecciona un proyecto en la barra superior.</p>
+      <div className="tags-page">
+        <h1 className="tags-page__title">Etiquetas</h1>
+        <p className="tags-page__hint">Selecciona un proyecto en la barra superior.</p>
       </div>
     )
   }
 
   return (
-    <div style={styles.page}>
-      <h1 style={styles.title}>Etiquetas</h1>
-      <p style={styles.hint}>
+    <div className="tags-page">
+      <h1 className="tags-page__title">Etiquetas</h1>
+      <p className="tags-page__hint">
         Crea etiquetas para clasificar el contenido. Luego asígnalas al crear o editar contenido.
       </p>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {error && <p className="tags-page__error">{error}</p>}
 
-      <div style={styles.toolbar}>
-        <button type="button" style={{ ...styles.btn, ...styles.btnPrimary }} onClick={openCreate}>
+      <div className="tags-page__toolbar">
+        <button type="button" className="tags-page__btn tags-page__btn--primary" onClick={openCreate}>
           + Nueva etiqueta
         </button>
       </div>
 
       {formOpen && (
-        <div style={styles.form}>
-          <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem' }}>Nueva etiqueta</h2>
+        <div className="tags-page__form">
+          <h2 className="tags-page__form-title">Nueva etiqueta</h2>
           <form onSubmit={handleSubmit}>
             <div>
-              <label style={styles.label} htmlFor="tag-name">
+              <label className="tags-page__label" htmlFor="tag-name">
                 Nombre *
               </label>
               <input
                 id="tag-name"
-                style={styles.input}
+                className="tags-page__input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ej. Noticias"
@@ -145,23 +101,23 @@ export function TagsPage() {
               />
             </div>
             <div>
-              <label style={styles.label} htmlFor="tag-slug">
+              <label className="tags-page__label" htmlFor="tag-slug">
                 Slug (opcional)
               </label>
               <input
                 id="tag-slug"
-                style={styles.input}
+                className="tags-page__input"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="Se deriva del nombre si se deja vacío"
               />
             </div>
-            {submitError && <p style={styles.error}>{submitError}</p>}
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-              <button type="submit" style={{ ...styles.btn, ...styles.btnPrimary }}>
+            {submitError && <p className="tags-page__error">{submitError}</p>}
+            <div className="tags-page__form-actions">
+              <button type="submit" className="tags-page__btn tags-page__btn--primary">
                 Crear
               </button>
-              <button type="button" style={styles.btn} onClick={closeForm}>
+              <button type="button" className="tags-page__btn" onClick={closeForm}>
                 Cancelar
               </button>
             </div>
@@ -169,16 +125,16 @@ export function TagsPage() {
         </div>
       )}
 
-      {loading && <p style={styles.hint}>Cargando…</p>}
+      {loading && <p className="tags-page__hint">Cargando…</p>}
       {!loading && list.length === 0 && !formOpen && (
-        <p style={styles.hint}>No hay etiquetas. Crea una para usarlas en el contenido.</p>
+        <p className="tags-page__hint">No hay etiquetas. Crea una para usarlas en el contenido.</p>
       )}
       {!loading && list.length > 0 && (
-        <ul style={styles.list}>
+        <ul className="tags-page__list">
           {list.map((tag) => (
-            <li key={tag.id} style={styles.row}>
-              <span style={styles.name}>{tag.name}</span>
-              <span style={styles.slug}>/{tag.slug}</span>
+            <li key={tag.id} className="tags-page__row">
+              <span className="tags-page__name">{tag.name}</span>
+              <span className="tags-page__slug">/{tag.slug}</span>
             </li>
           ))}
         </ul>

@@ -20,10 +20,12 @@ public class FieldDefinitionConfiguration : IEntityTypeConfiguration<FieldDefini
             .HasColumnName("schema_id")
             .IsRequired();
 
+#pragma warning disable CS0618 // FieldName is obsolete but needed for EF configuration
         builder.Property(f => f.FieldName)
             .HasColumnName("field_name")
             .HasMaxLength(100)
             .IsRequired();
+#pragma warning restore CS0618
 
         builder.Property(f => f.Label)
             .HasColumnName("label")
@@ -67,9 +69,11 @@ public class FieldDefinitionConfiguration : IEntityTypeConfiguration<FieldDefini
             .HasForeignKey(f => f.SchemaId)
             .OnDelete(DeleteBehavior.Cascade);
 
+#pragma warning disable CS0618 // FieldName is obsolete but needed for backward compatibility
         builder.HasIndex(f => new { f.SchemaId, f.FieldName })
             .IsUnique()
             .HasDatabaseName("ix_field_definitions_schema_name");
+#pragma warning restore CS0618
 
         builder.HasIndex(f => new { f.SchemaId, f.Slug })
             .IsUnique()

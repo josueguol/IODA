@@ -27,6 +27,12 @@ public interface IContentRepository
     /// <summary>Hijos directos de un contenido (para árbol).</summary>
     Task<IReadOnlyList<Entities.Content>> GetChildrenAsync(Guid parentContentId, CancellationToken cancellationToken = default);
 
+    /// <summary>Siguiente valor de Order para hermanos bajo el mismo padre (null = raíz).</summary>
+    Task<int> GetNextOrderForParentAsync(Guid? parentContentId, CancellationToken cancellationToken = default);
+
     /// <summary>Contenido publicado asignado al sitio con el slug dado (para resolución de URL por path - Req 5).</summary>
     Task<Entities.Content?> GetPublishedBySiteAndSlugAsync(Guid siteId, string slug, CancellationToken cancellationToken = default);
+
+    /// <summary>Obtiene el contenido que posee el bloque (con Blocks incluidos), o null si el bloque no existe.</summary>
+    Task<Entities.Content?> GetByBlockIdAsync(Guid blockId, CancellationToken cancellationToken = default);
 }

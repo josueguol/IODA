@@ -11,6 +11,10 @@ public static class ContentMappings
         IReadOnlyList<Guid>? hierarchyIds = null,
         IReadOnlyList<Guid>? siteIds = null)
     {
+        var blocks = content.Blocks
+            .OrderBy(b => b.Order)
+            .Select(b => new ContentBlockDto(b.Id, b.ContentId, b.BlockType, b.Order, new Dictionary<string, object>(b.Payload)))
+            .ToList();
         return new ContentDto(
             content.Id,
             content.PublicId.FullId,
@@ -18,6 +22,7 @@ public static class ContentMappings
             content.EnvironmentId,
             content.SiteId,
             content.ParentContentId,
+            content.Order,
             content.SchemaId,
             content.Title,
             content.Slug.Value,
@@ -33,7 +38,8 @@ public static class ContentMappings
             content.PublishedBy,
             tagIds ?? Array.Empty<Guid>(),
             hierarchyIds ?? Array.Empty<Guid>(),
-            siteIds ?? Array.Empty<Guid>());
+            siteIds ?? Array.Empty<Guid>(),
+            blocks);
     }
 
     public static ContentListItemDto ToListItemDto(this Content content)
@@ -47,6 +53,7 @@ public static class ContentMappings
             content.ContentType,
             content.SiteId,
             content.ParentContentId,
+            content.Order,
             content.CreatedAt,
             content.PublishedAt);
     }

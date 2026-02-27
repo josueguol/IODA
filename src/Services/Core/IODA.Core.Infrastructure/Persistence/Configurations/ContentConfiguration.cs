@@ -36,6 +36,10 @@ public class ContentConfiguration : IEntityTypeConfiguration<Content>
         builder.Property(c => c.ParentContentId)
             .HasColumnName("parent_content_id");
 
+        builder.Property(c => c.Order)
+            .HasColumnName("order")
+            .IsRequired();
+
         builder.Property(c => c.SchemaId)
             .HasColumnName("schema_id")
             .IsRequired();
@@ -124,6 +128,13 @@ public class ContentConfiguration : IEntityTypeConfiguration<Content>
 
         builder.Navigation(c => c.Versions).HasField("_versions");
 
+        builder.HasMany(c => c.Blocks)
+            .WithOne()
+            .HasForeignKey(b => b.ContentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(c => c.Blocks).HasField("_blocks");
+
         builder.HasIndex(c => c.PublicId)
             .IsUnique()
             .HasDatabaseName("ix_contents_public_id");
@@ -137,6 +148,9 @@ public class ContentConfiguration : IEntityTypeConfiguration<Content>
 
         builder.HasIndex(c => new { c.ProjectId, c.SiteId })
             .HasDatabaseName("ix_contents_project_site");
+
+        builder.HasIndex(c => new { c.ParentContentId, c.Order })
+            .HasDatabaseName("ix_contents_parent_order");
 
         builder.Ignore(c => c.DomainEvents);
     }
