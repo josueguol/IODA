@@ -25,6 +25,7 @@ public class CoreDbContext : DbContext
     public DbSet<Hierarchy> Hierarchies => Set<Hierarchy>();
     public DbSet<ContentHierarchy> ContentHierarchies => Set<ContentHierarchy>();
     public DbSet<ContentSite> ContentSites => Set<ContentSite>();
+    public DbSet<ContentSiteUrl> ContentSiteUrls => Set<ContentSiteUrl>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

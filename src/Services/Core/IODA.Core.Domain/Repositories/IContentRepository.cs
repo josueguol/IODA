@@ -32,6 +32,8 @@ public interface IContentRepository
 
     /// <summary>Contenido publicado asignado al sitio con el slug dado (para resolución de URL por path - Req 5).</summary>
     Task<Entities.Content?> GetPublishedBySiteAndSlugAsync(Guid siteId, string slug, CancellationToken cancellationToken = default);
+    /// <summary>Contenido publicado asignado al sitio con ruta publicada exacta (path relativo).</summary>
+    Task<Entities.Content?> GetPublishedBySiteAndPathAsync(Guid siteId, string path, CancellationToken cancellationToken = default);
 
     /// <summary>Obtiene el contenido que posee el bloque (con Blocks incluidos), o null si el bloque no existe.</summary>
     Task<Entities.Content?> GetByBlockIdAsync(Guid blockId, CancellationToken cancellationToken = default);

@@ -47,7 +47,12 @@ public class PublishContentCommandHandler : IRequestHandler<PublishContentComman
 
         var tagIds = await _unitOfWork.ContentTags.GetTagIdsByContentIdAsync(content.Id, cancellationToken);
         var hierarchyIds = await _unitOfWork.ContentHierarchies.GetHierarchyIdsByContentIdAsync(content.Id, cancellationToken);
+        var primaryHierarchyId = await _unitOfWork.ContentHierarchies.GetPrimaryHierarchyIdByContentIdAsync(content.Id, cancellationToken);
         var siteIds = await _unitOfWork.ContentSites.GetSiteIdsByContentIdAsync(content.Id, cancellationToken);
-        return content.ToDto(tagIds, hierarchyIds, siteIds);
+        var siteUrls = await _unitOfWork.ContentSiteUrls.GetByContentIdAsync(content.Id, cancellationToken);
+        var siteUrlDtos = siteUrls
+            .Select(x => new ContentSiteUrlDto(x.SiteId, x.Path, content.SiteId.HasValue && x.SiteId == content.SiteId.Value))
+            .ToList();
+        return content.ToDto(primaryHierarchyId, tagIds, hierarchyIds, siteIds, siteUrlDtos);
     }
 }

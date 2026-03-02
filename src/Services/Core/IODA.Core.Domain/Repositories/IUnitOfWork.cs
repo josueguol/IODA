@@ -15,6 +15,7 @@ public interface IUnitOfWork : IDisposable
     IHierarchyRepository Hierarchies { get; }
     IContentHierarchyRepository ContentHierarchies { get; }
     IContentSiteRepository ContentSites { get; }
+    IContentSiteUrlRepository ContentSiteUrls { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);

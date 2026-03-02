@@ -19,6 +19,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - Database__ApplyMigrationsOnStartup=true
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ioda_core;Username=postgres;Password=postgres
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__VirtualHost=/
@@ -75,6 +76,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - Database__ApplyMigrationsOnStartup=true
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ioda_authorization;Username=postgres;Password=postgres
       - Jwt__SecretKey=your-super-secret-key-min-32-chars-change-in-production
       - Jwt__Issuer=ioda-identity

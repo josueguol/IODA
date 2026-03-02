@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { coreApi } from '../../modules/core/api/core-api'
 import { useContextStore } from '../../modules/core/store/context-store'
@@ -16,6 +16,17 @@ import { HierarchySelector } from '../../modules/core/components/HierarchySelect
 import { SiteSelector } from '../../modules/core/components/SiteSelector'
 import { ContentBlocksSection } from '../components/ContentBlocksSection'
 import './EditContentPage.css'
+import type { Hierarchy, Site } from '../../modules/core/types'
+
+function normalizeSlugInput(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9_-]/g, '')
+}
 
 export function EditContentPage() {
   const { contentId } = useParams<{ contentId: string }>()
@@ -29,11 +40,16 @@ export function EditContentPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [editTitle, setEditTitle] = useState('')
+  const [editSlug, setEditSlug] = useState('')
   const [editParentContentId, setEditParentContentId] = useState<string | null>(null)
   const [editOrder, setEditOrder] = useState<string>('')
   const [editTagIds, setEditTagIds] = useState<string[]>([])
   const [editHierarchyIds, setEditHierarchyIds] = useState<string[]>([])
+  const [editPrimaryHierarchyId, setEditPrimaryHierarchyId] = useState<string>('')
   const [editSiteIds, setEditSiteIds] = useState<string[]>([])
+  const [editSiteUrlMap, setEditSiteUrlMap] = useState<Record<string, string>>({})
+  const [hierarchies, setHierarchies] = useState<Hierarchy[]>([])
+  const [sites, setSites] = useState<Site[]>([])
   const [requestingPublication, setRequestingPublication] = useState(false)
   const [requestPublicationMessage, setRequestPublicationMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [reindexing, setReindexing] = useState(false)
@@ -58,6 +74,16 @@ export function EditContentPage() {
   }
 
   useEffect(() => {
+    if (!currentProjectId) return
+    coreApi.getHierarchies(currentProjectId).then(setHierarchies).catch(() => setHierarchies([]))
+  }, [currentProjectId])
+
+  useEffect(() => {
+    if (!currentProjectId || !content?.environmentId) return
+    coreApi.getSites(currentProjectId, content.environmentId).then(setSites).catch(() => setSites([]))
+  }, [currentProjectId, content?.environmentId])
+
+  useEffect(() => {
     if (!currentProjectId || !contentId) {
       setLoading(false)
       return
@@ -68,11 +94,18 @@ export function EditContentPage() {
       .then((data) => {
         setContent(data ? { ...data, blocks: data.blocks ?? [] } : null)
         setEditTitle(data?.title ?? '')
+        setEditSlug(data?.slug ?? '')
         setEditParentContentId(data?.parentContentId ?? null)
         setEditOrder(data?.order != null ? String(data.order) : '')
         setEditTagIds(data?.tagIds ?? [])
         setEditHierarchyIds(data?.hierarchyIds ?? [])
+        setEditPrimaryHierarchyId(data?.primaryHierarchyId ?? '')
         setEditSiteIds(data?.siteIds ?? [])
+        const nextSiteUrlMap: Record<string, string> = {}
+        for (const siteUrl of data?.siteUrls ?? []) {
+          nextSiteUrlMap[siteUrl.siteId] = siteUrl.path
+        }
+        setEditSiteUrlMap(nextSiteUrlMap)
         if (data?.schemaId) {
           loadSchema(currentProjectId, data.schemaId).catch(() => {})
         }
@@ -80,6 +113,12 @@ export function EditContentPage() {
       .catch(() => setError('Contenido no encontrado'))
       .finally(() => setLoading(false))
   }, [currentProjectId, contentId, loadSchema])
+
+  useEffect(() => {
+    if (editPrimaryHierarchyId && !editHierarchyIds.includes(editPrimaryHierarchyId)) {
+      setEditPrimaryHierarchyId('')
+    }
+  }, [editPrimaryHierarchyId, editHierarchyIds])
 
   const schema = content && currentProjectId ? getSchemaSync(currentProjectId, content.schemaId) : null
 
@@ -89,6 +128,13 @@ export function EditContentPage() {
       )
     : undefined
 
+  const editTargetSiteIds = useMemo(() => {
+    const ids = new Set<string>()
+    if (content?.siteId) ids.add(content.siteId)
+    for (const id of editSiteIds) ids.add(id)
+    return Array.from(ids)
+  }, [content?.siteId, editSiteIds])
+
   const handleSubmit: DynamicFormProps['onSubmit'] = async (values) => {
     if (!currentProjectId || !contentId || !content) return
     setSubmitError(null)
@@ -96,22 +142,40 @@ export function EditContentPage() {
       const orderNum = editOrder === '' ? undefined : parseInt(editOrder, 10)
       await coreApi.updateContent(currentProjectId, contentId, {
         title: editTitle.trim() || content.title,
+        slug: editSlug.trim() ? normalizeSlugInput(editSlug) : undefined,
         fields: values as Record<string, unknown>,
         parentContentId: editParentContentId ?? undefined,
         order: orderNum !== undefined && !Number.isNaN(orderNum) ? orderNum : undefined,
         tagIds: editTagIds,
         hierarchyIds: editHierarchyIds,
+        primaryHierarchyId: editPrimaryHierarchyId || undefined,
         siteIds: editSiteIds,
+        siteUrls:
+          editTargetSiteIds.length > 0
+            ? editTargetSiteIds
+                .map((siteId) => ({
+                  siteId,
+                  path: normalizeSlugInput(editSiteUrlMap[siteId] || editSlug || editTitle),
+                }))
+                .filter((x) => x.path.length > 0)
+            : undefined,
       })
       const updated = await coreApi.getContent(currentProjectId, contentId)
       if (updated) {
         setContent(updated)
         setEditTitle(updated.title)
+        setEditSlug(updated.slug)
         setEditParentContentId(updated.parentContentId ?? null)
         setEditOrder(updated.order != null ? String(updated.order) : '')
         setEditTagIds(updated.tagIds ?? [])
         setEditHierarchyIds(updated.hierarchyIds ?? [])
+        setEditPrimaryHierarchyId(updated.primaryHierarchyId ?? '')
         setEditSiteIds(updated.siteIds ?? [])
+        const nextSiteUrlMap: Record<string, string> = {}
+        for (const siteUrl of updated.siteUrls ?? []) {
+          nextSiteUrlMap[siteUrl.siteId] = siteUrl.path
+        }
+        setEditSiteUrlMap(nextSiteUrlMap)
       }
       if (showHistory) await loadVersions()
     } catch (e) {
@@ -181,11 +245,18 @@ export function EditContentPage() {
       if (updated) {
         setContent(updated)
         setEditTitle(updated.title)
+        setEditSlug(updated.slug)
         setEditParentContentId(updated.parentContentId ?? null)
         setEditOrder(updated.order != null ? String(updated.order) : '')
         setEditTagIds(updated.tagIds ?? [])
         setEditHierarchyIds(updated.hierarchyIds ?? [])
+        setEditPrimaryHierarchyId(updated.primaryHierarchyId ?? '')
         setEditSiteIds(updated.siteIds ?? [])
+        const nextSiteUrlMap: Record<string, string> = {}
+        for (const siteUrl of updated.siteUrls ?? []) {
+          nextSiteUrlMap[siteUrl.siteId] = siteUrl.path
+        }
+        setEditSiteUrlMap(nextSiteUrlMap)
       }
       await loadVersions()
     } catch (e) {
@@ -250,6 +321,14 @@ export function EditContentPage() {
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
           />
+          <label htmlFor="edit-slug" className="edit-content-page__title-label">Slug</label>
+          <input
+            id="edit-slug"
+            type="text"
+            className="edit-content-page__title-input"
+            value={editSlug}
+            onChange={(e) => setEditSlug(normalizeSlugInput(e.target.value))}
+          />
         </div>
         <span className="edit-content-page__status">
           Estado: {content.status} · v{content.currentVersion}
@@ -268,6 +347,9 @@ export function EditContentPage() {
         {content.updatedBy != null && content.updatedBy !== '' && (
           <> · Actualizado por: {content.updatedBy}</>
         )}
+      </div>
+      <div className="edit-content-page__meta">
+        Site owner: {content.siteId ?? '—'} · Sites shared: {content.siteIds.length > 0 ? content.siteIds.join(', ') : '—'}
       </div>
 
       {submitError && <p className="edit-content-page__error">{submitError}</p>}
@@ -293,12 +375,58 @@ export function EditContentPage() {
           </div>
           <TagsSelector projectId={currentProjectId} value={editTagIds} onChange={setEditTagIds} />
           <HierarchySelector projectId={currentProjectId} value={editHierarchyIds} onChange={setEditHierarchyIds} />
+          {editHierarchyIds.length > 0 && (
+            <div className="edit-content-page__order-wrap">
+              <label htmlFor="edit-primary-section" className="edit-content-page__order-label">Sección principal (opcional)</label>
+              <select
+                id="edit-primary-section"
+                className="edit-content-page__order-input"
+                value={editPrimaryHierarchyId}
+                onChange={(e) => setEditPrimaryHierarchyId(e.target.value)}
+              >
+                <option value="">Sin sección principal</option>
+                {editHierarchyIds.map((id) => {
+                  const hierarchy = hierarchies.find((h) => h.id === id)
+                  return (
+                    <option key={id} value={id}>
+                      {hierarchy?.name ?? id}
+                    </option>
+                  )
+                })}
+              </select>
+            </div>
+          )}
           <SiteSelector
             projectId={currentProjectId}
             environmentId={content.environmentId}
             value={editSiteIds}
             onChange={setEditSiteIds}
           />
+          {editTargetSiteIds.length > 0 && (
+            <div className="edit-content-page__order-wrap">
+              <label className="edit-content-page__order-label">URLs por sitio</label>
+              {editTargetSiteIds.map((siteId) => {
+                const site = sites.find((s) => s.id === siteId)
+                return (
+                  <div key={siteId}>
+                    <label htmlFor={`edit-site-url-${siteId}`} className="edit-content-page__order-label">
+                      {site?.name ?? siteId} {siteId === content.siteId ? '(owner)' : '(shared)'}
+                    </label>
+                    <input
+                      id={`edit-site-url-${siteId}`}
+                      type="text"
+                      className="edit-content-page__order-input"
+                      value={editSiteUrlMap[siteId] ?? ''}
+                      onChange={(e) =>
+                        setEditSiteUrlMap((prev) => ({ ...prev, [siteId]: normalizeSlugInput(e.target.value) }))
+                      }
+                      placeholder={normalizeSlugInput(editSlug || editTitle || content.slug)}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )}
           <ContentBlocksSection
             projectId={currentProjectId}
             contentId={contentId}

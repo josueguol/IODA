@@ -42,11 +42,14 @@ public class ContentController : ControllerBase
             request.ParentContentId,
             request.SchemaId,
             request.Title,
+            request.Slug,
             request.ContentType,
             request.Fields,
             request.TagIds,
             request.HierarchyIds,
+            request.PrimaryHierarchyId,
             request.SiteIds,
+            request.SiteUrls?.Select(x => new ContentSiteUrlInput(x.SiteId, x.Path)).ToList(),
             userId.Value,
             request.Order);
         var id = await _mediator.Send(command, cancellationToken);
@@ -79,10 +82,11 @@ public class ContentController : ControllerBase
         [FromQuery] string? status = null,
         [FromQuery] Guid? siteId = null,
         [FromQuery] Guid? parentContentId = null,
+        [FromQuery] Guid? sectionId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(
-            new ListContentByProjectQuery(projectId, page, pageSize, contentType, status, siteId, parentContentId),
+            new ListContentByProjectQuery(projectId, page, pageSize, contentType, status, siteId, parentContentId, sectionId),
             cancellationToken);
         return Ok(result);
     }
@@ -106,13 +110,16 @@ public class ContentController : ControllerBase
         var command = new UpdateContentCommand(
             contentId,
             request.Title,
+            request.Slug,
             request.Fields,
             userId.Value,
             request.ParentContentId,
             request.Order,
             request.TagIds,
             request.HierarchyIds,
-            request.SiteIds);
+            request.PrimaryHierarchyId,
+            request.SiteIds,
+            request.SiteUrls?.Select(x => new ContentSiteUrlInput(x.SiteId, x.Path)).ToList());
         var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
     }
@@ -288,21 +295,29 @@ public record CreateContentRequest(
     Guid? ParentContentId,
     Guid SchemaId,
     string Title,
+    string? Slug,
     string ContentType,
     Dictionary<string, object> Fields,
     IReadOnlyList<Guid>? TagIds,
     IReadOnlyList<Guid>? HierarchyIds,
+    Guid? PrimaryHierarchyId,
     IReadOnlyList<Guid>? SiteIds,
+    IReadOnlyList<ContentSiteUrlRequest>? SiteUrls = null,
     int? Order = null);
 
 public record UpdateContentRequest(
     string Title,
+    string? Slug,
     Dictionary<string, object> Fields,
     Guid? ParentContentId,
     int? Order = null,
     IReadOnlyList<Guid>? TagIds = null,
     IReadOnlyList<Guid>? HierarchyIds = null,
-    IReadOnlyList<Guid>? SiteIds = null);
+    Guid? PrimaryHierarchyId = null,
+    IReadOnlyList<Guid>? SiteIds = null,
+    IReadOnlyList<ContentSiteUrlRequest>? SiteUrls = null);
+
+public record ContentSiteUrlRequest(Guid SiteId, string Path);
 
 public record UnpublishContentRequest(string Reason);
 

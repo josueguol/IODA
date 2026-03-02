@@ -190,13 +190,11 @@ public class ContentRepository : IContentRepository
 
     public async Task<Content?> GetPublishedBySiteAndSlugAsync(Guid siteId, string slug, CancellationToken cancellationToken = default)
     {
-        var contentId = await _context.ContentSites
-            .Where(cs => cs.SiteId == siteId)
-            .Join(_context.Contents,
-                cs => cs.ContentId,
-                c => c.Id,
-                (cs, c) => c)
-            .Where(c => c.Status == ContentStatus.Published && c.Slug.Value == slug)
+        var contentId = await _context.Contents
+            .Where(c =>
+                c.Status == ContentStatus.Published &&
+                c.Slug.Value == slug &&
+                (c.SiteId == siteId || _context.ContentSites.Any(cs => cs.ContentId == c.Id && cs.SiteId == siteId)))
             .Select(c => c.Id)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -205,6 +203,28 @@ public class ContentRepository : IContentRepository
 
         return await _context.Contents
             .Include(c => c.Versions)
+            .FirstOrDefaultAsync(c => c.Id == contentId, cancellationToken);
+    }
+
+    public async Task<Content?> GetPublishedBySiteAndPathAsync(Guid siteId, string path, CancellationToken cancellationToken = default)
+    {
+        var normalizedPath = ContentSiteUrl.NormalizePath(path);
+        var contentId = await _context.ContentSiteUrls
+            .Where(x => x.SiteId == siteId && x.Path == normalizedPath)
+            .Join(_context.Contents,
+                x => x.ContentId,
+                c => c.Id,
+                (x, c) => c)
+            .Where(c => c.Status == ContentStatus.Published)
+            .Select(c => c.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (contentId == default)
+            return null;
+
+        return await _context.Contents
+            .Include(c => c.Versions)
+            .Include(c => c.Blocks)
             .FirstOrDefaultAsync(c => c.Id == contentId, cancellationToken);
     }
 

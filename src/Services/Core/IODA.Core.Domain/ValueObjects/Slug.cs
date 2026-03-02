@@ -1,4 +1,7 @@
 using IODA.Shared.BuildingBlocks.Domain;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace IODA.Core.Domain.ValueObjects;
 
@@ -8,7 +11,7 @@ namespace IODA.Core.Domain.ValueObjects;
 public sealed class Slug : ValueObject
 {
     private const int MAX_LENGTH = 200;
-    private static readonly char[] INVALID_CHARS = ['/', '\\', '?', '#', '[', ']', '@', '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=', ' ', '%', '<', '>', '"', '{', '}', '|', '^', '`'];
+    private static readonly Regex AllowedSlugRegex = new("^[a-z0-9][a-z0-9_-]*$", RegexOptions.Compiled);
 
     public string Value { get; }
 
@@ -27,16 +30,16 @@ public sealed class Slug : ValueObject
             throw new ArgumentException("Slug cannot be empty", nameof(value));
         }
 
-        var normalized = Normalize(value);
+        var normalized = NormalizeInput(value);
 
         if (normalized.Length > MAX_LENGTH)
         {
             throw new ArgumentException($"Slug cannot exceed {MAX_LENGTH} characters", nameof(value));
         }
 
-        if (ContainsInvalidCharacters(normalized))
+        if (!AllowedSlugRegex.IsMatch(normalized))
         {
-            throw new ArgumentException("Slug contains invalid characters", nameof(value));
+            throw new ArgumentException("Slug contains invalid characters. Allowed: a-z, 0-9, -, _", nameof(value));
         }
 
         return new Slug(normalized);
@@ -52,42 +55,71 @@ public sealed class Slug : ValueObject
             throw new ArgumentException("Title cannot be empty", nameof(title));
         }
 
-        var slug = title
-            .ToLowerInvariant()
-            .Replace(" ", "-")
-            .Replace("_", "-");
-
-        // Remove invalid characters
-        foreach (var ch in INVALID_CHARS)
-        {
-            slug = slug.Replace(ch.ToString(), string.Empty);
-        }
-
-        // Remove consecutive hyphens
-        while (slug.Contains("--"))
-        {
-            slug = slug.Replace("--", "-");
-        }
-
-        // Trim hyphens from start and end
-        slug = slug.Trim('-');
+        var slug = BuildSlugFromTitle(title);
 
         if (slug.Length > MAX_LENGTH)
         {
             slug = slug[..MAX_LENGTH].TrimEnd('-');
         }
 
+        if (slug.Length == 0)
+        {
+            throw new ArgumentException("Title does not contain valid slug characters", nameof(title));
+        }
+
         return new Slug(slug);
     }
 
-    private static string Normalize(string value)
+    private static string NormalizeInput(string value)
     {
-        return value.ToLowerInvariant().Trim();
+        return RemoveDiacritics(value)
+            .ToLowerInvariant()
+            .Trim();
     }
 
-    private static bool ContainsInvalidCharacters(string value)
+    private static string BuildSlugFromTitle(string title)
     {
-        return value.Any(c => INVALID_CHARS.Contains(c));
+        var normalized = NormalizeInput(title);
+        var builder = new StringBuilder(normalized.Length);
+        var lastWasDash = false;
+
+        foreach (var ch in normalized)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                builder.Append(ch);
+                lastWasDash = false;
+                continue;
+            }
+
+            if (ch is '-' or '_' || char.IsWhiteSpace(ch))
+            {
+                if (!lastWasDash && builder.Length > 0)
+                {
+                    builder.Append('-');
+                    lastWasDash = true;
+                }
+            }
+        }
+
+        return builder.ToString().Trim('-');
+    }
+
+    private static string RemoveDiacritics(string input)
+    {
+        var normalized = input.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(normalized.Length);
+
+        foreach (var ch in normalized)
+        {
+            var category = CharUnicodeInfo.GetUnicodeCategory(ch);
+            if (category != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(ch);
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

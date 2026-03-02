@@ -65,6 +65,7 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
             order,
             request.SchemaId,
             request.Title,
+            request.Slug,
             request.ContentType,
             fields,
             request.CreatedBy);
@@ -81,6 +82,9 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
             await _unitOfWork.ContentTags.ReplaceTagsForContentAsync(content.Id, request.TagIds, cancellationToken);
         }
 
+        if (request.PrimaryHierarchyId.HasValue && (request.HierarchyIds == null || request.HierarchyIds.Count == 0))
+            throw new ArgumentException("HierarchyIds are required when PrimaryHierarchyId is provided.", nameof(request.PrimaryHierarchyId));
+
         if (request.HierarchyIds is { Count: > 0 })
         {
             var hierarchies = await _unitOfWork.Hierarchies.GetByIdsAsync(request.HierarchyIds, cancellationToken);
@@ -88,8 +92,20 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
                 throw new ArgumentException("One or more hierarchy IDs are invalid or do not belong to the project.", nameof(request.HierarchyIds));
             if (hierarchies.Any(h => h.ProjectId != request.ProjectId))
                 throw new ArgumentException("All hierarchies must belong to the project.", nameof(request.HierarchyIds));
-            await _unitOfWork.ContentHierarchies.ReplaceHierarchiesForContentAsync(content.Id, request.HierarchyIds, cancellationToken);
+
+            if (request.PrimaryHierarchyId.HasValue && !request.HierarchyIds.Contains(request.PrimaryHierarchyId.Value))
+                throw new ArgumentException("PrimaryHierarchyId must be included in HierarchyIds.", nameof(request.PrimaryHierarchyId));
+
+            await _unitOfWork.ContentHierarchies.ReplaceHierarchiesForContentAsync(
+                content.Id,
+                request.HierarchyIds,
+                request.PrimaryHierarchyId,
+                cancellationToken);
         }
+
+        var targetSiteIds = new HashSet<Guid>();
+        if (request.SiteId.HasValue)
+            targetSiteIds.Add(request.SiteId.Value);
 
         if (request.SiteIds is { Count: > 0 })
         {
@@ -102,8 +118,36 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
                     throw new ArgumentException("All sites must belong to the same project.", nameof(request.SiteIds));
                 if (site.EnvironmentId.HasValue && site.EnvironmentId != request.EnvironmentId)
                     throw new ArgumentException("All sites must belong to the same environment or be global to the project.", nameof(request.SiteIds));
+                targetSiteIds.Add(siteId);
             }
             await _unitOfWork.ContentSites.ReplaceSitesForContentAsync(content.Id, request.SiteIds, cancellationToken);
+        }
+
+        if (targetSiteIds.Count > 0)
+        {
+            var requestedPathBySite = (request.SiteUrls ?? Array.Empty<ContentSiteUrlInput>())
+                .GroupBy(x => x.SiteId)
+                .ToDictionary(g => g.Key, g => g.Last().Path);
+            var unknownSiteIds = requestedPathBySite.Keys.Where(siteId => !targetSiteIds.Contains(siteId)).ToList();
+            if (unknownSiteIds.Count > 0)
+                throw new ArgumentException("SiteUrls contains site IDs that are not assigned to the content.", nameof(request.SiteUrls));
+
+            var siteUrls = new List<Domain.Entities.ContentSiteUrl>();
+            foreach (var siteId in targetSiteIds)
+            {
+                var rawPath = requestedPathBySite.TryGetValue(siteId, out var customPath)
+                    ? customPath
+                    : content.Slug.Value;
+                var normalizedPath = Domain.Entities.ContentSiteUrl.NormalizePath(rawPath);
+
+                var existing = await _unitOfWork.ContentSiteUrls.GetBySiteAndPathAsync(siteId, normalizedPath, cancellationToken);
+                if (existing != null && existing.ContentId != content.Id)
+                    throw new ArgumentException($"Path '{normalizedPath}' is already in use for site '{siteId}'.", nameof(request.SiteUrls));
+
+                siteUrls.Add(Domain.Entities.ContentSiteUrl.Create(content.Id, siteId, normalizedPath));
+            }
+
+            await _unitOfWork.ContentSiteUrls.ReplaceForContentAsync(content.Id, siteUrls, cancellationToken);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

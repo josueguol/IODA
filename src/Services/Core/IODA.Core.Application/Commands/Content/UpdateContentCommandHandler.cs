@@ -74,6 +74,9 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
             await _unitOfWork.ContentTags.ReplaceTagsForContentAsync(content.Id, request.TagIds, cancellationToken);
         }
 
+        if (request.PrimaryHierarchyId.HasValue && request.HierarchyIds == null)
+            throw new InvalidOperationException("HierarchyIds are required when PrimaryHierarchyId is provided.");
+
         if (request.HierarchyIds != null)
         {
             if (request.HierarchyIds.Count > 0)
@@ -84,7 +87,25 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
                 if (hierarchies.Any(h => h.ProjectId != content.ProjectId))
                     throw new InvalidOperationException("All hierarchies must belong to the same project.");
             }
-            await _unitOfWork.ContentHierarchies.ReplaceHierarchiesForContentAsync(content.Id, request.HierarchyIds, cancellationToken);
+
+            if (request.PrimaryHierarchyId.HasValue && (request.HierarchyIds.Count == 0 || !request.HierarchyIds.Contains(request.PrimaryHierarchyId.Value)))
+                throw new InvalidOperationException("PrimaryHierarchyId must be included in HierarchyIds.");
+
+            await _unitOfWork.ContentHierarchies.ReplaceHierarchiesForContentAsync(
+                content.Id,
+                request.HierarchyIds,
+                request.PrimaryHierarchyId,
+                cancellationToken);
+        }
+
+        var targetSiteIds = new HashSet<Guid>();
+        if (content.SiteId.HasValue)
+            targetSiteIds.Add(content.SiteId.Value);
+        if (request.SiteIds == null)
+        {
+            var existingSharedSiteIds = await _unitOfWork.ContentSites.GetSiteIdsByContentIdAsync(content.Id, cancellationToken);
+            foreach (var siteId in existingSharedSiteIds)
+                targetSiteIds.Add(siteId);
         }
 
         if (request.SiteIds != null)
@@ -100,12 +121,37 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
                         throw new InvalidOperationException("All sites must belong to the same project.");
                     if (site.EnvironmentId.HasValue && site.EnvironmentId != content.EnvironmentId)
                         throw new InvalidOperationException("All sites must belong to the same environment or be global to the project.");
+                    targetSiteIds.Add(siteId);
                 }
             }
             await _unitOfWork.ContentSites.ReplaceSitesForContentAsync(content.Id, request.SiteIds, cancellationToken);
         }
 
-        content.Update(request.Title, request.Fields ?? new Dictionary<string, object>(), request.UpdatedBy);
+        content.Update(request.Title, request.Slug, request.Fields ?? new Dictionary<string, object>(), request.UpdatedBy);
+
+        if (targetSiteIds.Count > 0)
+        {
+            var requestedPathBySite = (request.SiteUrls ?? Array.Empty<ContentSiteUrlInput>())
+                .GroupBy(x => x.SiteId)
+                .ToDictionary(g => g.Key, g => g.Last().Path);
+            var unknownSiteIds = requestedPathBySite.Keys.Where(siteId => !targetSiteIds.Contains(siteId)).ToList();
+            if (unknownSiteIds.Count > 0)
+                throw new InvalidOperationException("SiteUrls contains site IDs that are not assigned to the content.");
+
+            var siteUrlEntities = new List<Domain.Entities.ContentSiteUrl>();
+            foreach (var siteId in targetSiteIds)
+            {
+                var rawPath = requestedPathBySite.TryGetValue(siteId, out var customPath)
+                    ? customPath
+                    : content.Slug.Value;
+                var normalizedPath = Domain.Entities.ContentSiteUrl.NormalizePath(rawPath);
+                var existing = await _unitOfWork.ContentSiteUrls.GetBySiteAndPathAsync(siteId, normalizedPath, cancellationToken);
+                if (existing != null && existing.ContentId != content.Id)
+                    throw new InvalidOperationException($"Path '{normalizedPath}' is already in use for site '{siteId}'.");
+                siteUrlEntities.Add(Domain.Entities.ContentSiteUrl.Create(content.Id, siteId, normalizedPath));
+            }
+            await _unitOfWork.ContentSiteUrls.ReplaceForContentAsync(content.Id, siteUrlEntities, cancellationToken);
+        }
 
         await _unitOfWork.Contents.UpdateAsync(content, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -126,7 +172,12 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
 
         var tagIds = await _unitOfWork.ContentTags.GetTagIdsByContentIdAsync(content.Id, cancellationToken);
         var hierarchyIds = await _unitOfWork.ContentHierarchies.GetHierarchyIdsByContentIdAsync(content.Id, cancellationToken);
+        var primaryHierarchyId = await _unitOfWork.ContentHierarchies.GetPrimaryHierarchyIdByContentIdAsync(content.Id, cancellationToken);
         var siteIds = await _unitOfWork.ContentSites.GetSiteIdsByContentIdAsync(content.Id, cancellationToken);
-        return content.ToDto(tagIds, hierarchyIds, siteIds);
+        var siteUrls = await _unitOfWork.ContentSiteUrls.GetByContentIdAsync(content.Id, cancellationToken);
+        var siteUrlDtos = siteUrls
+            .Select(x => new ContentSiteUrlDto(x.SiteId, x.Path, content.SiteId.HasValue && x.SiteId == content.SiteId.Value))
+            .ToList();
+        return content.ToDto(primaryHierarchyId, tagIds, hierarchyIds, siteIds, siteUrlDtos);
     }
 }
