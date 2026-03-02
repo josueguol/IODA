@@ -114,6 +114,7 @@ public class Content : AggregateRoot<Guid>
         int order,
         Guid schemaId,
         string title,
+        string? slug,
         string contentType,
         Dictionary<string, object> fields,
         Guid createdBy)
@@ -130,7 +131,9 @@ public class Content : AggregateRoot<Guid>
 
         var id = Guid.NewGuid();
         var publicId = Identifier.Create("cnt");
-        var slug = Slug.FromTitle(title);
+        var contentSlug = string.IsNullOrWhiteSpace(slug)
+            ? Slug.FromTitle(title)
+            : Slug.Create(slug);
 
         return new Content(
             id,
@@ -142,7 +145,7 @@ public class Content : AggregateRoot<Guid>
             order,
             schemaId,
             title,
-            slug,
+            contentSlug,
             contentType,
             fields,
             createdBy);
@@ -197,6 +200,7 @@ public class Content : AggregateRoot<Guid>
 
     public void Update(
         string title,
+        string? slug,
         Dictionary<string, object> fields,
         Guid updatedBy)
     {
@@ -212,7 +216,7 @@ public class Content : AggregateRoot<Guid>
 
         Title = title;
         Fields = fields;
-        Slug = Slug.FromTitle(title);
+        Slug = string.IsNullOrWhiteSpace(slug) ? Slug.FromTitle(title) : Slug.Create(slug);
         UpdatedAt = DateTime.UtcNow;
         UpdatedBy = updatedBy;
         CurrentVersion++;

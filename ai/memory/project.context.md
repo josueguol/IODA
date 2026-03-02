@@ -165,3 +165,33 @@ El core no debe modificarse para extender funcionalidad.
 - Permisos mal modelados.
 - Acoplamiento accidental vía DTOs compartidos.
 - Falsa sensación de consistencia fuerte entre servicios.
+
+---
+
+## 12. Agent Governance Model
+
+Modelo actual de agentes:
+
+- Fullstack: responsable de implementación end-to-end (backend + frontend).
+- Gobernanza Técnica (perfil unificado): arquitectura + code review + auditoría + orquestación.
+- QA Tester Gatekeeper: validación, aprobación y entrega controlada (commit/push autorizado).
+
+Regla de calidad:
+
+- Ningún cambio relevante se considera cerrado sin gate de QA y validación contra principios del CMS.
+
+---
+
+## 13. Future Technology Envelope (Compatible by Design)
+
+Las decisiones actuales deben mantener compatibilidad con adopción futura de:
+
+- OpenTelemetry para observabilidad estandarizada.
+- Redis para cache y optimización de sesiones/lecturas.
+- OpenSearch/Elasticsearch para búsqueda y read models avanzados.
+- Kafka o NATS para escenarios de mensajería de mayor escala.
+- Kubernetes + Helm para operación y escalado en producción.
+- CI/CD con quality gates (tests, seguridad, cobertura, e2e/perf).
+
+Esto no obliga adopción inmediata.
+Sí obliga a evitar acoplamientos que bloqueen esas opciones.

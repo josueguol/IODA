@@ -7,9 +7,11 @@ public static class ContentMappings
 {
     public static ContentDto ToDto(
         this Content content,
+        Guid? primaryHierarchyId = null,
         IReadOnlyList<Guid>? tagIds = null,
         IReadOnlyList<Guid>? hierarchyIds = null,
-        IReadOnlyList<Guid>? siteIds = null)
+        IReadOnlyList<Guid>? siteIds = null,
+        IReadOnlyList<ContentSiteUrlDto>? siteUrls = null)
     {
         var blocks = content.Blocks
             .OrderBy(b => b.Order)
@@ -36,9 +38,11 @@ public static class ContentMappings
             content.CreatedBy,
             content.UpdatedBy,
             content.PublishedBy,
+            primaryHierarchyId,
             tagIds ?? Array.Empty<Guid>(),
             hierarchyIds ?? Array.Empty<Guid>(),
             siteIds ?? Array.Empty<Guid>(),
+            siteUrls ?? Array.Empty<ContentSiteUrlDto>(),
             blocks);
     }
 

@@ -9,6 +9,7 @@ using IODA.Shared.Api.Middleware;
 using IODA.Shared.BuildingBlocks.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -115,6 +116,15 @@ if (!builder.Environment.IsDevelopment())
 }
 
 var app = builder.Build();
+
+var applyMigrationsOnStartup = app.Configuration.GetValue<bool?>("Database:ApplyMigrationsOnStartup")
+    ?? app.Environment.IsDevelopment();
+if (applyMigrationsOnStartup)
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<IODA.Authorization.Infrastructure.Persistence.AuthorizationDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // 1.2: seed de permisos del catálogo (idempotente por code)
 using (var scope = app.Services.CreateScope())

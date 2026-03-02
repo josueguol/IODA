@@ -1,3 +1,5 @@
+using IODA.Core.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -5,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace IODA.Core.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(CoreDbContext))]
+    [Migration("20260220100000_AddContentBlocksTable")]
     public partial class AddContentBlocksTable : Migration
     {
         /// <inheritdoc />

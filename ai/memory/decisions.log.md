@@ -33,6 +33,8 @@ Regla obligatoria:
 18. [ADR-018: Schema-driven y tipos en runtime](#adr-018-schema-driven-y-tipos-en-runtime)
 19. [ADR-019: Multi-tenant por proyecto](#adr-019-multi-tenant-por-proyecto)
 20. [ADR-020: Observabilidad y manejo de errores](#adr-020-observabilidad-y-manejo-de-errores)
+21. [ADR-021: Consolidación de perfiles de agentes en Gobernanza Técnica](#adr-021-consolidación-de-perfiles-de-agentes-en-gobernanza-técnica)
+22. [ADR-022: QA Gatekeeper como puerta obligatoria de aprobación y entrega](#adr-022-qa-gatekeeper-como-puerta-obligatoria-de-aprobación-y-entrega)
 
 ---
 
@@ -372,14 +374,65 @@ Regla obligatoria:
 
 ---
 
+## ADR-021: Consolidación de perfiles de agentes en Gobernanza Técnica
+
+**Estado:** Aceptado.
+
+**Contexto:** Existían perfiles separados (Architect, CodeReviewer, Auditor, Orchestrator) con solapamiento de responsabilidad y posibles decisiones inconsistentes.
+
+**Decisión:** Consolidar esas funciones en un solo perfil unificado de **Gobernanza Técnica** (`ai/agents/orchestrator.agent.md`) que centraliza:
+
+- Evaluación arquitectónica.
+- Revisión de riesgos y calidad.
+- Auditoría de cumplimiento de principios.
+- Orquestación del flujo diseño/implementación/revisión.
+
+Los perfiles individuales se marcan como consolidados y redirigen al perfil unificado.
+
+**Consecuencias:**
+
+- Menor ambigüedad de autoridad técnica.
+- Criterios de aprobación/rechazo consistentes.
+- Mejor trazabilidad de decisiones de arquitectura y calidad.
+
+**Referencias:** `ai/agents/orchestrator.agent.md`, `ai/agents/architect.agent.md`, `ai/agents/codereviewer.agent.md`, `ai/agents/auditor.agent.md`.
+
+---
+
+## ADR-022: QA Gatekeeper como puerta obligatoria de aprobación y entrega
+
+**Estado:** Aceptado.
+
+**Contexto:** Se requiere un rol explícito que valide cambios de forma sistemática antes de aprobar y subir cambios, con evolución futura hacia DevOps/CI/CD.
+
+**Decisión:** Crear perfil **QA Tester Gatekeeper** (`ai/agents/qa-tester.agent.md`) con responsabilidades de:
+
+- Validación funcional y técnica.
+- Clasificación de hallazgos por severidad.
+- Decisión formal (`Aprobado`, `Aprobado con condiciones`, `Rechazado`).
+- Entrega técnica controlada (commit/push) solo tras aprobación y autorización.
+
+El gate de QA se vuelve obligatorio para cambios relevantes de backend/frontend/contratos.
+
+**Consecuencias:**
+
+- Menor riesgo de regresiones en cambios de alto impacto.
+- Proceso de aprobación más claro y auditable.
+- Base preparada para quality gates automáticos en CI/CD.
+
+**Referencias:** `ai/agents/qa-tester.agent.md`, `ai/memory/project.context.md`.
+
+---
+
 ## Resumen por tema
 
 | Tema | ADRs |
 |------|------|
-| Arquitectura general | 001, 002, 003, 004, 015, 018, 019 |
+| Arquitectura general | 001, 002, 003, 004, 015, 018, 019, 021 |
 | Eventos y mensajería | 004, 005, 006 |
 | Seguridad y permisos | 007, 008, 009, 010, 011, 016, 017 |
 | Código y API | 012, 013, 014, 020 |
+| Calidad y release gate | 022 |
 
 ---
 

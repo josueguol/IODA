@@ -8,6 +8,7 @@ public interface IHierarchyRepository
     Task<Entities.Hierarchy?> GetByProjectAndSlugAsync(Guid projectId, string slug, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Entities.Hierarchy>> GetChildrenAsync(Guid? parentHierarchyId, Guid projectId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Guid>> GetAncestorIdsAsync(Guid hierarchyId, int maxDepth, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Guid>> GetDescendantIdsAsync(Guid hierarchyId, int maxDepth, CancellationToken cancellationToken = default);
     Task<bool> ExistsWithSlugAsync(Guid projectId, string slug, Guid? excludeHierarchyId, CancellationToken cancellationToken = default);
     Task<Entities.Hierarchy> AddAsync(Entities.Hierarchy hierarchy, CancellationToken cancellationToken = default);
     Task UpdateAsync(Entities.Hierarchy hierarchy, CancellationToken cancellationToken = default);

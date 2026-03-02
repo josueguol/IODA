@@ -9,7 +9,7 @@ import { ParentContentSelector } from '../../modules/core/components/ParentConte
 import { TagsSelector } from '../../modules/core/components/TagsSelector'
 import { HierarchySelector } from '../../modules/core/components/HierarchySelector'
 import { SiteSelector } from '../../modules/core/components/SiteSelector'
-import type { ContentListItem, ContentSchemaListItem } from '../../modules/core/types'
+import type { ContentListItem, ContentSchemaListItem, Hierarchy, Site } from '../../modules/core/types'
 import './ContentListPage.css'
 
 const SCHEMA_ICONS: Record<string, string> = {
@@ -39,6 +39,16 @@ function statusBadgeClass(status: string): string {
 
 const PAGE_SIZE = 20
 
+function normalizeSlugInput(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9_-]/g, '')
+}
+
 export function ContentListPage() {
   const { currentProjectId, currentEnvironmentId, currentSiteId } = useContextStore()
   const { schemaList, loadSchemas, listLoading } = useSchemaStore()
@@ -48,20 +58,42 @@ export function ContentListPage() {
   const [page, setPage] = useState(1)
   const [contentType, setContentType] = useState('')
   const [status, setStatus] = useState('')
+  const [sectionId, setSectionId] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hierarchies, setHierarchies] = useState<Hierarchy[]>([])
+  const [sites, setSites] = useState<Site[]>([])
 
   const [createSchema, setCreateSchema] = useState<ContentSchemaListItem | null>(null)
   const [contentTitle, setContentTitle] = useState('')
+  const [contentSlug, setContentSlug] = useState('')
   const [createParentContentId, setCreateParentContentId] = useState<string | null>(null)
   const [createTagIds, setCreateTagIds] = useState<string[]>([])
   const [createHierarchyIds, setCreateHierarchyIds] = useState<string[]>([])
+  const [createPrimaryHierarchyId, setCreatePrimaryHierarchyId] = useState<string>('')
   const [createSiteIds, setCreateSiteIds] = useState<string[]>([])
+  const [createSiteUrlMap, setCreateSiteUrlMap] = useState<Record<string, string>>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
     if (currentProjectId) loadSchemas(currentProjectId).catch(() => {})
   }, [currentProjectId, loadSchemas])
+
+  useEffect(() => {
+    if (!currentProjectId) return
+    coreApi.getHierarchies(currentProjectId).then(setHierarchies).catch(() => setHierarchies([]))
+  }, [currentProjectId])
+
+  useEffect(() => {
+    if (!currentProjectId || !currentEnvironmentId) return
+    coreApi.getSites(currentProjectId, currentEnvironmentId).then(setSites).catch(() => setSites([]))
+  }, [currentProjectId, currentEnvironmentId])
+
+  useEffect(() => {
+    if (createPrimaryHierarchyId && !createHierarchyIds.includes(createPrimaryHierarchyId)) {
+      setCreatePrimaryHierarchyId('')
+    }
+  }, [createHierarchyIds, createPrimaryHierarchyId])
 
   useEffect(() => {
     if (!currentProjectId) return
@@ -75,6 +107,7 @@ export function ContentListPage() {
           pageSize: PAGE_SIZE,
           contentType: contentType || undefined,
           status: status || undefined,
+          sectionId: sectionId || undefined,
           siteId: currentSiteId ?? undefined,
         })
         if (!cancelled && result) {
@@ -89,10 +122,10 @@ export function ContentListPage() {
     }
     fetchContent()
     return () => { cancelled = true }
-  }, [currentProjectId, currentSiteId, page, contentType, status])
+  }, [currentProjectId, currentSiteId, page, contentType, status, sectionId])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
-  const hasFilters = Boolean(contentType || status)
+  const hasFilters = Boolean(contentType || status || sectionId)
 
   const countByType = useMemo(() => {
     const map: Record<string, number> = {}
@@ -102,6 +135,13 @@ export function ContentListPage() {
     return map
   }, [items])
 
+  const createTargetSiteIds = useMemo(() => {
+    const ids = new Set<string>()
+    if (currentSiteId) ids.add(currentSiteId)
+    for (const id of createSiteIds) ids.add(id)
+    return Array.from(ids)
+  }, [currentSiteId, createSiteIds])
+
   const handleSelectSchema = (sc: ContentSchemaListItem) => {
     if (createSchema?.id === sc.id) {
       setCreateSchema(null)
@@ -109,22 +149,26 @@ export function ContentListPage() {
     }
     setCreateSchema(sc)
     setContentTitle('')
+    setContentSlug('')
     setSubmitError(null)
   }
 
   const handleCancelCreate = () => {
     setCreateSchema(null)
     setContentTitle('')
+    setContentSlug('')
     setCreateParentContentId(null)
     setCreateTagIds([])
     setCreateHierarchyIds([])
+    setCreatePrimaryHierarchyId('')
     setCreateSiteIds([])
+    setCreateSiteUrlMap({})
     setSubmitError(null)
   }
 
   const handleCreate: DynamicFormProps['onSubmit'] = async (values) => {
-    if (!currentProjectId || !currentEnvironmentId || !createSchema || !contentTitle.trim()) {
-      setSubmitError('Proyecto, entorno, schema y título son obligatorios.')
+    if (!currentProjectId || !currentEnvironmentId || !createSchema || !contentTitle.trim() || !contentSlug.trim()) {
+      setSubmitError('Proyecto, entorno, schema, título y slug son obligatorios.')
       return
     }
     setSubmitError(null)
@@ -135,11 +179,22 @@ export function ContentListPage() {
         parentContentId: createParentContentId ?? undefined,
         schemaId: createSchema.id,
         title: contentTitle.trim(),
+        slug: contentSlug.trim() ? normalizeSlugInput(contentSlug) : undefined,
         contentType: createSchema.schemaType,
         fields: values as Record<string, unknown>,
         tagIds: createTagIds.length > 0 ? createTagIds : undefined,
         hierarchyIds: createHierarchyIds.length > 0 ? createHierarchyIds : undefined,
+        primaryHierarchyId: createPrimaryHierarchyId || undefined,
         siteIds: createSiteIds.length > 0 ? createSiteIds : undefined,
+        siteUrls:
+          createTargetSiteIds.length > 0
+            ? createTargetSiteIds
+                .map((siteId) => ({
+                  siteId,
+                  path: normalizeSlugInput(createSiteUrlMap[siteId] || contentSlug || contentTitle),
+                }))
+                .filter((x) => x.path.length > 0)
+            : undefined,
       })
       handleCancelCreate()
       setPage(1)
@@ -148,6 +203,7 @@ export function ContentListPage() {
         pageSize: PAGE_SIZE,
         contentType: contentType || undefined,
         status: status || undefined,
+        sectionId: sectionId || undefined,
         siteId: currentSiteId ?? undefined,
       })
       if (result) {
@@ -162,6 +218,7 @@ export function ContentListPage() {
   const resetFilters = () => {
     setContentType('')
     setStatus('')
+    setSectionId('')
     setPage(1)
   }
 
@@ -214,9 +271,29 @@ export function ContentListPage() {
               type="text"
               className="content-list-page__create-input"
               value={contentTitle}
-              onChange={(e) => setContentTitle(e.target.value)}
+              onChange={(e) => {
+                const nextTitle = e.target.value
+                setContentTitle(nextTitle)
+                if (!contentSlug.trim()) {
+                  setContentSlug(normalizeSlugInput(nextTitle))
+                }
+              }}
               placeholder="Ej. Mi primer artículo"
               autoFocus
+            />
+          </div>
+
+          <div>
+            <label htmlFor="content-slug" className="content-list-page__create-label">
+              Slug (URL) *
+            </label>
+            <input
+              id="content-slug"
+              type="text"
+              className="content-list-page__create-input"
+              value={contentSlug}
+              onChange={(e) => setContentSlug(normalizeSlugInput(e.target.value))}
+              placeholder="ej-mi-contenido"
             />
           </div>
 
@@ -229,12 +306,60 @@ export function ContentListPage() {
               />
               <TagsSelector projectId={currentProjectId} value={createTagIds} onChange={setCreateTagIds} />
               <HierarchySelector projectId={currentProjectId} value={createHierarchyIds} onChange={setCreateHierarchyIds} />
+              {createHierarchyIds.length > 0 && (
+                <div>
+                  <label htmlFor="content-primary-section" className="content-list-page__create-label">
+                    Sección principal (opcional)
+                  </label>
+                  <select
+                    id="content-primary-section"
+                    className="content-list-page__create-input"
+                    value={createPrimaryHierarchyId}
+                    onChange={(e) => setCreatePrimaryHierarchyId(e.target.value)}
+                  >
+                    <option value="">Sin sección principal</option>
+                    {createHierarchyIds.map((id) => {
+                      const hierarchy = hierarchies.find((h) => h.id === id)
+                      return (
+                        <option key={id} value={id}>
+                          {hierarchy?.name ?? id}
+                        </option>
+                      )
+                    })}
+                  </select>
+                </div>
+              )}
               <SiteSelector
                 projectId={currentProjectId}
                 environmentId={currentEnvironmentId}
                 value={createSiteIds}
                 onChange={setCreateSiteIds}
               />
+              {createTargetSiteIds.length > 0 && (
+                <div>
+                  <p className="content-list-page__create-label">URLs por sitio (opcional)</p>
+                  {createTargetSiteIds.map((siteId) => {
+                    const site = sites.find((s) => s.id === siteId)
+                    return (
+                      <div key={siteId}>
+                        <label htmlFor={`site-url-${siteId}`} className="content-list-page__create-label">
+                          {site?.name ?? siteId} {siteId === currentSiteId ? '(owner)' : '(shared)'}
+                        </label>
+                        <input
+                          id={`site-url-${siteId}`}
+                          type="text"
+                          className="content-list-page__create-input"
+                          value={createSiteUrlMap[siteId] ?? ''}
+                          onChange={(e) =>
+                            setCreateSiteUrlMap((prev) => ({ ...prev, [siteId]: normalizeSlugInput(e.target.value) }))
+                          }
+                          placeholder={normalizeSlugInput(contentSlug || contentTitle || 'contenido')}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </>
           )}
 
@@ -279,6 +404,21 @@ export function ContentListPage() {
             <option value="Published">Published</option>
             <option value="InReview">En revisión</option>
             <option value="Archived">Archivado</option>
+          </select>
+        </div>
+        <div className="content-list-page__filter-group">
+          <span className="content-list-page__filter-label">Sección</span>
+          <select
+            className="content-list-page__filter-select"
+            value={sectionId}
+            onChange={(e) => { setSectionId(e.target.value); setPage(1) }}
+          >
+            <option value="">Todas</option>
+            {hierarchies.map((h) => (
+              <option key={h.id} value={h.id}>
+                {h.name}
+              </option>
+            ))}
           </select>
         </div>
         {hasFilters && (

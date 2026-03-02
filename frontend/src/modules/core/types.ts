@@ -180,10 +180,18 @@ export interface Content {
   createdBy: string
   updatedBy: string | null
   publishedBy: string | null
+  primaryHierarchyId: string | null
   tagIds: string[]
   hierarchyIds: string[]
   siteIds: string[]
+  siteUrls: ContentSiteUrl[]
   blocks: ContentBlock[]
+}
+
+export interface ContentSiteUrl {
+  siteId: string
+  path: string
+  isOwner: boolean
 }
 
 /** Jerarquía/categoría del proyecto (HierarchyDto). */

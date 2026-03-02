@@ -21,6 +21,7 @@ public class UnitOfWork : IUnitOfWork
         Hierarchies = new Repositories.HierarchyRepository(context);
         ContentHierarchies = new Repositories.ContentHierarchyRepository(context);
         ContentSites = new Repositories.ContentSiteRepository(context);
+        ContentSiteUrls = new Repositories.ContentSiteUrlRepository(context);
     }
 
     public IProjectRepository Projects { get; }
@@ -33,6 +34,7 @@ public class UnitOfWork : IUnitOfWork
     public IHierarchyRepository Hierarchies { get; }
     public IContentHierarchyRepository ContentHierarchies { get; }
     public IContentSiteRepository ContentSites { get; }
+    public IContentSiteUrlRepository ContentSiteUrls { get; }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

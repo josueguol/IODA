@@ -138,7 +138,15 @@ export const coreApi = {
   /** Lista contenido del proyecto (paginado). GET /api/projects/{projectId}/content */
   getContentList: (
     projectId: string,
-    params?: { page?: number; pageSize?: number; contentType?: string; status?: string; siteId?: string; parentContentId?: string }
+    params?: {
+      page?: number
+      pageSize?: number
+      contentType?: string
+      status?: string
+      siteId?: string
+      parentContentId?: string
+      sectionId?: string
+    }
   ) => {
     const search = new URLSearchParams()
     if (params?.page != null) search.set('page', String(params.page))
@@ -147,6 +155,7 @@ export const coreApi = {
     if (params?.status) search.set('status', params.status)
     if (params?.siteId) search.set('siteId', params.siteId)
     if (params?.parentContentId) search.set('parentContentId', params.parentContentId)
+    if (params?.sectionId) search.set('sectionId', params.sectionId)
     const q = search.toString()
     return coreClient.get<PagedResult<ContentListItem>>(
       `api/projects/${projectId}/content${q ? `?${q}` : ''}`
@@ -189,11 +198,14 @@ export const coreApi = {
       parentContentId?: string | null
       schemaId: string
       title: string
+      slug?: string | null
       contentType: string
       fields: Record<string, unknown>
       tagIds?: string[] | null
       hierarchyIds?: string[] | null
+      primaryHierarchyId?: string | null
       siteIds?: string[] | null
+      siteUrls?: Array<{ siteId: string; path: string }> | null
       /** Orden entre hermanos; si no se envía, se asigna el siguiente disponible. */
       order?: number | null
     }
@@ -205,13 +217,16 @@ export const coreApi = {
     contentId: string,
     body: {
       title: string
+      slug?: string | null
       fields: Record<string, unknown>
       parentContentId?: string | null
       /** Orden entre hermanos. */
       order?: number | null
       tagIds?: string[] | null
       hierarchyIds?: string[] | null
+      primaryHierarchyId?: string | null
       siteIds?: string[] | null
+      siteUrls?: Array<{ siteId: string; path: string }> | null
     }
   ) =>
     coreClient.put<Content>(`api/projects/${projectId}/content/${contentId}`, body),

@@ -18,6 +18,10 @@ public class ContentHierarchyConfiguration : IEntityTypeConfiguration<ContentHie
         builder.Property(ch => ch.HierarchyId)
             .HasColumnName("hierarchy_id");
 
+        builder.Property(ch => ch.IsPrimary)
+            .HasColumnName("is_primary")
+            .IsRequired();
+
         builder.HasOne(ch => ch.Content)
             .WithMany()
             .HasForeignKey(ch => ch.ContentId)
@@ -30,5 +34,10 @@ public class ContentHierarchyConfiguration : IEntityTypeConfiguration<ContentHie
 
         builder.HasIndex(ch => ch.HierarchyId)
             .HasDatabaseName("ix_content_hierarchies_hierarchy_id");
+
+        builder.HasIndex(ch => new { ch.ContentId, ch.IsPrimary })
+            .HasDatabaseName("ix_content_hierarchies_content_primary")
+            .HasFilter("is_primary = true")
+            .IsUnique();
     }
 }

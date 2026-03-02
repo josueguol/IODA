@@ -22,7 +22,20 @@ public class ContentHierarchyRepository : IContentHierarchyRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task ReplaceHierarchiesForContentAsync(Guid contentId, IReadOnlyList<Guid> hierarchyIds, CancellationToken cancellationToken = default)
+    public async Task<Guid?> GetPrimaryHierarchyIdByContentIdAsync(Guid contentId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ContentHierarchies
+            .AsNoTracking()
+            .Where(ch => ch.ContentId == contentId && ch.IsPrimary)
+            .Select(ch => (Guid?)ch.HierarchyId)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task ReplaceHierarchiesForContentAsync(
+        Guid contentId,
+        IReadOnlyList<Guid> hierarchyIds,
+        Guid? primaryHierarchyId = null,
+        CancellationToken cancellationToken = default)
     {
         var existing = await _context.ContentHierarchies
             .Where(ch => ch.ContentId == contentId)
@@ -31,7 +44,21 @@ public class ContentHierarchyRepository : IContentHierarchyRepository
 
         foreach (var hierarchyId in hierarchyIds ?? Array.Empty<Guid>())
         {
-            _context.ContentHierarchies.Add(ContentHierarchy.Create(contentId, hierarchyId));
+            var isPrimary = primaryHierarchyId.HasValue && primaryHierarchyId.Value == hierarchyId;
+            _context.ContentHierarchies.Add(ContentHierarchy.Create(contentId, hierarchyId, isPrimary));
         }
+    }
+
+    public async Task<IReadOnlyList<Guid>> GetContentIdsByHierarchyIdsAsync(IReadOnlyList<Guid> hierarchyIds, CancellationToken cancellationToken = default)
+    {
+        if (hierarchyIds == null || hierarchyIds.Count == 0)
+            return Array.Empty<Guid>();
+
+        return await _context.ContentHierarchies
+            .AsNoTracking()
+            .Where(ch => hierarchyIds.Contains(ch.HierarchyId))
+            .Select(ch => ch.ContentId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
     }
 }

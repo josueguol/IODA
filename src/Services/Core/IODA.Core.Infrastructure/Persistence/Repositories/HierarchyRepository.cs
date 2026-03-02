@@ -71,6 +71,30 @@ public class HierarchyRepository : IHierarchyRepository
         return ancestors;
     }
 
+    public async Task<IReadOnlyList<Guid>> GetDescendantIdsAsync(Guid hierarchyId, int maxDepth, CancellationToken cancellationToken = default)
+    {
+        var descendants = new HashSet<Guid>();
+        var frontier = new List<Guid> { hierarchyId };
+
+        for (var depth = 0; depth < maxDepth && frontier.Count > 0; depth++)
+        {
+            var childIds = await _context.Hierarchies
+                .AsNoTracking()
+                .Where(h => h.ParentHierarchyId.HasValue && frontier.Contains(h.ParentHierarchyId.Value))
+                .Select(h => h.Id)
+                .ToListAsync(cancellationToken);
+
+            frontier = [];
+            foreach (var childId in childIds)
+            {
+                if (descendants.Add(childId))
+                    frontier.Add(childId);
+            }
+        }
+
+        return descendants.ToList();
+    }
+
     public async Task<bool> ExistsWithSlugAsync(Guid projectId, string slug, Guid? excludeHierarchyId, CancellationToken cancellationToken = default)
     {
         var normalized = slug.Trim().ToLowerInvariant();
