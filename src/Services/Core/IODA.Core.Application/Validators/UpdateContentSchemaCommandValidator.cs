@@ -3,7 +3,7 @@ using IODA.Core.Application.Commands.Schemas;
 
 namespace IODA.Core.Application.Validators;
 
-public class CreateContentSchemaCommandValidator : AbstractValidator<CreateContentSchemaCommand>
+public class UpdateContentSchemaCommandValidator : AbstractValidator<UpdateContentSchemaCommand>
 {
     private static readonly HashSet<string> ReservedFieldSlugs = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -13,10 +13,13 @@ public class CreateContentSchemaCommandValidator : AbstractValidator<CreateConte
         "content-slug",
     };
 
-    public CreateContentSchemaCommandValidator()
+    public UpdateContentSchemaCommandValidator()
     {
         RuleFor(x => x.ProjectId)
             .NotEmpty().WithMessage("ProjectId is required.");
+
+        RuleFor(x => x.SchemaId)
+            .NotEmpty().WithMessage("SchemaId is required.");
 
         RuleFor(x => x.SchemaName)
             .NotEmpty().WithMessage("Schema name is required.")
@@ -25,15 +28,14 @@ public class CreateContentSchemaCommandValidator : AbstractValidator<CreateConte
         RuleFor(x => x.SchemaType)
             .NotEmpty().WithMessage("Schema type is required.")
             .MaximumLength(100).WithMessage("Schema type must not exceed 100 characters.")
-            .Matches("^[a-z][a-z0-9_-]*$").WithMessage("Schema type must be lowercase alphanumeric with underscores or hyphens (e.g. article, blog_post, video-article).");
+            .Matches("^[a-z][a-z0-9_-]*$").WithMessage("Schema type must be lowercase alphanumeric with underscores or hyphens.");
 
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Description must not exceed 500 characters.")
             .When(x => x.Description != null);
 
         RuleFor(x => x.Fields)
-            .NotEmpty().WithMessage("Schema must have at least one field.")
-            .Must(f => f.Count > 0).WithMessage("Schema must have at least one field.");
+            .NotEmpty().WithMessage("Schema must have at least one field.");
 
         RuleForEach(x => x.Fields).ChildRules(field =>
         {
@@ -58,12 +60,15 @@ public class CreateContentSchemaCommandValidator : AbstractValidator<CreateConte
         RuleFor(x => x.Fields)
             .Must(fields =>
             {
-                var slugs = fields.Where(f => !string.IsNullOrWhiteSpace(f.Slug)).Select(f => f.Slug!.Trim().ToLowerInvariant()).ToList();
+                var slugs = fields
+                    .Where(f => !string.IsNullOrWhiteSpace(f.Slug))
+                    .Select(f => f.Slug.Trim().ToLowerInvariant())
+                    .ToList();
                 return slugs.Count == slugs.Distinct().Count();
             })
             .WithMessage("Field slugs must be unique within the schema.");
 
-        RuleFor(x => x.CreatedBy)
-            .NotEmpty().WithMessage("CreatedBy is required.");
+        RuleFor(x => x.UpdatedBy)
+            .NotEmpty().WithMessage("UpdatedBy is required.");
     }
 }

@@ -22,6 +22,8 @@ export interface DynamicFormProps {
   submitLabel?: string
 }
 
+const RESERVED_NATIVE_FIELD_SLUGS = new Set(['title', 'slug', 'content-title', 'content-slug'])
+
 /** Resuelve el schema por projectId/schemaId, construye formulario dinámico y envía valores al submit. */
 export function DynamicForm({
   projectId,
@@ -39,11 +41,8 @@ export function DynamicForm({
     }
   }, [projectId, schemaId, schema, loadSchema])
 
-  // Combine inherited fields (from parent schema) with own fields
   const allFields = useMemo(() => {
-    const inherited = schema?.inheritedFields ?? []
-    const own = schema?.fields ?? []
-    return [...inherited, ...own]
+    return (schema?.fields ?? []).filter((f) => !RESERVED_NATIVE_FIELD_SLUGS.has((f.slug ?? '').toLowerCase()))
   }, [schema])
 
   const zodSchema = useMemo(() => {

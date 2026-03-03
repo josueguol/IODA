@@ -18,42 +18,6 @@ public class GetSchemaByIdQueryHandler : IRequestHandler<GetSchemaByIdQuery, Con
     {
         var schema = await _schemaRepository.GetByIdAsync(request.SchemaId, cancellationToken);
         if (schema is null) return null;
-
-        // Resolve inherited fields from parent chain
-        List<FieldDefinitionDto>? inheritedFields = null;
-        if (schema.ParentSchemaId.HasValue)
-        {
-            inheritedFields = new List<FieldDefinitionDto>();
-            var visited = new HashSet<Guid> { schema.Id };
-            var currentParentId = schema.ParentSchemaId;
-
-            while (currentParentId.HasValue)
-            {
-                if (!visited.Add(currentParentId.Value))
-                    break; // Circular reference protection
-
-                var parent = await _schemaRepository.GetByIdAsync(currentParentId.Value, cancellationToken);
-                if (parent is null) break;
-
-                // Add parent fields that don't conflict with already collected fields
-                var existingFieldNames = inheritedFields
-                    .Select(f => f.Slug)
-                    .Concat(schema.Fields.Select(f => f.Slug))
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var field in parent.Fields.OrderBy(f => f.DisplayOrder))
-                {
-                    if (!existingFieldNames.Contains(field.Slug))
-                    {
-                        inheritedFields.Add(field.ToDto());
-                        existingFieldNames.Add(field.Slug);
-                    }
-                }
-
-                currentParentId = parent.ParentSchemaId;
-            }
-        }
-
-        return schema.ToDto(inheritedFields);
+        return schema.ToDto(null);
     }
 }

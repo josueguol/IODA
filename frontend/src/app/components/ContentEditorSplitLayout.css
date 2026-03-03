@@ -1,0 +1,20 @@
+.content-editor-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.content-editor-split__left,
+.content-editor-split__right {
+  background: var(--page-bg-elevated);
+  border: 1px solid var(--page-border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .content-editor-split {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,50 +1,99 @@
-/* CreateContentPage */
 .create-content-page {
-  max-width: 640px;
   color: var(--page-text);
+}
+
+.create-content-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .create-content-page__title {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: var(--page-text);
+  margin: 0;
   font-size: 1.5rem;
+  color: var(--page-text);
 }
 
-.create-content-page__selector {
-  margin-bottom: 1.5rem;
+.create-content-page__back-link {
+  color: var(--cms-primary);
+  text-decoration: none;
+  font-weight: 600;
 }
 
+.create-content-page__back-link:hover,
+.create-content-page__inline-link:hover {
+  text-decoration: underline;
+}
+
+.create-content-page__inline-link {
+  color: var(--cms-primary);
+  text-decoration: none;
+}
+
+.create-content-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.create-content-page__fields-panel,
+.create-content-page__properties-panel {
+  background: var(--page-bg-elevated);
+  border: 1px solid var(--page-border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.create-content-page__section-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+}
+
+.create-content-page__label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--page-text);
+}
+
+.create-content-page__input,
 .create-content-page__select {
+  width: 100%;
   padding: 0.5rem;
   font-size: 0.875rem;
-  min-width: 220px;
   border-radius: 4px;
   border: 1px solid var(--input-border);
   color: var(--input-text);
   background: var(--input-bg);
+  margin-bottom: 0.9rem;
+  box-sizing: border-box;
+}
+
+.create-content-page__dynamic-form {
+  margin-top: 0.75rem;
+}
+
+.create-content-page__site-url-item {
+  margin-bottom: 0.25rem;
 }
 
 .create-content-page__hint {
   color: var(--page-text-muted);
   font-size: 0.875rem;
-  margin-top: 0.5rem;
-}
-
-.create-content-page__input {
-  width: 100%;
-  max-width: 400px;
-  padding: 0.5rem;
-  font-size: 0.875rem;
-  border-radius: 4px;
-  border: 1px solid var(--input-border);
-  color: var(--input-text);
-  background: var(--input-bg);
-  margin-bottom: 1rem;
-  box-sizing: border-box;
 }
 
 .create-content-page__error {
   color: #dc3545;
   margin-bottom: 0.5rem;
+}
+
+@media (max-width: 1024px) {
+  .create-content-page__layout {
+    grid-template-columns: 1fr;
+  }
 }

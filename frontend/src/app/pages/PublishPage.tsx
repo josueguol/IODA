@@ -144,7 +144,7 @@ export function PublishPage() {
                   <tr key={req.id}>
                     <td className="publish-page__td">
                       <Link
-                        to={currentProjectId ? `/content/${req.contentId}/edit` : '#'}
+                        to={currentProjectId ? `/content/editor?contentId=${req.contentId}` : '#'}
                         className="publish-page__link"
                       >
                         {req.contentId.slice(0, 8)}…

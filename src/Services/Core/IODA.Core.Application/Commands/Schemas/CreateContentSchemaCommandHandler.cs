@@ -1,6 +1,5 @@
 using IODA.Core.Application.Interfaces;
 using IODA.Core.Domain.Entities;
-using IODA.Core.Domain.Exceptions;
 using IODA.Core.Domain.Repositories;
 using IODA.Shared.Contracts.Events.V1;
 using MediatR;
@@ -24,16 +23,6 @@ public class CreateContentSchemaCommandHandler : IRequestHandler<CreateContentSc
         if (exists)
         {
             throw new InvalidOperationException($"Schema type '{request.SchemaType}' already exists for this project.");
-        }
-
-        // Validate parent schema exists if specified
-        if (request.ParentSchemaId.HasValue)
-        {
-            var parentExists = await _unitOfWork.Schemas.ExistsAsync(request.ParentSchemaId.Value, cancellationToken);
-            if (!parentExists)
-            {
-                throw new SchemaNotFoundException(request.ParentSchemaId.Value);
-            }
         }
 
         var fieldDefinitions = request.Fields
@@ -60,7 +49,7 @@ public class CreateContentSchemaCommandHandler : IRequestHandler<CreateContentSc
             request.Description,
             fieldDefinitions,
             request.CreatedBy,
-            request.ParentSchemaId,
+            null,
             allowedRules);
 
         await _unitOfWork.Schemas.AddAsync(schema, cancellationToken);

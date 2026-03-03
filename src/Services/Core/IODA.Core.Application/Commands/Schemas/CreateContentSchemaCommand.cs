@@ -10,5 +10,4 @@ public record CreateContentSchemaCommand(
     string? Description,
     List<CreateSchemaFieldDto> Fields,
     Guid CreatedBy,
-    Guid? ParentSchemaId = null,
     IReadOnlyList<AllowedBlockTypeRuleDto>? AllowedBlockTypes = null) : IRequest<Guid>;

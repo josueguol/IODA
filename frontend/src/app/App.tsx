@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { config } from '../config/env'
 import { useAuthStore } from '../modules/auth/store/auth-store'
 import { LoginPage } from '../modules/auth/pages/LoginPage'
@@ -12,14 +12,22 @@ import { HomePage } from './pages/HomePage'
 import { ForbiddenPage } from './pages/ForbiddenPage'
 import { PublishPage } from './pages/PublishPage'
 import { ContentListPage } from './pages/ContentListPage'
+import { CreateContentPage } from './pages/CreateContentPage'
 import { EditContentPage } from './pages/EditContentPage'
 import { SearchPage } from './pages/SearchPage'
 import { SitesPage } from './pages/SitesPage'
 import { RolesPermissionsPage } from './pages/RolesPermissionsPage'
 import { SchemaDesignerPage } from './pages/SchemaDesignerPage'
+import { SchemaListPage } from './pages/SchemaListPage'
 import { HierarchiesPage } from './pages/HierarchiesPage'
 import { TagsPage } from './pages/TagsPage'
 import { UsersPage } from './pages/UsersPage'
+
+function LegacyContentEditRedirect() {
+  const { contentId } = useParams<{ contentId: string }>()
+  if (!contentId) return <Navigate to="/content" replace />
+  return <Navigate to={`/content/editor?contentId=${encodeURIComponent(contentId)}`} replace />
+}
 
 function AppRoutes() {
   return (
@@ -49,9 +57,21 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="/content/new" element={<Navigate to="/content" replace />} />
+      <Route path="/content/new" element={<Navigate to="/content/create" replace />} />
       <Route
-        path="/content/:contentId/edit"
+        path="/content/create"
+        element={
+          <ProtectedRoute>
+            <RequireFullContext>
+              <AppLayout>
+                <CreateContentPage />
+              </AppLayout>
+            </RequireFullContext>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/editor"
         element={
           <ProtectedRoute>
             <RequireFullContext>
@@ -62,6 +82,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/content/:contentId/edit" element={<LegacyContentEditRedirect />} />
       <Route
         path="/dashboard"
         element={
@@ -136,6 +157,18 @@ function AppRoutes() {
       />
       <Route
         path="/admin/schemas"
+        element={
+          <ProtectedRoute>
+            <RequireFullContext>
+              <AppLayout>
+                <SchemaListPage />
+              </AppLayout>
+            </RequireFullContext>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/schemas/design"
         element={
           <ProtectedRoute>
             <RequireFullContext>

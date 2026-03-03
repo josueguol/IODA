@@ -115,6 +115,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isActive = (path: string, exact: boolean) =>
     exact ? location.pathname === path : location.pathname.startsWith(path)
+  const isAdminMode =
+    location.pathname === '/sites' ||
+    location.pathname.startsWith('/admin/schemas') ||
+    location.pathname === '/admin/hierarchies' ||
+    location.pathname === '/admin/tags'
 
   return (
     <div className="app-layout">
@@ -152,6 +157,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             icon={<Settings size={ICON_SIZE} strokeWidth={2} />}
             triggerClass="app-layout__dropdown-trigger--top"
           >
+            <Link to="/" className="app-layout__dropdown-item" role="menuitem">
+              Dashboard
+            </Link>
+            <div className="app-layout__dropdown-sep" />
             <Link to="/admin/schemas" className="app-layout__dropdown-item" role="menuitem">
               Schemas
             </Link>
@@ -243,35 +252,87 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="app-layout__tabs">
         {hasFullContext && (
           <nav className="app-layout__tablist" role="tablist" aria-label="Pestañas principales">
-            <Link
-              to="/"
-              role="tab"
-              aria-selected={isActive('/', true)}
-              aria-current={isActive('/', true) ? 'page' : undefined}
-              className={`app-layout__tab ${isActive('/', true) ? 'app-layout__tab--active' : ''}`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/content"
-              role="tab"
-              aria-selected={isActive('/content', false)}
-              aria-current={isActive('/content', false) ? 'page' : undefined}
-              className={`app-layout__tab ${isActive('/content', false) ? 'app-layout__tab--active' : ''}`}
-            >
-              Contenido
-            </Link>
-            <Can permission="content.publish">
-              <Link
-                to="/publish"
-                role="tab"
-                aria-selected={isActive('/publish', true)}
-                aria-current={isActive('/publish', true) ? 'page' : undefined}
-                className={`app-layout__tab ${isActive('/publish', true) ? 'app-layout__tab--active' : ''}`}
-              >
-                Publicar
-              </Link>
-            </Can>
+            {isAdminMode ? (
+              <>
+                <Link
+                  to="/"
+                  role="tab"
+                  aria-selected={isActive('/', true)}
+                  aria-current={isActive('/', true) ? 'page' : undefined}
+                  className={`app-layout__tab ${isActive('/', true) ? 'app-layout__tab--active' : ''}`}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/sites"
+                  role="tab"
+                  aria-selected={isActive('/sites', true)}
+                  aria-current={isActive('/sites', true) ? 'page' : undefined}
+                  className={`app-layout__tab ${isActive('/sites', true) ? 'app-layout__tab--active' : ''}`}
+                >
+                  Configuración de sitio
+                </Link>
+                <Link
+                  to="/admin/schemas"
+                  role="tab"
+                  aria-selected={isActive('/admin/schemas', false)}
+                  aria-current={isActive('/admin/schemas', false) ? 'page' : undefined}
+                  className={`app-layout__tab ${isActive('/admin/schemas', false) ? 'app-layout__tab--active' : ''}`}
+                >
+                  Schemas
+                </Link>
+                <Link
+                  to="/admin/hierarchies"
+                  role="tab"
+                  aria-selected={isActive('/admin/hierarchies', true)}
+                  aria-current={isActive('/admin/hierarchies', true) ? 'page' : undefined}
+                  className={`app-layout__tab ${isActive('/admin/hierarchies', true) ? 'app-layout__tab--active' : ''}`}
+                >
+                  Jerarquías
+                </Link>
+                <Link
+                  to="/admin/tags"
+                  role="tab"
+                  aria-selected={isActive('/admin/tags', true)}
+                  aria-current={isActive('/admin/tags', true) ? 'page' : undefined}
+                  className={`app-layout__tab ${isActive('/admin/tags', true) ? 'app-layout__tab--active' : ''}`}
+                >
+                  Etiquetas
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/"
+                  role="tab"
+                  aria-selected={isActive('/', true)}
+                  aria-current={isActive('/', true) ? 'page' : undefined}
+                  className={`app-layout__tab ${isActive('/', true) ? 'app-layout__tab--active' : ''}`}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/content"
+                  role="tab"
+                  aria-selected={isActive('/content', false)}
+                  aria-current={isActive('/content', false) ? 'page' : undefined}
+                  className={`app-layout__tab ${isActive('/content', false) ? 'app-layout__tab--active' : ''}`}
+                >
+                  Contenido
+                </Link>
+                <Can permission="content.publish">
+                  <Link
+                    to="/publish"
+                    role="tab"
+                    aria-selected={isActive('/publish', true)}
+                    aria-current={isActive('/publish', true) ? 'page' : undefined}
+                    className={`app-layout__tab ${isActive('/publish', true) ? 'app-layout__tab--active' : ''}`}
+                  >
+                    Publicar
+                  </Link>
+                </Can>
+              </>
+            )}
           </nav>
         )}
       </div>

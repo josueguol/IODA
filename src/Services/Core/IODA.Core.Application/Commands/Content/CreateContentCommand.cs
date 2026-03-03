@@ -6,7 +6,6 @@ public record CreateContentCommand(
     Guid ProjectId,
     Guid EnvironmentId,
     Guid? SiteId,
-    Guid? ParentContentId,
     Guid SchemaId,
     string Title,
     string? Slug,

@@ -11,7 +11,7 @@ export function HomeDashboard() {
           <span className="home__widget-title">Contenido</span>
           <p className="home__widget-desc">Ver y gestionar las entradas de contenido.</p>
         </Link>
-        <Link to="/content/new" className="home__widget">
+        <Link to="/content/create" className="home__widget">
           <span className="home__widget-icon">&#10133;</span>
           <span className="home__widget-title">Crear contenido</span>
           <p className="home__widget-desc">Crear una nueva entrada de contenido.</p>

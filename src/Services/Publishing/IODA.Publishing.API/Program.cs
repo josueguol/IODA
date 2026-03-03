@@ -1,14 +1,12 @@
 using System.Net;
-using System.Text;
 using IODA.Publishing.Application;
 using IODA.Publishing.Application.Exceptions;
 using IODA.Publishing.Infrastructure;
 using IODA.Publishing.Domain.Exceptions;
 using IODA.Shared.Api;
+using IODA.Shared.Api.Extensions;
 using IODA.Shared.Api.Middleware;
 using IODA.Shared.BuildingBlocks.Domain;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 static (HttpStatusCode StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails Details)? MapPublishingException(Exception ex, IHostEnvironment? _)
@@ -83,47 +81,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-var jwtSecret = builder.Configuration["Jwt:SecretKey"];
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "ioda-cms";
-if (!string.IsNullOrEmpty(jwtSecret))
+builder.Services.AddAuthorization(options =>
 {
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtIssuer,
-                ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                ClockSkew = TimeSpan.Zero
-            };
-        });
-    builder.Services.AddAuthorization(options =>
-    {
-        // 2.4: policy por permiso (JWT incluye claim "permission" con códigos desde Identity)
-        options.AddPolicy("Editor", policy => policy.RequireClaim("permission", "content.publish"));
-    });
-}
-
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
-    allowedOrigins = new[] { "http://localhost:3000", "http://localhost:5173", "https://localhost:3000", "https://localhost:5173" };
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins(allowedOrigins)
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
+    // Policy legada usada por controladores actuales.
+    options.AddPolicy("Editor", policy => policy.RequireClaim("permission", "content.publish"));
+    // Alias explícito para consistencia con otras APIs.
+    options.AddPolicy("content.publish", policy => policy.RequireClaim("permission", "content.publish"));
 });
+builder.Services.AddDefaultCors(builder.Configuration, builder.Environment);
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 // 1.4: en no-Development, no arrancar sin configuración crítica
 if (!builder.Environment.IsDevelopment())

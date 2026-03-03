@@ -39,7 +39,6 @@ public class ContentController : ControllerBase
             projectId,
             request.EnvironmentId,
             request.SiteId,
-            request.ParentContentId,
             request.SchemaId,
             request.Title,
             request.Slug,
@@ -81,12 +80,11 @@ public class ContentController : ControllerBase
         [FromQuery] string? contentType = null,
         [FromQuery] string? status = null,
         [FromQuery] Guid? siteId = null,
-        [FromQuery] Guid? parentContentId = null,
         [FromQuery] Guid? sectionId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(
-            new ListContentByProjectQuery(projectId, page, pageSize, contentType, status, siteId, parentContentId, sectionId),
+            new ListContentByProjectQuery(projectId, page, pageSize, contentType, status, siteId, sectionId),
             cancellationToken);
         return Ok(result);
     }
@@ -113,7 +111,6 @@ public class ContentController : ControllerBase
             request.Slug,
             request.Fields,
             userId.Value,
-            request.ParentContentId,
             request.Order,
             request.TagIds,
             request.HierarchyIds,
@@ -292,7 +289,6 @@ public class ContentController : ControllerBase
 public record CreateContentRequest(
     Guid EnvironmentId,
     Guid? SiteId,
-    Guid? ParentContentId,
     Guid SchemaId,
     string Title,
     string? Slug,
@@ -309,7 +305,6 @@ public record UpdateContentRequest(
     string Title,
     string? Slug,
     Dictionary<string, object> Fields,
-    Guid? ParentContentId,
     int? Order = null,
     IReadOnlyList<Guid>? TagIds = null,
     IReadOnlyList<Guid>? HierarchyIds = null,
