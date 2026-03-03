@@ -9,6 +9,7 @@ import type {
   ContentSchemaListItem,
   ContentVersion,
   CreateSchemaRequest,
+  UpdateSchemaRequest,
   DefaultFieldSuggestionDto,
   Environment,
   Hierarchy,
@@ -134,6 +135,10 @@ export const coreApi = {
   createSchema: (projectId: string, body: CreateSchemaRequest) =>
     coreClient.post<string>(`api/projects/${projectId}/schemas`, body),
 
+  /** Actualiza un schema existente. PUT /api/projects/{projectId}/schemas/{schemaId} */
+  updateSchema: (projectId: string, schemaId: string, body: UpdateSchemaRequest) =>
+    coreClient.put<void>(`api/projects/${projectId}/schemas/${schemaId}`, body),
+
   // Content
   /** Lista contenido del proyecto (paginado). GET /api/projects/{projectId}/content */
   getContentList: (
@@ -144,7 +149,6 @@ export const coreApi = {
       contentType?: string
       status?: string
       siteId?: string
-      parentContentId?: string
       sectionId?: string
     }
   ) => {
@@ -154,7 +158,6 @@ export const coreApi = {
     if (params?.contentType) search.set('contentType', params.contentType)
     if (params?.status) search.set('status', params.status)
     if (params?.siteId) search.set('siteId', params.siteId)
-    if (params?.parentContentId) search.set('parentContentId', params.parentContentId)
     if (params?.sectionId) search.set('sectionId', params.sectionId)
     const q = search.toString()
     return coreClient.get<PagedResult<ContentListItem>>(
@@ -195,7 +198,6 @@ export const coreApi = {
     body: {
       environmentId: string
       siteId?: string | null
-      parentContentId?: string | null
       schemaId: string
       title: string
       slug?: string | null
@@ -219,7 +221,6 @@ export const coreApi = {
       title: string
       slug?: string | null
       fields: Record<string, unknown>
-      parentContentId?: string | null
       /** Orden entre hermanos. */
       order?: number | null
       tagIds?: string[] | null

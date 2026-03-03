@@ -79,7 +79,7 @@ export function SearchPage() {
                 <div key={`${item.contentId}-${item.versionId}`} className="search-page__result-item">
                   <h3 className="search-page__result-title">
                     <Link
-                      to={currentProjectId ? `/content/${item.contentId}/edit` : '#'}
+                      to={currentProjectId ? `/content/editor?contentId=${item.contentId}` : '#'}
                       className="search-page__link"
                     >
                       {item.title}

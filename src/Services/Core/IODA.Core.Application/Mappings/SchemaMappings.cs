@@ -14,7 +14,7 @@ public static class SchemaMappings
             schema.SchemaName,
             schema.SchemaType,
             schema.Description,
-            schema.ParentSchemaId,
+            null,
             schema.SchemaVersion,
             schema.IsActive,
             schema.CreatedAt,
@@ -32,7 +32,7 @@ public static class SchemaMappings
             schema.PublicId.FullId,
             schema.SchemaName,
             schema.SchemaType,
-            schema.ParentSchemaId,
+            null,
             schema.SchemaVersion,
             schema.IsActive,
             schema.AllowedBlockTypes.Select(r => new AllowedBlockTypeRuleDto(r.BlockType, r.MinOccurrences, r.MaxOccurrences)).ToList());

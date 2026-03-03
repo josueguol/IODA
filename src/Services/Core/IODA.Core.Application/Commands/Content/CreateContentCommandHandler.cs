@@ -46,22 +46,13 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
             }
         }
 
-        if (request.ParentContentId.HasValue)
-        {
-            var parent = await _unitOfWork.Contents.GetByIdAsync(request.ParentContentId.Value, cancellationToken);
-            if (parent == null)
-                throw new ContentNotFoundException(request.ParentContentId.Value);
-            if (parent.ProjectId != request.ProjectId || parent.EnvironmentId != request.EnvironmentId)
-                throw new ArgumentException("Parent content must belong to the same project and environment.", nameof(request.ParentContentId));
-        }
-
-        var order = request.Order ?? await _unitOfWork.Contents.GetNextOrderForParentAsync(request.ParentContentId, cancellationToken);
+        var order = request.Order ?? await _unitOfWork.Contents.GetNextOrderForParentAsync(null, cancellationToken);
         var fields = request.Fields ?? new Dictionary<string, object>();
         var content = Domain.Entities.Content.Create(
             request.ProjectId,
             request.EnvironmentId,
             request.SiteId,
-            request.ParentContentId,
+            null,
             order,
             request.SchemaId,
             request.Title,

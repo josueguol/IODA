@@ -1,6 +1,5 @@
 /* EditContentPage */
 .edit-content-page {
-  max-width: 640px;
   color: var(--page-text);
 }
 
@@ -13,20 +12,35 @@
   gap: 0.5rem;
 }
 
+.edit-content-page__page-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.edit-content-page__back-link {
+  color: var(--cms-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
 .edit-content-page__title-label {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--page-text);
+  display: block;
+  margin-bottom: 0.35rem;
 }
 
 .edit-content-page__title-input {
   width: 100%;
-  max-width: 400px;
+  margin-bottom: 0.9rem;
   padding: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: 1px solid #ccc;
+  font-size: 0.875rem;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   box-sizing: border-box;
+  color: var(--input-text);
+  background: var(--input-bg);
 }
 
 .edit-content-page__status {
@@ -50,12 +64,18 @@
 }
 
 .edit-content-page__order-input {
-  width: 80px;
-  margin-left: 0.5rem;
+  width: 100%;
   padding: 0.35rem;
   font-size: 0.875rem;
   border: 1px solid var(--input-border);
   border-radius: 4px;
+  color: var(--input-text);
+  background: var(--input-bg);
+  box-sizing: border-box;
+}
+
+.edit-content-page__order-input--full {
+  margin-bottom: 0.65rem;
 }
 
 .edit-content-page__error {
@@ -107,11 +127,9 @@
 }
 
 .edit-content-page__link {
-  color: #0d6efd;
-  text-decoration: none;
-  margin-left: 0.5rem;
+  margin-left: 0.6rem;
   font-size: 0.875rem;
-  color: #666;
+  color: var(--page-text-muted);
 }
 
 .edit-content-page__link a {

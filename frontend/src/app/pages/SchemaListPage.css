@@ -1,0 +1,20 @@
+.schema-list-page {
+  color: var(--page-text);
+}
+
+.schema-list-page__title {
+  margin: 0;
+}
+
+.schema-list-page__hint {
+  margin-top: 0.35rem;
+  color: var(--page-text-muted);
+}
+
+.schema-list-page__error {
+  color: #dc3545;
+}
+
+.schema-list-page .work-area {
+  margin-top: 0.75rem;
+}

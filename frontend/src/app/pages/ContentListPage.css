@@ -20,6 +20,24 @@
   color: var(--page-text);
 }
 
+.content-list-page__create-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--cms-primary);
+  color: #fff;
+  background: var(--cms-primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.content-list-page__create-link:hover {
+  opacity: 0.92;
+}
+
 /* Schema cards */
 .content-list-page__schema-section {
   margin-bottom: 1.5rem;
@@ -54,6 +72,8 @@
   gap: 0.4rem;
   min-height: 90px;
   position: relative;
+  text-decoration: none;
+  color: var(--page-text);
 }
 
 .content-list-page__schema-card:hover {

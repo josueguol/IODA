@@ -41,13 +41,41 @@ public class SchemasController : ControllerBase
             request.Description,
             request.Fields,
             request.CreatedBy,
-            request.ParentSchemaId,
             allowedBlockTypes);
         var id = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { projectId, schemaId = id }, id);
     }
 
-    /// <summary>Campos sugeridos al crear un nuevo schema (title, teaser, image, content). Son editables y eliminables antes de guardar.</summary>
+    /// <summary>Actualizar schema de contenido existente.</summary>
+    [HttpPut("{schemaId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(
+        Guid projectId,
+        Guid schemaId,
+        [FromBody] UpdateSchemaRequest request,
+        CancellationToken cancellationToken)
+    {
+        var allowedBlockTypes = request.AllowedBlockTypes?
+            .Select(r => new AllowedBlockTypeRuleDto(r.BlockType, r.MinOccurrences, r.MaxOccurrences))
+            .ToList();
+
+        var command = new UpdateContentSchemaCommand(
+            projectId,
+            schemaId,
+            request.SchemaName,
+            request.SchemaType,
+            request.Description,
+            request.Fields,
+            request.UpdatedBy,
+            allowedBlockTypes);
+
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>Campos sugeridos al crear un nuevo schema (teaser, content). Son editables y eliminables antes de guardar.</summary>
     [HttpGet("default-fields")]
     [ProducesResponseType(typeof(IReadOnlyList<DefaultFieldSuggestionDto>), StatusCodes.Status200OK)]
     public ActionResult<IReadOnlyList<DefaultFieldSuggestionDto>> GetDefaultFields(Guid projectId)
@@ -98,5 +126,12 @@ public record CreateSchemaRequest(
     string? Description,
     List<CreateSchemaFieldDto> Fields,
     Guid CreatedBy,
-    Guid? ParentSchemaId = null,
+    List<AllowedBlockTypeRuleRequest>? AllowedBlockTypes = null);
+
+public record UpdateSchemaRequest(
+    string SchemaName,
+    string SchemaType,
+    string? Description,
+    List<UpdateSchemaFieldDto> Fields,
+    Guid UpdatedBy,
     List<AllowedBlockTypeRuleRequest>? AllowedBlockTypes = null);

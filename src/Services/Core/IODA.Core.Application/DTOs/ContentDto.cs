@@ -11,7 +11,6 @@ public record ContentDto(
     Guid ProjectId,
     Guid EnvironmentId,
     Guid? SiteId,
-    Guid? ParentContentId,
     int Order,
     Guid SchemaId,
     string Title,
@@ -41,7 +40,6 @@ public record ContentListItemDto(
     string Status,
     string ContentType,
     Guid? SiteId,
-    Guid? ParentContentId,
     int Order,
     DateTime CreatedAt,
     DateTime? PublishedAt);

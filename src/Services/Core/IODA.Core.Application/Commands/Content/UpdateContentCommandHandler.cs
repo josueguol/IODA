@@ -43,18 +43,8 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
                 .ToList());
         }
 
-        if (request.ParentContentId.HasValue)
-        {
-            var parent = await _unitOfWork.Contents.GetByIdAsync(request.ParentContentId.Value, cancellationToken);
-            if (parent == null)
-                throw new ContentNotFoundException(request.ParentContentId.Value);
-            if (parent.ProjectId != content.ProjectId || parent.EnvironmentId != content.EnvironmentId)
-                throw new InvalidOperationException("Parent content must belong to the same project and environment.");
-            var ancestorIds = await _unitOfWork.Contents.GetAncestorIdsAsync(request.ParentContentId.Value, maxDepth: 50, cancellationToken);
-            if (ancestorIds.Contains(content.Id))
-                throw new InvalidOperationException("Setting this parent would create a circular reference.");
-            content.SetParent(request.ParentContentId);
-        }
+        // Parent content relationship is disabled. Existing content remains root-level.
+        content.SetParent(null);
 
         if (request.Order.HasValue)
         {

@@ -93,15 +93,12 @@ export interface ContentSchema {
   schemaName: string
   schemaType: string
   description: string | null
-  parentSchemaId: string | null
   schemaVersion: number
   isActive: boolean
   createdAt: string
   updatedAt: string | null
   createdBy: string
   fields: FieldDefinition[]
-  /** Campos heredados del schema padre (resueltos por el backend). */
-  inheritedFields: FieldDefinition[] | null
   /** Tipos de bloque permitidos en contenidos con este schema. Vacío = no se permiten bloques. */
   allowedBlockTypes: AllowedBlockTypeRule[]
 }
@@ -111,7 +108,6 @@ export interface ContentSchemaListItem {
   publicId: string
   schemaName: string
   schemaType: string
-  parentSchemaId: string | null
   schemaVersion: number
   isActive: boolean
   allowedBlockTypes: AllowedBlockTypeRule[]
@@ -119,6 +115,18 @@ export interface ContentSchemaListItem {
 
 /** Campo para crear schema. POST /api/projects/{projectId}/schemas */
 export interface CreateSchemaFieldDto {
+  label: string
+  slug: string
+  fieldType: string
+  isRequired?: boolean
+  defaultValue?: unknown
+  helpText?: string | null
+  validationRules?: Record<string, unknown> | null
+  displayOrder?: number
+}
+
+export interface UpdateSchemaFieldDto {
+  id?: string | null
   label: string
   slug: string
   fieldType: string
@@ -143,8 +151,16 @@ export interface CreateSchemaRequest {
   description?: string | null
   fields: CreateSchemaFieldDto[]
   createdBy: string
-  parentSchemaId?: string | null
   /** Tipos de bloque permitidos (opcional). Vacío o ausente = no se permiten bloques. */
+  allowedBlockTypes?: AllowedBlockTypeRule[] | null
+}
+
+export interface UpdateSchemaRequest {
+  schemaName: string
+  schemaType: string
+  description?: string | null
+  fields: UpdateSchemaFieldDto[]
+  updatedBy: string
   allowedBlockTypes?: AllowedBlockTypeRule[] | null
 }
 
@@ -164,7 +180,6 @@ export interface Content {
   projectId: string
   environmentId: string
   siteId: string | null
-  parentContentId: string | null
   /** Orden entre hermanos (hijos del mismo padre). 0-based. */
   order: number
   schemaId: string
@@ -214,7 +229,6 @@ export interface ContentListItem {
   status: string
   contentType: string
   siteId: string | null
-  parentContentId: string | null
   /** Orden entre hermanos (hijos del mismo padre). 0-based. */
   order: number
   createdAt: string

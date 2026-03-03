@@ -4,9 +4,9 @@ import type { Content, ContentBlock, ContentSchema } from '../../../modules/core
 import './ContentBlocksSection.css'
 
 const ALL_BLOCK_TYPES = [
-  { value: 'hero', label: 'Hero' },
-  { value: 'text', label: 'Texto' },
-  { value: 'image', label: 'Imagen' },
+  { value: 'theme_component', label: 'Componente de tema' },
+  { value: 'dynamic_content_list', label: 'Listado dinámico' },
+  { value: 'embed', label: 'Embed' },
 ] as const
 
 export interface ContentBlocksSectionProps {

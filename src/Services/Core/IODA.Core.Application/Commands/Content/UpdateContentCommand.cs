@@ -9,7 +9,6 @@ public record UpdateContentCommand(
     string? Slug,
     Dictionary<string, object> Fields,
     Guid UpdatedBy,
-    Guid? ParentContentId = null,
     int? Order = null,
     IReadOnlyList<Guid>? TagIds = null,
     IReadOnlyList<Guid>? HierarchyIds = null,

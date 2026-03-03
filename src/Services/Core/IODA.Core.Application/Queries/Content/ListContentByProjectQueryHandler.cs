@@ -38,11 +38,6 @@ public class ListContentByProjectQueryHandler : IRequestHandler<ListContentByPro
             query = query.Where(c => c.Status.Value == request.Status);
         }
 
-        if (request.ParentContentId.HasValue)
-        {
-            query = query.Where(c => c.ParentContentId == request.ParentContentId.Value);
-        }
-
         if (request.SectionId.HasValue)
         {
             var descendantIds = await _hierarchyRepository.GetDescendantIdsAsync(request.SectionId.Value, maxDepth: 50, cancellationToken);

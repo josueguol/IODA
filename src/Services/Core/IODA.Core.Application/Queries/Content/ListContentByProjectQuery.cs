@@ -10,5 +10,4 @@ public record ListContentByProjectQuery(
     string? ContentType = null,
     string? Status = null,
     Guid? SiteId = null,
-    Guid? ParentContentId = null,
     Guid? SectionId = null) : IRequest<PagedResultDto<ContentListItemDto>>;

@@ -171,6 +171,44 @@ public class ContentSchema : AggregateRoot<Guid>
         RaiseDomainEvent(new SchemaUpdatedDomainEvent(Id, SchemaName, SchemaVersion));
     }
 
+    public void UpdateDefinition(
+        string schemaName,
+        string? description,
+        List<FieldDefinition> fields,
+        IReadOnlyList<AllowedBlockTypeRule>? allowedBlockTypes = null)
+    {
+        if (string.IsNullOrWhiteSpace(schemaName))
+            throw new ArgumentException("Schema name cannot be empty", nameof(schemaName));
+        if (fields == null || fields.Count == 0)
+            throw new ArgumentException("Schema must have at least one field", nameof(fields));
+
+        var duplicateSlugs = fields
+            .GroupBy(f => f.Slug, StringComparer.OrdinalIgnoreCase)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+        if (duplicateSlugs.Count > 0)
+            throw new InvalidOperationException($"Duplicate field slugs are not allowed: {string.Join(", ", duplicateSlugs)}");
+
+        SchemaName = schemaName;
+        Description = description;
+
+        _fields.Clear();
+        foreach (var field in fields.OrderBy(f => f.DisplayOrder))
+        {
+            field.SetSchemaId(Id);
+            _fields.Add(field);
+        }
+
+        _allowedBlockTypes.Clear();
+        if (allowedBlockTypes is not null)
+            _allowedBlockTypes.AddRange(allowedBlockTypes);
+
+        SchemaVersion++;
+        UpdatedAt = DateTime.UtcNow;
+        RaiseDomainEvent(new SchemaUpdatedDomainEvent(Id, SchemaName, SchemaVersion));
+    }
+
     public void Deactivate()
     {
         IsActive = false;
@@ -243,11 +281,11 @@ public class FieldDefinition : Entity<Guid>
         SchemaId = schemaId;
     }
 
-    /// <summary>Kebab-case: lowercase, hyphens, no spaces. Regex: ^[a-z0-9]+(-[a-z0-9]+)*$</summary>
+    /// <summary>Slug format: lowercase, numbers, hyphen or underscore separators.</summary>
     public static bool IsValidSlugFormat(string slug)
     {
         if (string.IsNullOrWhiteSpace(slug)) return false;
-        return System.Text.RegularExpressions.Regex.IsMatch(slug, @"^[a-z0-9]+(-[a-z0-9]+)*$");
+        return System.Text.RegularExpressions.Regex.IsMatch(slug, @"^[a-z0-9]+(?:[-_][a-z0-9]+)*$");
     }
 
     /// <summary>Convert label to slug (kebab-case). Non-alphanumeric to hyphen; collapse hyphens; lowercase.</summary>
@@ -267,22 +305,23 @@ public class FieldDefinition : Entity<Guid>
         object? defaultValue = null,
         string? helpText = null,
         Dictionary<string, object>? validationRules = null,
-        int displayOrder = 0)
+        int displayOrder = 0,
+        Guid? id = null)
     {
         if (string.IsNullOrWhiteSpace(label))
             throw new ArgumentException("Field label cannot be empty", nameof(label));
         if (string.IsNullOrWhiteSpace(slug))
             throw new ArgumentException("Field slug cannot be empty", nameof(slug));
         if (!IsValidSlugFormat(slug))
-            throw new ArgumentException("Slug must be kebab-case (lowercase letters, numbers, hyphens only).", nameof(slug));
+            throw new ArgumentException("Slug must use lowercase letters, numbers, hyphen or underscore.", nameof(slug));
         if (string.IsNullOrWhiteSpace(fieldType))
             throw new ArgumentException("Field type cannot be empty", nameof(fieldType));
 
-        var id = Guid.NewGuid();
+        var fieldId = id ?? Guid.NewGuid();
         var fieldName = slug;
 
         return new FieldDefinition(
-            id,
+            fieldId,
             schemaId,
             fieldName,
             label,

@@ -23,7 +23,6 @@ public static class ContentMappings
             content.ProjectId,
             content.EnvironmentId,
             content.SiteId,
-            content.ParentContentId,
             content.Order,
             content.SchemaId,
             content.Title,
@@ -56,7 +55,6 @@ public static class ContentMappings
             content.Status.Value,
             content.ContentType,
             content.SiteId,
-            content.ParentContentId,
             content.Order,
             content.CreatedAt,
             content.PublishedAt);

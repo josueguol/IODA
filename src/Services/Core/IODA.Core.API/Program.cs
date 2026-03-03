@@ -104,7 +104,10 @@ builder.Services.AddAuthorization(options =>
             ctx.User.HasClaim("permission", "project.edit") ||
             ctx.User.HasClaim("permission", "project.create")));
     options.AddPolicy("schema.edit", policy => policy.RequireClaim("permission", "schema.edit"));
-    options.AddPolicy("site.edit", policy => policy.RequireClaim("permission", "site.edit"));
+    options.AddPolicy("site.edit", policy => policy
+        .RequireAssertion(ctx =>
+            ctx.User.IsInRole("SuperAdmin") ||
+            ctx.User.HasClaim("permission", "site.edit")));
 });
 
 // 1.4: en no-Development, no arrancar sin configuración crítica
