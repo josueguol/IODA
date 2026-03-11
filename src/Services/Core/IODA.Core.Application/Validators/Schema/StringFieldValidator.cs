@@ -5,10 +5,10 @@ using IODA.Core.Domain.Entities;
 
 namespace IODA.Core.Application.Validators.Schema;
 
-/// <summary>Valida campos de tipo string, text y richtext (minLength, maxLength, pattern).</summary>
+/// <summary>Valida campos de tipo string, text y formattedtext (minLength, maxLength, pattern).</summary>
 public sealed class StringFieldValidator : IFieldValidator
 {
-    private static readonly string[] Types = { "string", "text", "richtext" };
+    private static readonly string[] Types = { "string", "text", "formattedtext" };
 
     public bool CanValidate(string fieldType) =>
         Types.Contains(fieldType.Trim().ToLowerInvariant());

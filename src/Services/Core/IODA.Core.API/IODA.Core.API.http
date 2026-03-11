@@ -35,7 +35,7 @@ Content-Type: application/json
   "fields": [
     {
       "fieldName": "body",
-      "fieldType": "RichText",
+      "fieldType": "richtexteditor",
       "isRequired": true,
       "displayOrder": 0
     },

@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
 
         // Validadores de esquema por tipo (orden: específicos primero, Default al final como fallback)
+        services.AddSingleton<IFieldValidator, BlockNoteMarkdownFieldValidator>();
         services.AddSingleton<IFieldValidator, StringFieldValidator>();
         services.AddSingleton<IFieldValidator, NumberFieldValidator>();
         services.AddSingleton<IFieldValidator, BooleanFieldValidator>();

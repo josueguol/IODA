@@ -27,15 +27,27 @@ cp .env.example .env
 
 | Variable | Descripción | Por defecto |
 |----------|-------------|-------------|
-| `VITE_CORE_API_URL` | Core API (proyectos, contenido, esquemas) | `http://localhost:5269` |
-| `VITE_IDENTITY_API_URL` | Identity API (login, refresh) | `http://localhost:5270` |
-| `VITE_AUTHORIZATION_API_URL` | Authorization API (check access) | `http://localhost:5271` |
-| `VITE_PUBLISHING_API_URL` | Publishing API (solicitudes, aprobar) | `http://localhost:5272` |
-| `VITE_INDEXING_API_URL` | Indexing API (búsqueda) | `http://localhost:5273` |
+| `VITE_CORE_API_URL` | Core API (proyectos, contenido, esquemas) | `http://localhost:5001` (Docker local) |
+| `VITE_IDENTITY_API_URL` | Identity API (login, refresh) | `http://localhost:5002` (Docker local) |
+| `VITE_AUTHORIZATION_API_URL` | Authorization API (check access) | `http://localhost:5003` (Docker local) |
+| `VITE_PUBLISHING_API_URL` | Publishing API (solicitudes, aprobar) | `http://localhost:5004` (Docker local) |
+| `VITE_INDEXING_API_URL` | Indexing API (búsqueda) | `http://localhost:5005` (Docker local) |
+| `VITE_ENABLE_RICHTEXT_EDITOR` | Habilita el editor nuevo `RichtextEditor` para campos rich text | `true` en DEV/QA local |
 
 Solo las variables con prefijo `VITE_` están disponibles en el código (Vite las expone en `import.meta.env`).
 
+Si ejecutas APIs fuera de Docker (por ejemplo con `dotnet run`), ajusta esas URLs a los puertos de `launchSettings.json`.
+
 ## Desarrollo
+
+Si backend/servicios están en Docker local:
+
+```bash
+# Desde la raíz del repo
+docker compose --profile services up -d --build
+```
+
+Luego levanta el frontend:
 
 ```bash
 npm run dev
@@ -82,7 +94,7 @@ src/
 
 ### Probar Búsqueda (Fase 7)
 
-1. **Indexing API** levantada (puerto 5273) y con contenido publicado indexado (normalmente se indexa automáticamente cuando Publishing aprueba una solicitud).
+1. **Indexing API** levantada (puerto 5005 en Docker local; 5273 si corres API con `dotnet run`) y con contenido publicado indexado (normalmente se indexa automáticamente cuando Publishing aprueba una solicitud).
 2. En el frontend: usa la **barra de búsqueda** en la parte superior del layout (o ve a `/search`) e introduce un término.
 3. Los resultados muestran contenido publicado con enlaces a edición. Si no hay resultados o hay error, se muestran mensajes claros.
 4. La búsqueda usa paginación (20 por página).
@@ -117,7 +129,7 @@ Si necesitas reindexar contenido publicado manualmente:
 
 1. Core API levantada y con al menos un **proyecto** y un **ContentSchema** con campos (ej. article con title, body, author).
 2. En el frontend: inicia sesión, selecciona proyecto en la barra, ve a **“Crear contenido”** (o `/content/new`).
-3. Elige un schema en el desplegable: se carga el schema completo y se muestra un formulario generado dinámicamente (inputs según `fieldType`: string, number, boolean, date, richtext, json, etc.).
+3. Elige un schema en el desplegable: se carga el schema completo y se muestra un formulario generado dinámicamente (inputs según `fieldType`: string, number, boolean, date, richtexteditor, json, etc.).
 4. Rellena título y campos y envía: se crea el contenido en Core (Fase 5) y se redirige al listado. Las validaciones se aplican vía Zod.
 
 ### Probar Contexto – Proyecto y entorno (Fase 3)

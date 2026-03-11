@@ -11,7 +11,7 @@ import {
   Image,
   List,
   Link2,
-  Pilcrow,
+  NotepadText,
   Sigma,
   SlidersHorizontal,
   Type,
@@ -32,7 +32,8 @@ const ALLOWED_BLOCK_TYPES_OPTIONS = [
 
 const FIELD_TYPES = [
   'string',
-  'richtext',
+  'formattedtext',
+  'richtexteditor',
   'number',
   'boolean',
   'date',
@@ -49,7 +50,8 @@ const VIRTUAL_NATIVE_ORDER = ['content-title', 'content-slug']
 
 const FIELD_TYPE_CATALOG = [
   { value: 'string', label: 'Campo de texto simple', icon: Type },
-  { value: 'richtext', label: 'Campo de texto enriquecido', icon: Pilcrow },
+  { value: 'formattedtext', label: 'Texto con formato simple', icon: Type },
+  { value: 'richtexteditor', label: 'Editor de texto enriquecido', icon: NotepadText },
   { value: 'number', label: 'Campo numérico', icon: Sigma },
   { value: 'boolean', label: 'Campo booleano', icon: CheckSquare },
   { value: 'date', label: 'Campo fecha', icon: Calendar },
@@ -85,6 +87,13 @@ function isValidSlug(slug: string): boolean {
 
 function nextKey(): string {
   return `f-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
+function normalizeEditorFieldType(fieldType: string): string {
+  const lower = (fieldType ?? '').trim().toLowerCase()
+  if (lower === 'formatted-text' || lower === 'formatted_text') return 'formattedtext'
+  if (lower === 'richtexteditor') return 'richtexteditor'
+  return lower
 }
 
 function buildVirtualNativeFields(): FieldEditor[] {
@@ -143,8 +152,10 @@ function uniqueSlug(base: string, fields: FieldEditor[]): string {
 
 function fieldTypePlaceholder(type: string): string {
   switch (type) {
-    case 'richtext':
-      return 'Contenido enriquecido'
+    case 'formattedtext':
+      return 'Texto con formato inline'
+    case 'richtexteditor':
+      return 'Editor blocknote markdown'
     case 'number':
       return '0'
     case 'boolean':
@@ -176,7 +187,7 @@ function mapSchemaToEditor(schema: ContentSchema): FieldEditor[] {
       isNativeVirtual: false,
       label: f.label,
       slug: f.slug,
-      fieldType: f.fieldType,
+      fieldType: normalizeEditorFieldType(f.fieldType),
       isRequired: f.isRequired,
       defaultValue: f.defaultValue ?? undefined,
       helpText: f.helpText ?? null,
@@ -263,7 +274,7 @@ export function SchemaDesignerPage() {
           isNativeVirtual: false,
           label: s.label,
           slug: s.slug,
-          fieldType: s.fieldType,
+          fieldType: normalizeEditorFieldType(s.fieldType),
           isRequired: false,
           defaultValue: undefined,
           helpText: null,
