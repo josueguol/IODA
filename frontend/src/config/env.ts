@@ -37,6 +37,11 @@ export const config = {
   isDev: env.DEV === true,
   /** Si estamos en producción. */
   isProd: env.PROD === true,
+  /** Feature flag de rollout para el editor RichtextEditor (BlockNote). */
+  enableRichtextEditor:
+    typeof env.VITE_ENABLE_RICHTEXT_EDITOR === 'string'
+      ? env.VITE_ENABLE_RICHTEXT_EDITOR.toLowerCase() !== 'false'
+      : true,
 } as const;
 
 export type Config = typeof config;

@@ -1,12 +1,12 @@
 import { useEffect, useMemo } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
+import { FormProvider, useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSchemaStore } from '../store/schema-store'
 import { buildZodSchema, type DynamicFormValues } from '../utils/field-validation'
 import { DynamicField } from './DynamicField'
 
 const formStyles: Record<string, React.CSSProperties> = {
-  form: { maxWidth: 600, color: 'var(--page-text)' },
+  form: { width: '100%', maxWidth: '100%', color: 'var(--page-text)' },
   actions: { marginTop: '1.5rem', display: 'flex', gap: '0.75rem' },
   submit: { padding: '0.5rem 1rem', background: '#0d6efd', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.875rem' },
   reset: { padding: '0.5rem 1rem', background: '#6c757d', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.875rem' },
@@ -77,7 +77,7 @@ export function DynamicForm({
   }, [defaultValues, allFields])
 
   const form = useForm<DynamicFormValues>({
-    resolver: zodSchema ? (zodResolver(zodSchema) as any) : undefined,
+    resolver: zodSchema ? (zodResolver(zodSchema) as unknown as Resolver<DynamicFormValues>) : undefined,
     defaultValues: initialDefaults,
   })
 

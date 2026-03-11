@@ -3,11 +3,16 @@ import type { FieldDefinition, ValidationRules } from '../../core/types'
 
 /** Convierte ValidationRules del backend en restricciones Zod. */
 function validationToZod(rules: ValidationRules | null, isRequired: boolean, fieldType: string): z.ZodTypeAny {
-  const typeLower = fieldType.toLowerCase()
+  const normalized = fieldType.trim().toLowerCase()
+  const typeLower =
+    normalized === 'formatted-text' || normalized === 'formatted_text'
+      ? 'formattedtext'
+      : normalized
 
   switch (typeLower) {
     case 'string':
-    case 'richtext':
+    case 'formattedtext':
+    case 'richtexteditor':
     case 'text': {
       let base: z.ZodTypeAny = z.string()
       if (rules) {

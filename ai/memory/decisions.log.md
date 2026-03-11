@@ -35,6 +35,7 @@ Regla obligatoria:
 20. [ADR-020: Observabilidad y manejo de errores](#adr-020-observabilidad-y-manejo-de-errores)
 21. [ADR-021: Consolidación de perfiles de agentes en Gobernanza Técnica](#adr-021-consolidación-de-perfiles-de-agentes-en-gobernanza-técnica)
 22. [ADR-022: QA Gatekeeper como puerta obligatoria de aprobación y entrega](#adr-022-qa-gatekeeper-como-puerta-obligatoria-de-aprobación-y-entrega)
+23. [ADR-023: Sustitución de richtext por blocknote_markdown con compatibilidad transitoria](#adr-023-sustitución-de-richtext-por-blocknote_markdown-con-compatibilidad-transitoria)
 
 ---
 
@@ -424,6 +425,56 @@ El gate de QA se vuelve obligatorio para cambios relevantes de backend/frontend/
 
 ---
 
+## ADR-023: Sustitución de richtext por blocknote_markdown con compatibilidad transitoria
+
+**Estado:** Aceptado.
+
+**Contexto:** El CMS requiere sustituir el componente `richtext` por un editor basado en BlockNote con soporte de bloques avanzados (incluyendo columnas, media y embeds), sin romper contenido existente ni contratos headless.
+
+**Decisión:** Adoptar el tipo de campo `blocknote_markdown` con las siguientes reglas:
+
+- Persistencia canónica en `markdown`.
+- Soporte de `metadata` estructurado para bloques no representables en markdown puro (`table`, `media`, `embed`, `component module`, `columns`).
+- Compatibilidad transitoria de lectura dual (`richtext` legacy + `blocknote_markdown`).
+- Deprecación escalonada de `richtext`: bloquear alta nueva primero, migrar contenido después, retirar runtime al cerrar conversión.
+- Validación de seguridad obligatoria en backend para media/embed/module (allowlist, sanitización y límites de payload).
+- Migración legacy con estrategia mixta: conversión on-write + proceso batch con trazabilidad de estado (`converted`, `partial`, `failed`).
+
+**Consecuencias:**
+
+- Evita breaking changes inmediatos para contenido histórico.
+- Introduce ventana temporal de doble compatibilidad que requiere monitoreo y QA de no regresión.
+- Exige contrato explícito y validadores de seguridad del lado servidor.
+- Permite rollout gradual y rollback controlado durante la transición.
+
+**Referencias:** `docs/011-RICHTEXT-MARKDOWN/ANALISIS_REQUERIMIENTO.md`, `docs/011-RICHTEXT-MARKDOWN/DECISIONES_APROBADAS.md`, `docs/CONSULTORIA/architecture/principios-cms.md`.
+
+---
+
+## ADR-024: Retiro inmediato de richtext legacy en fase de desarrollo
+
+**Estado:** Aceptado.
+
+**Contexto:** El equipo confirmó que no habrá despliegue a producción en esta fase y que los datos de DEV/QA son descartables. Mantener compatibilidad legacy aumenta complejidad y retrabajo sin aportar valor inmediato.
+
+**Decisión:** Cambiar la estrategia de transición y operar con corte limpio:
+
+- `richtexteditor` queda como único tipo de editor enriquecido soportado.
+- Se elimina soporte runtime de `richtext` en frontend y backend.
+- Se elimina soporte de aliases transitorios para editor enriquecido (`blocknote_markdown`, `markdown`) en contratos de campo.
+- Se cancela migración legacy (on-write y batch) para esta fase.
+- La validación QA se enfoca en flujo nuevo end-to-end (`richtexteditor`) y en confirmar ausencia de schemas legacy activos.
+
+**Consecuencias:**
+
+- Menor complejidad técnica y menor superficie de errores durante iteración.
+- Breaking change aceptado en DEV/QA por tratarse de entorno reiniciable.
+- Requiere recrear datos de prueba y schemas para validar el flujo completo.
+
+**Referencias:** `docs/011-RICHTEXT-MARKDOWN/DECISIONES_APROBADAS.md`, `docs/011-RICHTEXT-MARKDOWN/PLAN_EJECUCION.md`, `docs/011-RICHTEXT-MARKDOWN/ESTADO.md`.
+
+---
+
 ## Resumen por tema
 
 | Tema | ADRs |
@@ -433,6 +484,7 @@ El gate de QA se vuelve obligatorio para cambios relevantes de backend/frontend/
 | Seguridad y permisos | 007, 008, 009, 010, 011, 016, 017 |
 | Código y API | 012, 013, 014, 020 |
 | Calidad y release gate | 022 |
+| Contenido y authoring | 023, 024 |
 
 ---
 

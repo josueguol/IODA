@@ -5,7 +5,8 @@ public static class SchemaFieldTypes
     public static readonly HashSet<string> Allowed = new(StringComparer.OrdinalIgnoreCase)
     {
         "string",
-        "richtext",
+        "formattedtext",
+        "richtexteditor",
         "number",
         "boolean",
         "date",
@@ -17,4 +18,3 @@ public static class SchemaFieldTypes
         "media",
     };
 }
-

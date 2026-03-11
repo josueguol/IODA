@@ -9,7 +9,7 @@ public static class DefaultSchemaFields
     public static IReadOnlyList<DefaultFieldSuggestion> SuggestedFields { get; } = new[]
     {
         new DefaultFieldSuggestion("Descripción corta / Teaser", "teaser", "string"),
-        new DefaultFieldSuggestion("Contenido", "content", "richtext"),
+        new DefaultFieldSuggestion("Contenido", "content", "richtexteditor"),
     };
 }
 
