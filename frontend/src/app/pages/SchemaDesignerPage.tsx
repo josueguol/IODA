@@ -19,7 +19,7 @@ import {
 import { coreApi } from '../../modules/core/api/core-api'
 import { useAuthStore } from '../../modules/auth/store/auth-store'
 import { useContextStore } from '../../modules/core/store/context-store'
-import type { AllowedBlockTypeRule, ContentSchema, CreateSchemaFieldDto, UpdateSchemaFieldDto } from '../../modules/core/types'
+import type { AllowedBlockTypeRule, ContentSchema, CreateSchemaFieldDto, UpdateSchemaFieldDto, ValidationRules } from '../../modules/core/types'
 import { useSchemaStore } from '../../modules/schema/store/schema-store'
 import { ErrorBanner } from '../../shared/components'
 import './SchemaDesignerPage.css'
@@ -63,6 +63,14 @@ const FIELD_TYPE_CATALOG = [
 ] as const
 
 const SLUG_REGEX = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/
+const MEDIA_CATEGORIES = ['image', 'video', 'audio'] as const
+
+interface MediaRulesEditorState {
+  allowedCategories: string[]
+  allowedMimeTypes: string[]
+  allowedExtensions: string[]
+  maxSizeBytes?: number
+}
 
 interface FieldEditor extends CreateSchemaFieldDto {
   _key: string
@@ -175,6 +183,56 @@ function fieldTypePlaceholder(type: string): string {
     default:
       return 'Valor de ejemplo'
   }
+}
+
+function parseCommaSeparatedList(raw: string): string[] {
+  return raw
+    .split(',')
+    .map((x) => x.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+function parseMediaRulesFromValidationRules(validationRules: ValidationRules | null | undefined): MediaRulesEditorState {
+  const media = validationRules && typeof validationRules === 'object'
+    ? (validationRules['media'] as Record<string, unknown> | undefined)
+    : undefined
+
+  const categories = Array.isArray(media?.['allowedCategories'])
+    ? (media?.['allowedCategories'] as unknown[]).map((x) => String(x).toLowerCase()).filter(Boolean)
+    : []
+  const mimeTypes = Array.isArray(media?.['allowedMimeTypes'])
+    ? (media?.['allowedMimeTypes'] as unknown[]).map((x) => String(x).toLowerCase()).filter(Boolean)
+    : []
+  const extensions = Array.isArray(media?.['allowedExtensions'])
+    ? (media?.['allowedExtensions'] as unknown[]).map((x) => String(x).toLowerCase().replace(/^\./, '')).filter(Boolean)
+    : []
+  const rawMaxSize = media?.['maxSizeBytes']
+  const maxSize = typeof rawMaxSize === 'number'
+    ? rawMaxSize
+    : typeof rawMaxSize === 'string'
+      ? Number(rawMaxSize)
+      : undefined
+
+  return {
+    allowedCategories: categories,
+    allowedMimeTypes: mimeTypes,
+    allowedExtensions: extensions,
+    maxSizeBytes: maxSize && Number.isFinite(maxSize) && maxSize > 0 ? maxSize : undefined,
+  }
+}
+
+function mergeMediaRulesIntoValidationRules(
+  validationRules: ValidationRules | null | undefined,
+  mediaRules: MediaRulesEditorState
+): ValidationRules {
+  const next: ValidationRules = { ...(validationRules ?? {}) }
+  next['media'] = {
+    allowedCategories: mediaRules.allowedCategories,
+    allowedMimeTypes: mediaRules.allowedMimeTypes,
+    allowedExtensions: mediaRules.allowedExtensions,
+    ...(mediaRules.maxSizeBytes && mediaRules.maxSizeBytes > 0 ? { maxSizeBytes: mediaRules.maxSizeBytes } : {}),
+  }
+  return next
 }
 
 function mapSchemaToEditor(schema: ContentSchema): FieldEditor[] {
@@ -795,6 +853,81 @@ export function SchemaDesignerPage() {
                     />
                     Es requerido
                   </label>
+                  {selectedField.fieldType === 'media' && !selectedField.isNativeVirtual && (() => {
+                    const mediaRules = parseMediaRulesFromValidationRules(selectedField.validationRules)
+                    const maxSizeMb = mediaRules.maxSizeBytes ? Math.round(mediaRules.maxSizeBytes / (1024 * 1024)) : ''
+
+                    const updateMediaRules = (nextRules: MediaRulesEditorState) => {
+                      updateField(selectedField._key, {
+                        validationRules: mergeMediaRulesIntoValidationRules(selectedField.validationRules, nextRules),
+                      })
+                    }
+
+                    return (
+                      <>
+                        <div className="schema-designer-page__form-row">
+                          <label className="schema-designer-page__label">Categorías permitidas</label>
+                          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                            {MEDIA_CATEGORIES.map((category) => {
+                              const checked = mediaRules.allowedCategories.includes(category)
+                              return (
+                                <label key={category} className="schema-designer-page__checkbox-label" style={{ margin: 0 }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={(e) => {
+                                      const nextCategories = e.target.checked
+                                        ? Array.from(new Set([...mediaRules.allowedCategories, category]))
+                                        : mediaRules.allowedCategories.filter((c) => c !== category)
+                                      updateMediaRules({ ...mediaRules, allowedCategories: nextCategories })
+                                    }}
+                                  />
+                                  {category}
+                                </label>
+                              )
+                            })}
+                          </div>
+                        </div>
+                        <div className="schema-designer-page__form-row">
+                          <label className="schema-designer-page__label">MIME permitidos (csv)</label>
+                          <input
+                            type="text"
+                            className="schema-designer-page__input schema-designer-page__input--fill"
+                            value={mediaRules.allowedMimeTypes.join(', ')}
+                            onChange={(e) => updateMediaRules({ ...mediaRules, allowedMimeTypes: parseCommaSeparatedList(e.target.value) })}
+                            placeholder="image/jpeg, image/png, video/mp4"
+                          />
+                        </div>
+                        <div className="schema-designer-page__form-row">
+                          <label className="schema-designer-page__label">Extensiones permitidas (csv)</label>
+                          <input
+                            type="text"
+                            className="schema-designer-page__input schema-designer-page__input--fill"
+                            value={mediaRules.allowedExtensions.join(', ')}
+                            onChange={(e) => updateMediaRules({ ...mediaRules, allowedExtensions: parseCommaSeparatedList(e.target.value).map((x) => x.replace(/^\./, '')) })}
+                            placeholder="jpg, jpeg, png, mp4"
+                          />
+                        </div>
+                        <div className="schema-designer-page__form-row">
+                          <label className="schema-designer-page__label">Tamaño máximo (MB, opcional)</label>
+                          <input
+                            type="number"
+                            min={1}
+                            className="schema-designer-page__input schema-designer-page__input--fill"
+                            value={maxSizeMb}
+                            onChange={(e) => {
+                              const mb = e.target.value === '' ? undefined : Number(e.target.value)
+                              updateMediaRules({
+                                ...mediaRules,
+                                maxSizeBytes: mb && Number.isFinite(mb) && mb > 0 ? Math.round(mb * 1024 * 1024) : undefined,
+                              })
+                            }}
+                            placeholder="50"
+                          />
+                        </div>
+                      </>
+                    )
+                  })()}
                       </>
                     )
                   })()}

@@ -15,7 +15,11 @@ public class LocalMediaStorage : IMediaStorage
 
     public LocalMediaStorage(IConfiguration configuration, ILogger<LocalMediaStorage> logger)
     {
-        _rootPath = configuration["Media:StoragePath"] ?? configuration["Media:RootPath"] ?? Path.Combine(Path.GetTempPath(), "ioda-media");
+        _rootPath =
+            configuration["Media:Local:RootPath"]
+            ?? configuration["Media:StoragePath"]
+            ?? configuration["Media:RootPath"]
+            ?? Path.Combine(Path.GetTempPath(), "ioda-media");
         _logger = logger;
         if (!Directory.Exists(_rootPath))
             Directory.CreateDirectory(_rootPath);

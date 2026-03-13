@@ -1,5 +1,6 @@
 using FluentValidation;
 using IODA.Core.Application.Commands.Schemas;
+using IODA.Core.Application.Schemas;
 
 namespace IODA.Core.Application.Validators;
 
@@ -55,6 +56,17 @@ public class UpdateContentSchemaCommandValidator : AbstractValidator<UpdateConte
                 .MaximumLength(50).WithMessage("Field type must not exceed 50 characters.")
                 .Must(t => SchemaFieldTypes.Allowed.Contains(t))
                 .WithMessage($"Field type is invalid. Allowed: {string.Join(", ", SchemaFieldTypes.Allowed.OrderBy(x => x))}.");
+
+            field.RuleFor(f => f)
+                .Custom((f, context) =>
+                {
+                    var type = FieldTypeCanonicalizer.Canonicalize(f.FieldType);
+                    if (!string.Equals(type, "media", StringComparison.OrdinalIgnoreCase))
+                        return;
+
+                    if (!MediaFieldRulesParser.TryParseValidationRules(f.ValidationRules, out _, out var error))
+                        context.AddFailure(nameof(f.ValidationRules), error ?? "Invalid validationRules.media.");
+                });
         });
 
         RuleFor(x => x.Fields)

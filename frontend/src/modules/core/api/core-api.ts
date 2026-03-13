@@ -305,12 +305,11 @@ export const coreApi = {
   uploadMedia: (
     projectId: string,
     file: File,
-    options?: { displayName?: string; createdBy: string; metadata?: Record<string, unknown> }
+    options?: { displayName?: string; metadata?: Record<string, unknown> }
   ) => {
     const form = new FormData()
     form.append('file', file)
     if (options?.displayName) form.append('displayName', options.displayName)
-    if (options?.createdBy) form.append('createdBy', options.createdBy)
     if (options?.metadata) form.append('metadata', JSON.stringify(options.metadata))
     return coreClient.post<MediaItem>(`api/projects/${projectId}/media`, form)
   },

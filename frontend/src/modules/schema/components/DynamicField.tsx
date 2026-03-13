@@ -124,6 +124,7 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
                       projectId={projectId}
                       value={typeof f.value === 'string' ? f.value : null}
                       onChange={(id) => f.onChange(id ?? '')}
+                      validationRules={field.validationRules}
                       allowUpload
                     />
                   </>

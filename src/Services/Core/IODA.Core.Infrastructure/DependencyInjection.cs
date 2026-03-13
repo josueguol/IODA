@@ -43,7 +43,17 @@ public static class DependencyInjection
         services.AddScoped<IContentSiteRepository>(sp => sp.GetRequiredService<IUnitOfWork>().ContentSites);
         services.AddScoped<IContentSiteUrlRepository>(sp => sp.GetRequiredService<IUnitOfWork>().ContentSiteUrls);
         services.AddScoped<IEnvironmentRepository, Persistence.Repositories.EnvironmentRepository>();
-        services.AddScoped<Application.Interfaces.IMediaStorage, Storage.LocalMediaStorage>();
+        var mediaProvider = (configuration["Media:Provider"] ?? "local").Trim().ToLowerInvariant();
+        switch (mediaProvider)
+        {
+            case "do_spaces":
+                services.AddScoped<Application.Interfaces.IMediaStorage, Storage.DoSpacesMediaStorage>();
+                break;
+            case "local":
+            default:
+                services.AddScoped<Application.Interfaces.IMediaStorage, Storage.LocalMediaStorage>();
+                break;
+        }
 
         var rabbitEnabledRaw = configuration["RabbitMQ:Enabled"];
         var rabbitEnabled = string.IsNullOrEmpty(rabbitEnabledRaw) || !string.Equals(rabbitEnabledRaw, "false", StringComparison.OrdinalIgnoreCase);

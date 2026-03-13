@@ -37,6 +37,13 @@ public class CreateContentCommandHandler : IRequestHandler<CreateContentCommand,
                 .ToList());
         }
 
+        await MediaFieldContentValidator.ValidateAsync(
+            schema,
+            request.Fields ?? new Dictionary<string, object>(),
+            request.ProjectId,
+            _unitOfWork.MediaItems,
+            cancellationToken);
+
         if (request.SiteId.HasValue)
         {
             var site = await _unitOfWork.Sites.GetByIdAsync(request.SiteId.Value, cancellationToken);
