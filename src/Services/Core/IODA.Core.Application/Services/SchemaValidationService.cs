@@ -1,4 +1,5 @@
 using IODA.Core.Application.Interfaces;
+using IODA.Core.Application.Schemas;
 using IODA.Core.Application.Validators.Schema;
 using IODA.Core.Domain.Entities;
 
@@ -42,7 +43,8 @@ public class SchemaValidationService : ISchemaValidationService
                     continue;
             }
 
-            var validator = _fieldValidators.FirstOrDefault(v => v.CanValidate(fieldDef.FieldType));
+            var canonicalFieldType = FieldTypeCanonicalizer.Canonicalize(fieldDef.FieldType);
+            var validator = _fieldValidators.FirstOrDefault(v => v.CanValidate(canonicalFieldType));
             if (validator != null)
             {
                 var typeErrors = validator.Validate(fieldDef, value);

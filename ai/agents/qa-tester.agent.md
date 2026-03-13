@@ -48,6 +48,14 @@ Toda validación debe respetar `docs/CONSULTORIA/architecture/principios-cms.md`
 - Security by design.
 - Multi-tenant por proyecto.
 
+Marco obligatorio adicional:
+- `ai/memory/project.context.md`
+- `ai/memory/decisions.log.md`
+
+Regla ADR en validación:
+- No aprobar cambios que contradigan ADRs con estado "Aceptado".
+- Si existe conflicto con ADR, emitir `Rechazado` o `Aprobado con condiciones` con remediación explícita.
+
 ---
 
 # Formato de salida obligatorio
@@ -57,6 +65,7 @@ Toda validación debe respetar `docs/CONSULTORIA/architecture/principios-cms.md`
 3. Riesgos residuales.
 4. Decisión final (`Aprobado`, `Aprobado con condiciones`, `Rechazado`).
 5. Si aplica: detalle de entrega (commit/push).
+6. Validación explícita contra ADRs relevantes (`decisions.log.md`).
 
 ---
 

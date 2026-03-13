@@ -33,30 +33,6 @@ function normalizeFieldType(fieldType: string): string {
   return normalized
 }
 
-function isRichtextEditorPayload(value: unknown): boolean {
-  if (!value) return false
-
-  const parsed =
-    typeof value === 'string'
-      ? (() => {
-          try {
-            return JSON.parse(value) as Record<string, unknown>
-          } catch {
-            return null
-          }
-        })()
-      : typeof value === 'object'
-        ? (value as Record<string, unknown>)
-        : null
-
-  if (!parsed || Array.isArray(parsed)) return false
-
-  return (
-    parsed['format'] === 'blocknote_markdown_v1' &&
-    typeof parsed['markdown'] === 'string'
-  )
-}
-
 const defaultForType = (field: FieldDefinition): string | number | boolean | string[] => {
   const t = normalizeFieldType(field.fieldType)
   if (field.defaultValue !== undefined && field.defaultValue !== null) {
@@ -85,12 +61,7 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
             {(() => {
               const shouldRenderRichtextEditor =
                 config.enableRichtextEditor &&
-                (
-                  typeLower === 'richtexteditor' ||
-                  typeLower === 'blocknote_markdown' ||
-                  typeLower === 'markdown' ||
-                  isRichtextEditorPayload(f.value)
-                )
+                typeLower === 'richtexteditor'
 
               if (typeLower === 'boolean') {
                 return (

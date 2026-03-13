@@ -1,4 +1,5 @@
 using IODA.Core.Application.Interfaces;
+using IODA.Core.Application.Schemas;
 using IODA.Core.Domain.Entities;
 using IODA.Core.Domain.Repositories;
 using IODA.Shared.Contracts.Events.V1;
@@ -30,7 +31,7 @@ public class CreateContentSchemaCommandHandler : IRequestHandler<CreateContentSc
                 Guid.Empty,
                 f.Label,
                 f.Slug,
-                f.FieldType,
+                FieldTypeCanonicalizer.Canonicalize(f.FieldType),
                 f.IsRequired,
                 f.DefaultValue,
                 f.HelpText,

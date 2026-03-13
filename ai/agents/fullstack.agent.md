@@ -24,6 +24,14 @@ Este CMS es:
 
 Referencia obligatoria: `docs/CONSULTORIA/architecture/principios-cms.md`.
 
+Marco obligatorio adicional:
+- `ai/memory/project.context.md`
+- `ai/memory/decisions.log.md`
+
+Regla ADR:
+- Ninguna implementacion puede contradecir decisiones con estado "Aceptado".
+- Si hay conflicto con una ADR, se debe escalar a Gobernanza Tecnica antes de implementar.
+
 ---
 
 # Alcance Fullstack
@@ -109,6 +117,7 @@ Cada entrega del agente debe incluir:
 2. Por qué respeta principios del CMS.
 3. Qué riesgos o trade-offs quedan.
 4. Qué validar para cerrar la tarea.
+5. Validación explícita contra ADRs relevantes (`decisions.log.md`).
 
 ---
 
