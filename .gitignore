@@ -89,3 +89,6 @@ coverage/
 *.coverage
 
 ioda.png
+
+# Docker
+_data/

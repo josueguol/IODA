@@ -2,9 +2,11 @@ using IODA.Core.Application.Commands.Media;
 using IODA.Core.Application.DTOs;
 using IODA.Core.Application.Interfaces;
 using IODA.Core.Application.Queries.Media;
+using IODA.Core.API.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace IODA.Core.API.Controllers;
 
@@ -32,14 +34,28 @@ public class MediaController : ControllerBase
         Guid projectId,
         IFormFile file,
         [FromForm] string? displayName = null,
-        [FromForm] Guid? createdBy = null,
+        [FromForm] string? metadata = null,
         CancellationToken cancellationToken = default)
     {
+        var userId = User.GetUserId();
+        if (userId is null)
+            return Unauthorized();
+
         if (file == null || file.Length == 0)
             return BadRequest("No file or empty file.");
 
-        if (createdBy == null || createdBy == Guid.Empty)
-            return BadRequest("createdBy is required.");
+        Dictionary<string, object>? parsedMetadata = null;
+        if (!string.IsNullOrWhiteSpace(metadata))
+        {
+            try
+            {
+                parsedMetadata = JsonSerializer.Deserialize<Dictionary<string, object>>(metadata);
+            }
+            catch (Exception)
+            {
+                return BadRequest("metadata must be a valid JSON object.");
+            }
+        }
 
         await using var stream = file.OpenReadStream();
         var command = new UploadMediaCommand(
@@ -48,9 +64,9 @@ public class MediaController : ControllerBase
             file.FileName ?? "file",
             file.ContentType ?? "application/octet-stream",
             file.Length,
-            createdBy.Value,
+            userId.Value,
             displayName,
-            null);
+            parsedMetadata);
 
         var id = await _mediator.Send(command, cancellationToken);
         var item = await _mediator.Send(new GetMediaByIdQuery(id), cancellationToken);

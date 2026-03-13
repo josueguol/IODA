@@ -43,6 +43,13 @@ public class UpdateContentCommandHandler : IRequestHandler<UpdateContentCommand,
                 .ToList());
         }
 
+        await MediaFieldContentValidator.ValidateAsync(
+            schema,
+            request.Fields ?? new Dictionary<string, object>(),
+            content.ProjectId,
+            _unitOfWork.MediaItems,
+            cancellationToken);
+
         // Parent content relationship is disabled. Existing content remains root-level.
         content.SetParent(null);
 
