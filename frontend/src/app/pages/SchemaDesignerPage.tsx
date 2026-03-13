@@ -212,6 +212,7 @@ export function SchemaDesignerPage() {
   const [fields, setFields] = useState<FieldEditor[]>([])
   const [selectedFieldKey, setSelectedFieldKey] = useState<string | null>(null)
   const [allowedBlockTypes, setAllowedBlockTypes] = useState<AllowedBlockTypeRule[]>([])
+  const [initialFieldTypeById, setInitialFieldTypeById] = useState<Record<string, string>>({})
   const [rightTab, setRightTab] = useState<RightTab>('field-config')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -256,6 +257,9 @@ export function SchemaDesignerPage() {
           setSchemaName(schema.schemaName)
           setSchemaType(schema.schemaType)
           setDescription(schema.description ?? '')
+          setInitialFieldTypeById(
+            Object.fromEntries(schema.fields.map((f) => [f.id, normalizeEditorFieldType(f.fieldType)]))
+          )
           const nextFields = mapSchemaToEditor(schema)
           setFields(nextFields)
           setSelectedFieldKey(nextFields[0]?._key ?? null)
@@ -268,6 +272,7 @@ export function SchemaDesignerPage() {
     coreApi
       .getDefaultSchemaFields(currentProjectId)
       .then((list) => {
+        setInitialFieldTypeById({})
         const custom = list.map((s, i) => ({
           _key: nextKey(),
           existingId: null,
@@ -359,6 +364,13 @@ export function SchemaDesignerPage() {
     for (const f of validFields) {
       if (!isValidSlug(f.slug.trim())) return `El slug «${f.slug}» no es válido. Usa letras, números, guion o guion bajo.`
       if (RESERVED_NATIVE_SLUGS.has(f.slug.trim().toLowerCase())) return `El slug «${f.slug}» está reservado por campos nativos.`
+      // La inmutabilidad aplica únicamente a campos activos existentes (con Id persistida).
+      if (f.existingId) {
+        const originalType = initialFieldTypeById[f.existingId]
+        if (originalType && originalType !== normalizeEditorFieldType(f.fieldType)) {
+          return `El tipo del campo existente «${f.slug}» es inmutable. Elimina y recrea el campo para cambiar tipo.`
+        }
+      }
     }
     return null
   }
@@ -707,7 +719,8 @@ export function SchemaDesignerPage() {
               {selectedField ? (
                 <>
                   {(() => {
-                    const isSlugReadOnly = Boolean(selectedField.isNativeVirtual || (isEditMode && selectedField.existingId))
+                    const isExistingActiveField = Boolean(isEditMode && selectedField.existingId)
+                    const isSlugReadOnly = Boolean(selectedField.isNativeVirtual || isExistingActiveField)
                     return (
                       <>
                   <div className="schema-designer-page__form-row">
@@ -749,8 +762,8 @@ export function SchemaDesignerPage() {
                       onChange={(e) => {
                         if (!selectedField.isNativeVirtual) updateField(selectedField._key, { fieldType: e.target.value })
                       }}
-                      disabled={Boolean(selectedField.isNativeVirtual || (isEditMode && selectedField.existingId))}
-                      title={selectedField.isNativeVirtual ? 'Campo nativo: tipo de solo lectura.' : isEditMode && selectedField.existingId ? 'El tipo de campo es solo lectura una vez creado.' : undefined}
+                      disabled={Boolean(selectedField.isNativeVirtual || isExistingActiveField)}
+                      title={selectedField.isNativeVirtual ? 'Campo nativo: tipo de solo lectura.' : isExistingActiveField ? 'El tipo de campo activo existente es de solo lectura.' : undefined}
                     >
                       {FIELD_TYPES.map((t) => (
                         <option key={t} value={t}>

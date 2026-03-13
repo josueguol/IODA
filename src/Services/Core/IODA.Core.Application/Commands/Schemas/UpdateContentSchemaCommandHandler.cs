@@ -1,4 +1,5 @@
 using IODA.Core.Application.Interfaces;
+using IODA.Core.Application.Schemas;
 using IODA.Core.Domain.Entities;
 using IODA.Core.Domain.Exceptions;
 using IODA.Core.Domain.Repositories;
@@ -29,30 +30,21 @@ public class UpdateContentSchemaCommandHandler : IRequestHandler<UpdateContentSc
         if (!string.Equals(schema.SchemaType, request.SchemaType, StringComparison.Ordinal))
             throw new InvalidOperationException("SchemaType is immutable once created.");
 
-        var existingById = schema.Fields.ToDictionary(f => f.Id, f => f);
-        var existingBySlug = schema.Fields.ToDictionary(f => f.Slug, f => f, StringComparer.OrdinalIgnoreCase);
-        var existingSlugs = schema.Fields.Select(f => f.Slug).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var incomingSlugs = request.Fields.Select(f => f.Slug).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var existingFields = schema.Fields.ToList();
+        var existingById = existingFields.ToDictionary(f => f.Id, f => f);
 
         foreach (var incoming in request.Fields)
         {
-            FieldDefinition? existing = null;
-            if (incoming.Id.HasValue && existingById.TryGetValue(incoming.Id.Value, out var byId))
-            {
-                existing = byId;
-            }
-            else if (existingBySlug.TryGetValue(incoming.Slug, out var bySlug))
-            {
-                existing = bySlug;
-            }
-            else if (incoming.Id.HasValue)
-            {
-                // Legacy tolerance: if frontend sends a stale field Id, fall back to slug matching.
-                // If neither Id nor slug exists in this schema, reject to avoid cross-schema Id injection.
+            // Field identity is the persistent Id. Deleted fields are represented by omission from request.Fields,
+            // so a re-added field with same slug but null Id must be treated as a brand-new field.
+            if (!incoming.Id.HasValue) continue;
+            if (!existingById.TryGetValue(incoming.Id.Value, out var existing))
                 throw new InvalidOperationException($"Field id '{incoming.Id}' does not belong to the target schema.");
-            }
 
-            if (existing != null && !string.Equals(existing.FieldType, incoming.FieldType, StringComparison.OrdinalIgnoreCase))
+            var existingType = FieldTypeCanonicalizer.Canonicalize(existing.FieldType);
+            var incomingType = FieldTypeCanonicalizer.Canonicalize(incoming.FieldType);
+
+            if (!string.Equals(existingType, incomingType, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException($"FieldType for '{existing.Slug}' is immutable once the field exists.");
         }
 
@@ -60,21 +52,14 @@ public class UpdateContentSchemaCommandHandler : IRequestHandler<UpdateContentSc
             .OrderBy(f => f.DisplayOrder)
             .Select((f, index) =>
             {
-                Guid? stableId = null;
-                if (f.Id.HasValue && existingById.ContainsKey(f.Id.Value))
-                {
-                    stableId = f.Id.Value;
-                }
-                else if (existingBySlug.TryGetValue(f.Slug, out var bySlug))
-                {
-                    stableId = bySlug.Id;
-                }
+                // Preserve identity only for currently existing active fields matched by Id.
+                Guid? stableId = f.Id.HasValue && existingById.ContainsKey(f.Id.Value) ? f.Id.Value : null;
 
                 return FieldDefinition.Create(
                     Guid.Empty,
                     f.Label,
                     f.Slug,
-                    f.FieldType,
+                    FieldTypeCanonicalizer.Canonicalize(f.FieldType),
                     f.IsRequired,
                     f.DefaultValue,
                     f.HelpText,
@@ -104,7 +89,7 @@ public class UpdateContentSchemaCommandHandler : IRequestHandler<UpdateContentSc
             SchemaVersion = schema.SchemaVersion,
             UpdatedBy = request.UpdatedBy,
             AddedFields = schema.Fields
-                .Where(f => !existingSlugs.Contains(f.Slug))
+                .Where(f => !existingById.ContainsKey(f.Id))
                 .Select(f => new IODA.Shared.Contracts.Events.V1.FieldDefinitionDto(
                     f.Slug,
                     f.FieldType,
@@ -112,11 +97,12 @@ public class UpdateContentSchemaCommandHandler : IRequestHandler<UpdateContentSc
                     f.DefaultValue,
                     f.ValidationRules))
                 .ToList(),
-            RemovedFields = existingSlugs
-                .Where(slug => !incomingSlugs.Contains(slug))
+            RemovedFields = existingFields
+                .Where(old => schema.Fields.All(next => next.Id != old.Id))
+                .Select(old => old.Slug)
                 .ToList(),
             ModifiedFields = schema.Fields
-                .Where(f => existingSlugs.Contains(f.Slug))
+                .Where(f => existingById.ContainsKey(f.Id))
                 .Select(f => new IODA.Shared.Contracts.Events.V1.FieldDefinitionDto(
                     f.Slug,
                     f.FieldType,

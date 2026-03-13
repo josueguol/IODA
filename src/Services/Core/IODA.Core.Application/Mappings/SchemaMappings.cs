@@ -1,4 +1,5 @@
 using IODA.Core.Application.DTOs;
+using IODA.Core.Application.Schemas;
 using IODA.Core.Domain.Entities;
 
 namespace IODA.Core.Application.Mappings;
@@ -45,7 +46,7 @@ public static class SchemaMappings
             field.Slug, // FieldName is obsolete; use Slug for backward compatibility
             field.Label,
             field.Slug,
-            field.FieldType,
+            FieldTypeCanonicalizer.Canonicalize(field.FieldType),
             field.IsRequired,
             field.DefaultValue,
             field.HelpText,
