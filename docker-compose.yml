@@ -28,6 +28,7 @@ services:
       - Jwt__SecretKey=your-super-secret-key-min-32-chars-change-in-production
       - Jwt__Issuer=ioda-identity
       - Jwt__Audience=ioda-cms
+      - Core__PublicBaseUrl=http://localhost:5001
       - Media__Provider=local
       - Media__Local__RootPath=/var/lib/ioda/media
     depends_on: []  # [postgres, rabbitmq] cuando uses compose para infra

@@ -313,4 +313,25 @@ export const coreApi = {
     if (options?.metadata) form.append('metadata', JSON.stringify(options.metadata))
     return coreClient.post<MediaItem>(`api/projects/${projectId}/media`, form)
   },
+
+  /** Actualiza metadatos/displayName. PATCH /api/projects/{projectId}/media/{mediaId} */
+  updateMediaMetadata: (
+    projectId: string,
+    mediaId: string,
+    body: { displayName?: string | null; metadata?: Record<string, unknown> | null }
+  ) => coreClient.patch<MediaItem>(`api/projects/${projectId}/media/${mediaId}`, body),
+
+  /** Reemplaza archivo del media (incrementa version). POST /api/projects/{projectId}/media/{mediaId}/replace */
+  replaceMedia: (
+    projectId: string,
+    mediaId: string,
+    file: File,
+    options?: { displayName?: string; metadata?: Record<string, unknown> }
+  ) => {
+    const form = new FormData()
+    form.append('file', file)
+    if (options?.displayName) form.append('displayName', options.displayName)
+    if (options?.metadata) form.append('metadata', JSON.stringify(options.metadata))
+    return coreClient.post<MediaItem>(`api/projects/${projectId}/media/${mediaId}/replace`, form)
+  },
 }

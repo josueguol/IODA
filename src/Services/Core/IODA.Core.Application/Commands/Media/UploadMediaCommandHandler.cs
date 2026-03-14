@@ -10,11 +10,13 @@ public class UploadMediaCommandHandler : IRequestHandler<UploadMediaCommand, Gui
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMediaStorage _storage;
+    private readonly IMediaProcessingQueue _processingQueue;
 
-    public UploadMediaCommandHandler(IUnitOfWork unitOfWork, IMediaStorage storage)
+    public UploadMediaCommandHandler(IUnitOfWork unitOfWork, IMediaStorage storage, IMediaProcessingQueue processingQueue)
     {
         _unitOfWork = unitOfWork;
         _storage = storage;
+        _processingQueue = processingQueue;
     }
 
     public async Task<Guid> Handle(UploadMediaCommand request, CancellationToken cancellationToken)
@@ -31,6 +33,7 @@ public class UploadMediaCommandHandler : IRequestHandler<UploadMediaCommand, Gui
             cancellationToken);
 
         var displayName = request.DisplayName ?? request.FileName;
+        var metadataWithPending = MediaProcessingMetadata.WithPendingStatus(request.Metadata);
         var mediaItem = MediaItem.Create(
             request.ProjectId,
             request.FileName,
@@ -39,10 +42,11 @@ public class UploadMediaCommandHandler : IRequestHandler<UploadMediaCommand, Gui
             request.SizeBytes,
             storageKey,
             request.CreatedBy,
-            request.Metadata);
+            metadataWithPending);
 
         await _unitOfWork.MediaItems.AddAsync(mediaItem, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        _processingQueue.Enqueue(mediaItem.Id);
 
         return mediaItem.Id;
     }

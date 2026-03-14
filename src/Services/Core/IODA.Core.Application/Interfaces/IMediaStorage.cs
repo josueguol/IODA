@@ -24,4 +24,9 @@ public interface IMediaStorage
     /// Elimina el archivo del almacenamiento (opcional; para borrado lógico no se usa).
     /// </summary>
     Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lista claves de archivos almacenados. Se puede limitar por prefijo (ej. projectId/).
+    /// </summary>
+    Task<IReadOnlyList<string>> ListKeysAsync(string? prefix = null, CancellationToken cancellationToken = default);
 }

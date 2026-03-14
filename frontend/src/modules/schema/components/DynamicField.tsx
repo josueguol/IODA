@@ -141,6 +141,7 @@ export function DynamicField({ field, projectId }: { field: FieldDefinition; pro
                     <RichtextEditor
                       value={f.value}
                       onChange={(next) => f.onChange(next)}
+                      projectId={projectId}
                     />
                   </>
                 )

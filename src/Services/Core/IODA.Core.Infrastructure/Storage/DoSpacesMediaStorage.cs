@@ -102,6 +102,30 @@ public class DoSpacesMediaStorage : IMediaStorage
         return _s3.DeleteObjectAsync(_bucket, storageKey, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<string>> ListKeysAsync(string? prefix = null, CancellationToken cancellationToken = default)
+    {
+        var results = new List<string>();
+        var request = new ListObjectsV2Request
+        {
+            BucketName = _bucket,
+            Prefix = string.IsNullOrWhiteSpace(prefix) ? _keyPrefix : BuildKey(prefix),
+            MaxKeys = 1000,
+        };
+
+        ListObjectsV2Response response;
+        do
+        {
+            response = await _s3.ListObjectsV2Async(request, cancellationToken);
+            foreach (var item in response.S3Objects)
+                results.Add(item.Key);
+
+            request.ContinuationToken = response.NextContinuationToken;
+        }
+        while (response.IsTruncated == true);
+
+        return results;
+    }
+
     private string BuildKey(string key)
     {
         var normalized = key.TrimStart('/');

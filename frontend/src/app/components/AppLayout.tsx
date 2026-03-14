@@ -320,6 +320,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 >
                   Contenido
                 </Link>
+                <Link
+                  to="/multimedia"
+                  role="tab"
+                  aria-selected={isActive('/multimedia', false)}
+                  aria-current={isActive('/multimedia', false) ? 'page' : undefined}
+                  className={`app-layout__tab ${isActive('/multimedia', false) ? 'app-layout__tab--active' : ''}`}
+                >
+                  Multimedia
+                </Link>
                 <Can permission="content.publish">
                   <Link
                     to="/publish"

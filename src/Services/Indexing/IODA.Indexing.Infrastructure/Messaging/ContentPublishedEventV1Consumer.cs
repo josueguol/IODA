@@ -27,7 +27,7 @@ public class ContentPublishedEventV1Consumer : IConsumer<ContentPublishedEventV1
             ev.Title,
             ev.ContentType,
             ev.PublishedAt,
-            null);
+            ev.Fields);
         await _indexer.IndexAsync(request, context.CancellationToken);
     }
 }
