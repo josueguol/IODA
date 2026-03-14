@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BlockNoteSchema, type PartialBlock } from '@blocknote/core'
 import { en } from '@blocknote/core/locales'
 import { filterSuggestionItems } from '@blocknote/core/extensions'
@@ -23,6 +23,9 @@ import { getMultiColumnSlashMenuItems, locales as multiColumnLocales, multiColum
 import '@blocknote/core/fonts/inter.css'
 import '@blocknote/mantine/style.css'
 import './RichtextEditor.css'
+import type { MediaItem } from '../../core/types'
+import { coreApi } from '../../core/api/core-api'
+import { MediaLibrarySelector } from './MediaLibrarySelector'
 
 interface BlockNoteFieldPayload {
   format: 'blocknote_markdown_v1'
@@ -61,9 +64,11 @@ function toPayload(raw: unknown): BlockNoteFieldPayload | null {
 export function RichtextEditor({
   value,
   onChange,
+  projectId,
 }: {
   value: unknown
   onChange: (nextValue: string) => void
+  projectId?: string
 }) {
   const parsedValue = useMemo(() => toPayload(value), [value])
   const initialContent = useMemo<PartialBlock[] | undefined>(
@@ -72,6 +77,7 @@ export function RichtextEditor({
   )
   const initialMarkdown = parsedValue?.markdown ?? (typeof value === 'string' ? value : '')
   const schema = useMemo(() => withMultiColumn(BlockNoteSchema.create()), [])
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false)
 
   const editor = useCreateBlockNote({
     schema,
@@ -124,6 +130,22 @@ export function RichtextEditor({
     editor.insertBlocks(blocks, current, 'after')
   }, [editor])
 
+  const insertMediaFromLibrary = useCallback((item: MediaItem) => {
+    if (!projectId) return
+    const current = editor.getTextCursorPosition().block
+    const fileUrl = coreApi.getMediaFileUrl(projectId, item.id)
+    const lower = item.contentType.toLowerCase()
+    const label = item.displayName ?? item.fileName
+
+    const content = lower.startsWith('image/')
+      ? `![${label}](${fileUrl})`
+      : `[${label}](${fileUrl})`
+
+    const blocks = [{ type: 'paragraph', content }] as unknown as PartialBlock[]
+    editor.insertBlocks(blocks, current, 'after')
+    setShowMediaLibrary(false)
+  }, [editor, projectId])
+
   const toolbarBlockTypes = useMemo(() => {
     return blockTypeSelectItems(editor.dictionary).filter((item) => {
       if (item.type === 'heading') {
@@ -172,13 +194,33 @@ export function RichtextEditor({
         group: 'Custom Integrations',
         onItemClick: () => insertComponentModuleTemplate(),
       },
+      ...(projectId
+        ? [{
+            title: 'Media from library',
+            subtext: 'Inserta multimedia desde el modulo Multimedia',
+            aliases: ['media', 'image', 'video', 'audio', 'library'],
+            group: 'Custom Media',
+            onItemClick: () => setShowMediaLibrary(true),
+          } satisfies DefaultReactSuggestionItem]
+        : []),
     ]
     const filtered = filterSuggestionItems([...multiColumnItems, ...defaults, ...customItems], query)
     return ensureUniqueSuggestionTitles(filtered)
-  }, [editor, insertComponentModuleTemplate, insertEmbedTemplate])
+  }, [editor, insertComponentModuleTemplate, insertEmbedTemplate, projectId])
 
   return (
     <div className="blocknote-field">
+      {projectId && (
+        <div className="blocknote-field__toolbar">
+          <button
+            type="button"
+            className="blocknote-field__btn"
+            onClick={() => setShowMediaLibrary(true)}
+          >
+            Insertar media
+          </button>
+        </div>
+      )}
       <div className="blocknote-field__editor">
         <BlockNoteView
           editor={editor}
@@ -211,6 +253,13 @@ export function RichtextEditor({
           <SuggestionMenuController triggerCharacter="/" getItems={getSlashItems} />
         </BlockNoteView>
       </div>
+      {showMediaLibrary && projectId && (
+        <MediaLibrarySelector
+          projectId={projectId}
+          onClose={() => setShowMediaLibrary(false)}
+          onSelect={insertMediaFromLibrary}
+        />
+      )}
     </div>
   )
 }

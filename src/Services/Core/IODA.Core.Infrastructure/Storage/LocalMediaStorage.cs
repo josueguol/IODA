@@ -67,6 +67,27 @@ public class LocalMediaStorage : IMediaStorage
         return Task.CompletedTask;
     }
 
+    public Task<IReadOnlyList<string>> ListKeysAsync(string? prefix = null, CancellationToken cancellationToken = default)
+    {
+        var keys = new List<string>();
+        if (!Directory.Exists(_rootPath))
+            return Task.FromResult<IReadOnlyList<string>>(keys);
+
+        var normalizedPrefix = string.IsNullOrWhiteSpace(prefix)
+            ? null
+            : prefix.Trim().TrimStart('/').Replace('\\', '/');
+
+        foreach (var fullPath in Directory.EnumerateFiles(_rootPath, "*", SearchOption.AllDirectories))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var relativePath = Path.GetRelativePath(_rootPath, fullPath).Replace('\\', '/');
+            if (normalizedPrefix is null || relativePath.StartsWith(normalizedPrefix, StringComparison.Ordinal))
+                keys.Add(relativePath);
+        }
+
+        return Task.FromResult<IReadOnlyList<string>>(keys);
+    }
+
     private string GetFullPath(string storageKey)
     {
         if (string.IsNullOrWhiteSpace(storageKey) || storageKey.IndexOf("..", StringComparison.Ordinal) >= 0)

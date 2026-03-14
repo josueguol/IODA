@@ -14,6 +14,7 @@ import { PublishPage } from './pages/PublishPage'
 import { ContentListPage } from './pages/ContentListPage'
 import { CreateContentPage } from './pages/CreateContentPage'
 import { EditContentPage } from './pages/EditContentPage'
+import { MultimediaPage } from './pages/MultimediaPage'
 import { SearchPage } from './pages/SearchPage'
 import { SitesPage } from './pages/SitesPage'
 import { RolesPermissionsPage } from './pages/RolesPermissionsPage'
@@ -90,6 +91,18 @@ function AppRoutes() {
             <RequireFullContext>
               <AppLayout>
                 <HomePage />
+              </AppLayout>
+            </RequireFullContext>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/multimedia"
+        element={
+          <ProtectedRoute>
+            <RequireFullContext>
+              <AppLayout>
+                <MultimediaPage />
               </AppLayout>
             </RequireFullContext>
           </ProtectedRoute>

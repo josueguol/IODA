@@ -1,6 +1,7 @@
 using IODA.Core.Application.Interfaces;
 using IODA.Core.Domain.Repositories;
 using IODA.Core.Infrastructure.Messaging;
+using IODA.Core.Infrastructure.Processing;
 using IODA.Core.Infrastructure.Persistence;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,12 @@ public static class DependencyInjection
                 services.AddScoped<Application.Interfaces.IMediaStorage, Storage.LocalMediaStorage>();
                 break;
         }
+        services.AddSingleton<Application.Interfaces.IMediaPublicUrlBuilder, Storage.MediaPublicUrlBuilder>();
+        services.AddScoped<Application.Interfaces.IMediaLifecycleService, MediaLifecycleService>();
+
+        services.AddSingleton<MediaProcessingBackgroundService>();
+        services.AddSingleton<Application.Interfaces.IMediaProcessingQueue>(sp => sp.GetRequiredService<MediaProcessingBackgroundService>());
+        services.AddHostedService(sp => sp.GetRequiredService<MediaProcessingBackgroundService>());
 
         var rabbitEnabledRaw = configuration["RabbitMQ:Enabled"];
         var rabbitEnabled = string.IsNullOrEmpty(rabbitEnabledRaw) || !string.Equals(rabbitEnabledRaw, "false", StringComparison.OrdinalIgnoreCase);

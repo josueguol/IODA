@@ -102,4 +102,30 @@ public class MediaItem : AggregateRoot<Guid>
             throw new ArgumentException("Display name cannot be empty", nameof(displayName));
         DisplayName = displayName;
     }
+
+    public void ReplaceFile(
+        string fileName,
+        string contentType,
+        long sizeBytes,
+        string storageKey,
+        string? displayName = null)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            throw new ArgumentException("File name cannot be empty", nameof(fileName));
+        if (string.IsNullOrWhiteSpace(contentType))
+            throw new ArgumentException("Content type cannot be empty", nameof(contentType));
+        if (string.IsNullOrWhiteSpace(storageKey))
+            throw new ArgumentException("Storage key cannot be empty", nameof(storageKey));
+        if (sizeBytes < 0)
+            throw new ArgumentOutOfRangeException(nameof(sizeBytes), "Size must be non-negative.");
+
+        FileName = fileName;
+        ContentType = contentType;
+        SizeBytes = sizeBytes;
+        StorageKey = storageKey;
+        Version += 1;
+
+        if (!string.IsNullOrWhiteSpace(displayName))
+            DisplayName = displayName.Trim();
+    }
 }

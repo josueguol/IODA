@@ -16,6 +16,7 @@ public record ContentPublishedEventV1 : EventBase
     public required string ContentType { get; init; }
     public required Guid PublishedBy { get; init; }
     public required DateTime PublishedAt { get; init; }
+    public Dictionary<string, object>? Fields { get; init; }
     public Guid? ScheduledPublishId { get; init; }
     public EventMetadata? Metadata { get; init; }
 }
